@@ -31,7 +31,7 @@ flutter create .
 
 3. Build và Chạy Dự án
 Sau khi thiết lập dự án, bạn có thể build và chạy bằng lệnh:
-    
-    ```bash
-   flutter run
-    ```
+
+```bash
+flutter run
+```

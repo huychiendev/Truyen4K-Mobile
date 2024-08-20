@@ -1,16 +1,37 @@
-# apptruyenonline
+# Dự án Flutter của tôi
 
-A new Flutter project.
+Chào mừng đến với **Dự án Flutter của tôi**! Dự án này được xây dựng bằng Flutter và có thể chạy trên nhiều nền tảng bao gồm Android và iOS.
 
-## Getting Started
+## Yêu cầu trước khi bắt đầu
 
-This project is a starting point for a Flutter application.
+Trước khi bạn có thể chạy dự án này, hãy đảm bảo rằng bạn đã cài đặt các phần mềm sau:
 
-A few resources to get you started if this is your first Flutter project:
+- [Flutter SDK](https://flutter.dev/docs/get-started/install)
+- [Android Studio](https://developer.android.com/studio) (dành cho phát triển Android)
+- [Xcode](https://developer.apple.com/xcode/) (dành cho phát triển iOS, chỉ có trên macOS)
+- [Visual Studio Code](https://code.visualstudio.com/) (tùy chọn, nhưng được khuyến khích)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Hướng dẫn cài đặt
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 1. Clone Repository
+
+Đầu tiên, clone repository này về máy tính của bạn:
+
+```bash
+git clone https://github.com/ten-cua-ban/ten-repository.git
+cd ten-repository
+```
+
+2. Cài đặt Dependencies
+Nếu đây là lần đầu bạn chạy dự án, hoặc nếu bạn đã xóa các thư mục nền tảng, bạn cần chạy lệnh sau:
+
+```bash
+flutter create .
+```
+
+3. Build và Chạy Dự án
+Sau khi thiết lập dự án, bạn có thể build và chạy bằng lệnh:
+    
+    ```bash
+   flutter run
+    ```

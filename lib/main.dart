@@ -36,7 +36,8 @@ class LoginScreen extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/background.png'), // Đường dẫn tới hình nền
+                image: AssetImage(
+                    'assets/background.png'), // Đường dẫn tới hình nền
                 fit: BoxFit.cover,
               ),
             ),
@@ -57,7 +58,8 @@ class LoginScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15.0),
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, // Căn chỉnh tiêu đề bên trái
+                        crossAxisAlignment: CrossAxisAlignment
+                            .start, // Căn chỉnh tiêu đề bên trái
                         children: [
                           Text(
                             'Đăng nhập',
@@ -69,7 +71,8 @@ class LoginScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 30),
                           TextField(
-                            onTap: () => _showSnackBar(context, 'Bạn vừa click vào ô nhập Email'),
+                            onTap: () => _showSnackBar(
+                                context, 'Bạn vừa click vào ô nhập Email'),
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white.withOpacity(0.8),
@@ -82,10 +85,12 @@ class LoginScreen extends StatelessWidget {
                           SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: () {
-                              _showSnackBar(context, 'Bạn vừa click vào nút Tiếp tục');
+                              _showSnackBar(
+                                  context, 'Bạn vừa click vào nút Tiếp tục');
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFFB2D6A5), // Màu nền nút "Tiếp tục"
+                              backgroundColor:
+                                  Color(0xFFB2D6A5), // Màu nền nút "Tiếp tục"
                               padding: EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -105,7 +110,8 @@ class LoginScreen extends StatelessWidget {
                           Align(
                             alignment: Alignment.centerRight,
                             child: GestureDetector(
-                              onTap: () => _showSnackBar(context, 'Bạn vừa click vào Quên mật khẩu?'),
+                              onTap: () => _showSnackBar(
+                                  context, 'Bạn vừa click vào Quên mật khẩu?'),
                               child: Text(
                                 'Quên mật khẩu?',
                                 style: TextStyle(
@@ -123,7 +129,8 @@ class LoginScreen extends StatelessWidget {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10.0),
                                 child: Text(
                                   'Hoặc',
                                   style: TextStyle(
@@ -147,7 +154,8 @@ class LoginScreen extends StatelessWidget {
                               color: Colors.white,
                               textColor: Colors.blue,
                               onPressed: () {
-                                _showSnackBar(context, 'Bạn vừa click vào nút Đăng nhập với Facebook');
+                                _showSnackBar(context,
+                                    'Bạn vừa click vào nút Đăng nhập với Facebook');
                               },
                             ),
                           ),
@@ -159,7 +167,8 @@ class LoginScreen extends StatelessWidget {
                               color: Colors.white,
                               textColor: Colors.red,
                               onPressed: () {
-                                _showSnackBar(context, 'Bạn vừa click vào nút Đăng nhập với Google');
+                                _showSnackBar(context,
+                                    'Bạn vừa click vào nút Đăng nhập với Google');
                               },
                             ),
                           ),
@@ -171,14 +180,16 @@ class LoginScreen extends StatelessWidget {
                               color: Colors.white,
                               textColor: Colors.black,
                               onPressed: () {
-                                _showSnackBar(context, 'Bạn vừa click vào nút Đăng nhập với Apple');
+                                _showSnackBar(context,
+                                    'Bạn vừa click vào nút Đăng nhập với Apple');
                               },
                             ),
                           ),
                           SizedBox(height: 20),
                           Center(
                             child: GestureDetector(
-                              onTap: () => _showSnackBar(context, 'Bạn vừa click vào Đăng ký'),
+                              onTap: () => _showSnackBar(
+                                  context, 'Bạn vừa click vào Đăng ký'),
                               child: Text.rich(
                                 TextSpan(
                                   text: 'Bạn chưa có tài khoản? ',
@@ -239,7 +250,8 @@ class LoginButton extends StatelessWidget {
           style: TextStyle(color: textColor),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: color, // Màu nền trắng cho nút đăng nhập với các dịch vụ khác
+          backgroundColor:
+              color, // Màu nền trắng cho nút đăng nhập với các dịch vụ khác
           padding: EdgeInsets.symmetric(vertical: 15),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),

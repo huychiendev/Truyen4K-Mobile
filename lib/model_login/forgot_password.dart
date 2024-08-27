@@ -6,6 +6,9 @@ class ForgotPassword extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Quay lại đăng nhập"),
+      ),
       body: Stack(
         children: [
           // Background image

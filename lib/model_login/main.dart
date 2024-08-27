@@ -81,6 +81,21 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                           ),
+
+                          SizedBox(height: 30),
+                          TextField(
+                            onTap: () => _showSnackBar(
+                                context, 'bạn vừa click vào password'),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.8),
+                              hintText: 'Password',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+
                           SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: () {
@@ -158,7 +173,7 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          SizedBox(height: 20),
+                          SizedBox(height: 40),
                           FractionallySizedBox(
                             widthFactor: 0.9,
                             child: LoginButton(
@@ -198,7 +213,7 @@ class LoginScreen extends StatelessWidget {
                               },
                             ),
                           ),
-                          SizedBox(height: 20),
+                          SizedBox(height: 40),
                           Center(
                             child: GestureDetector(
                               onTap: () {

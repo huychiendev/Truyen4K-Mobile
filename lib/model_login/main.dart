@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:apptruyenonline/model_login/sign_up_screen.dart'; // Nhập SignUpScreen từ file mới
 
 void main() {
   runApp(MyApp());
@@ -10,8 +11,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Inter', // Sử dụng font Inter cho toàn bộ ứng dụng
+        fontFamily: 'Inter',
       ),
       home: LoginScreen(),
     );
@@ -32,17 +34,14 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Background image
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                    'assets/background.png'), // Đường dẫn tới hình nền
+                image: AssetImage('assets/background.png'),
                 fit: BoxFit.cover,
               ),
             ),
           ),
-          // Foreground content
           Center(
             child: SingleChildScrollView(
               child: Padding(
@@ -58,8 +57,7 @@ class LoginScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15.0),
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment
-                            .start, // Căn chỉnh tiêu đề bên trái
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Đăng nhập',
@@ -86,11 +84,10 @@ class LoginScreen extends StatelessWidget {
                           ElevatedButton(
                             onPressed: () {
                               _showSnackBar(
-                                  context, 'Bạn vừa click vào nút Tiếp tục');
+                                  context, 'Bạn vừa click vào nút Vũ đẹp trai');
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Color(0xFFB2D6A5), // Màu nền nút "Tiếp tục"
+                              backgroundColor: Color(0xFFB2D6A5),
                               padding: EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -147,7 +144,7 @@ class LoginScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 20),
                           FractionallySizedBox(
-                            widthFactor: 0.9, // Chiếm 90% chiều rộng màn hình
+                            widthFactor: 0.9,
                             child: LoginButton(
                               icon: FontAwesomeIcons.facebookF,
                               text: 'Đăng nhập với Facebook',
@@ -160,7 +157,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                           ),
                           FractionallySizedBox(
-                            widthFactor: 0.9, // Chiếm 90% chiều rộng màn hình
+                            widthFactor: 0.9,
                             child: LoginButton(
                               icon: FontAwesomeIcons.google,
                               text: 'Đăng nhập với Google',
@@ -173,7 +170,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                           ),
                           FractionallySizedBox(
-                            widthFactor: 0.9, // Chiếm 90% chiều rộng màn hình
+                            widthFactor: 0.9,
                             child: LoginButton(
                               icon: FontAwesomeIcons.apple,
                               text: 'Đăng nhập với Apple',
@@ -188,8 +185,14 @@ class LoginScreen extends StatelessWidget {
                           SizedBox(height: 20),
                           Center(
                             child: GestureDetector(
-                              onTap: () => _showSnackBar(
-                                  context, 'Bạn vừa click vào Đăng ký'),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SignUpScreen(),
+                                  ),
+                                );
+                              },
                               child: Text.rich(
                                 TextSpan(
                                   text: 'Bạn chưa có tài khoản? ',
@@ -250,12 +253,11 @@ class LoginButton extends StatelessWidget {
           style: TextStyle(color: textColor),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              color, // Màu nền trắng cho nút đăng nhập với các dịch vụ khác
+          backgroundColor: color,
           padding: EdgeInsets.symmetric(vertical: 15),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: Colors.grey.shade300), // Viền mờ
+            side: BorderSide(color: Colors.grey.shade300),
           ),
         ),
         onPressed: onPressed,

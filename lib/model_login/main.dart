@@ -1,3 +1,4 @@
+import 'package:apptruyenonline/model_login/forgot_password.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -103,20 +104,35 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 15),
-                          Align(
-                            alignment: Alignment.centerRight,
+
+                          SizedBox(height: 20),
+                          Center(
                             child: GestureDetector(
-                              onTap: () => _showSnackBar(
-                                  context, 'Bạn vừa click vào Quên mật khẩu?'),
-                              child: Text(
-                                'Quên mật khẩu?',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ForgotPassword(),
+                                  ),
+                                );
+                              },
+                              child: Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'Quên mật khẩu?',
+                                      style: TextStyle(
+                                        color: Colors.lightGreenAccent,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           ),
+
+
                           SizedBox(height: 40),
                           Row(
                             children: [

@@ -1,8 +1,8 @@
-import 'package:apptruyenonline/model_login/main.dart';
+import 'package:apptruyenonline/model_login/sign_up_screen.dart'; // Đảm bảo rằng bạn đã khai báo đúng đường dẫn của file SignUpScreen
 import 'package:flutter/material.dart';
 import 'dart:ui'; // Để sử dụng ImageFilter
 
-class SignUpScreen extends StatelessWidget {
+class ForgotPassword extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,51 +35,27 @@ class SignUpScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Đăng ký',
+                            'Khôi Phục Mật Khẩu',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          SizedBox(height: 20), // Thêm khoảng cách giữa các thành phần
                           Text(
-                            'Có vẻ như bạn chưa có tài khoản, hãy tạo một tài khoản mới cho bạn.',
+                            'Bạn quên mật khẩu? Đừng lo lắng, hãy nhập email của bạn để đặt lại mật khẩu hiện tại.',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
-
                           SizedBox(height: 20),
-                          _buildTextField('Tên', 'Nhập tên của bạn'),
-                          SizedBox(height: 15),
                           _buildTextField('Email', 'Nhập email của bạn'),
-                          SizedBox(height: 15),
-                          _buildTextField('Mật khẩu', 'Nhập mật khẩu của bạn', obscureText: true),
-                          SizedBox(height: 15),
-                          _buildTextField('Xác nhận mật khẩu', 'Nhập lại mật khẩu của bạn', obscureText: true),
                           SizedBox(height: 20),
-
-                          Text.rich(
-                            TextSpan(
-                              text: 'Bằng cách chọn Tạo tài khoản bên dưới, tôi đồng ý với',
-                              style: TextStyle(color: Colors.white),
-                              children: [
-                                TextSpan(
-                                  text: ' Điều khoản dịch vụ và chính sách bảo mật',
-                                  style: TextStyle(
-                                    color: Colors.lightGreenAccent,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
                           ElevatedButton(
                             onPressed: () {
-                              // Thực hiện đăng ký ở đây
+                              // Thực hiện hành động gửi email khôi phục mật khẩu ở đây
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFF8CD860),
@@ -90,7 +66,7 @@ class SignUpScreen extends StatelessWidget {
                             ),
                             child: Center(
                               child: Text(
-                                'Tạo Tài Khoản',
+                                'Gửi',
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.black,
@@ -98,7 +74,6 @@ class SignUpScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-
                           SizedBox(height: 20),
                           Center(
                             child: GestureDetector(
@@ -106,17 +81,17 @@ class SignUpScreen extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => LoginScreen(),
+                                    builder: (context) => SignUpScreen(),
                                   ),
                                 );
                               },
                               child: Text.rich(
                                 TextSpan(
-                                  text: 'Bạn đã có tài khoản? ',
+                                  text: 'Bạn chưa có tài khoản? ',
                                   style: TextStyle(color: Colors.white),
                                   children: [
                                     TextSpan(
-                                      text: 'Đăng nhập',
+                                      text: 'Đăng Ký',
                                       style: TextStyle(
                                         color: Colors.lightGreenAccent,
                                         decoration: TextDecoration.underline,
@@ -149,6 +124,8 @@ class SignUpScreen extends StatelessWidget {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.8),
       ),
     );
   }

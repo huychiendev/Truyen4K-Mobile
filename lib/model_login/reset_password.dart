@@ -1,15 +1,11 @@
-import 'package:apptruyenonline/model_login/reset_password.dart';
-import 'package:apptruyenonline/model_login/sign_up_screen.dart';
+import 'package:apptruyenonline/model_login/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui'; // Để sử dụng ImageFilter
 
-class ForgotPassword extends StatelessWidget {
+class ResetPassword extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Quay lại đăng nhập"),
-      ),
       body: Stack(
         children: [
           // Background image
@@ -39,32 +35,37 @@ class ForgotPassword extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Khôi Phục Mật Khẩu',
+                            'Đặt mật khẩu',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 20), // Thêm khoảng cách giữa các thành phần
                           Text(
-                            'Bạn quên mật khẩu? Đừng lo lắng, hãy nhập email của bạn để đặt lại mật khẩu hiện tại.',
+                            'Có vẻ như bạn chưa có tài khoản, hãy tạo một tài khoản mới cho bạn.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          _buildTextField('Mật khẩu', 'Nhập mật khẩu của bạn', obscureText: true),
+                          SizedBox(height: 15),
+                          _buildTextField('Xác nhận mật khẩu', 'Nhập lại mật khẩu của bạn', obscureText: true),
+                          SizedBox(height: 20),
+                          Text(
+                            'Ít nhất 8 kí tự',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,
                             ),
                           ),
-                          SizedBox(height: 20),
-                          _buildTextField('Email', 'Nhập email của bạn'),
-                          SizedBox(height: 20),
+                          SizedBox(height: 20), // Bổ sung thêm SizedBox để tạo khoảng cách trước nút bấm
                           ElevatedButton(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ResetPassword(),
-                                ),
-                              );
+                              // Thực hiện đặt mật khẩu ở đây
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFF8CD860),
@@ -75,7 +76,7 @@ class ForgotPassword extends StatelessWidget {
                             ),
                             child: Center(
                               child: Text(
-                                'Gửi',
+                                'Đặt mật khẩu',
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.black,
@@ -83,34 +84,7 @@ class ForgotPassword extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 40), // Tạo khoảng cách giữa các thành phần
-                          Center(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SignUpScreen(),
-                                  ),
-                                );
-                              },
-                              child: Text.rich(
-                                TextSpan(
-                                  text: 'Bạn chưa có tài khoản? ',
-                                  style: TextStyle(color: Colors.white),
-                                  children: [
-                                    TextSpan(
-                                      text: 'Đăng Ký',
-                                      style: TextStyle(
-                                        color: Colors.lightGreenAccent,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
+                          SizedBox(height: 20),
                         ],
                       ),
                     ),
@@ -133,8 +107,6 @@ class ForgotPassword extends StatelessWidget {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.8),
       ),
     );
   }

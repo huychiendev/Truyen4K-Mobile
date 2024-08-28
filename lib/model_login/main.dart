@@ -175,7 +175,7 @@ class LoginScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 40),
                           FractionallySizedBox(
-                            widthFactor: 0.9,
+                            widthFactor: 1,
                             child: LoginButton(
                               icon: FontAwesomeIcons.facebookF,
                               text: 'Đăng nhập với Facebook',
@@ -188,7 +188,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                           ),
                           FractionallySizedBox(
-                            widthFactor: 0.9,
+                            widthFactor: 1,
                             child: LoginButton(
                               icon: FontAwesomeIcons.google,
                               text: 'Đăng nhập với Google',
@@ -201,7 +201,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                           ),
                           FractionallySizedBox(
-                            widthFactor: 0.9,
+                            widthFactor: 1,
                             child: LoginButton(
                               icon: FontAwesomeIcons.apple,
                               text: 'Đăng nhập với Apple',

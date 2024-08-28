@@ -1,8 +1,9 @@
-import 'package:apptruyenonline/model_login/forgot_password.dart';
-import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'package:apptruyenonline/model_login/forgot_password.dart';
 import 'package:apptruyenonline/model_login/sign_up_screen.dart'; // Nhập SignUpScreen từ file mới
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() {
   runApp(MyApp());
@@ -81,7 +82,6 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-
                           SizedBox(height: 30),
                           TextField(
                             onTap: () => _showSnackBar(
@@ -95,7 +95,6 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-
                           SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: () {
@@ -119,7 +118,6 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-
                           SizedBox(height: 20),
                           Center(
                             child: GestureDetector(
@@ -138,7 +136,7 @@ class LoginScreen extends StatelessWidget {
                                       text: 'Quên mật khẩu?',
                                       style: TextStyle(
                                         color: Colors.lightGreenAccent,
-                                        decoration: TextDecoration.underline,
+                                        decoration: TextDecoration.none,
                                       ),
                                     ),
                                   ],
@@ -146,8 +144,6 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-
-
                           SizedBox(height: 40),
                           Row(
                             children: [
@@ -233,7 +229,7 @@ class LoginScreen extends StatelessWidget {
                                       text: 'Đăng ký',
                                       style: TextStyle(
                                         color: Colors.lightGreenAccent,
-                                        decoration: TextDecoration.underline,
+                                        decoration: TextDecoration.none,
                                       ),
                                     ),
                                   ],

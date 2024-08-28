@@ -21,17 +21,18 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool _obscureText = true;
+  bool _isPasswordVisible = false;
 
   void _togglePasswordVisibility() {
     setState(() {
-      _obscureText = !_obscureText;
+      _isPasswordVisible = !_isPasswordVisible;
     });
   }
 
@@ -93,6 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               hintText: 'Email',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: Colors.white),
                               ),
                             ),
                             style: TextStyle(fontSize: 14),
@@ -101,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextField(
                             onTap: () => _showSnackBar(
                                 context, 'Bạn vừa click vào password'),
-                            obscureText: _obscureText,
+                            obscureText: !_isPasswordVisible,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white.withOpacity(0.8),
@@ -111,9 +113,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscureText
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
+                                  _isPasswordVisible
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
                                   size: 18,
                                 ),
                                 onPressed: _togglePasswordVisibility,
@@ -276,7 +278,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
 
 class LoginButton extends StatelessWidget {
   final IconData icon;

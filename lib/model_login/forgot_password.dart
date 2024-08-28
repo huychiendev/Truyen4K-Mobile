@@ -1,7 +1,8 @@
+import 'dart:ui'; // Để sử dụng ImageFilter
+
 import 'package:apptruyenonline/model_login/reset_password.dart';
 import 'package:apptruyenonline/model_login/sign_up_screen.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui'; // Để sử dụng ImageFilter
 
 class ForgotPassword extends StatelessWidget {
   @override
@@ -32,7 +33,7 @@ class ForgotPassword extends StatelessWidget {
                     child: Container(
                       padding: EdgeInsets.all(20.0),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.black.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(15.0),
                       ),
                       child: Column(
@@ -46,7 +47,9 @@ class ForgotPassword extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 20), // Thêm khoảng cách giữa các thành phần
+                          SizedBox(
+                              height:
+                                  20), // Thêm khoảng cách giữa các thành phần
                           Text(
                             'Bạn quên mật khẩu? Đừng lo lắng, hãy nhập email của bạn để đặt lại mật khẩu hiện tại.',
                             style: TextStyle(
@@ -83,7 +86,9 @@ class ForgotPassword extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 40), // Tạo khoảng cách giữa các thành phần
+                          SizedBox(
+                              height:
+                                  40), // Tạo khoảng cách giữa các thành phần
                           Center(
                             child: GestureDetector(
                               onTap: () {
@@ -103,7 +108,7 @@ class ForgotPassword extends StatelessWidget {
                                       text: 'Đăng Ký',
                                       style: TextStyle(
                                         color: Colors.lightGreenAccent,
-                                        decoration: TextDecoration.underline,
+                                        decoration: TextDecoration.none,
                                       ),
                                     ),
                                   ],
@@ -124,7 +129,8 @@ class ForgotPassword extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String label, String hint, {bool obscureText = false}) {
+  Widget _buildTextField(String label, String hint,
+      {bool obscureText = false}) {
     return TextField(
       obscureText: obscureText,
       decoration: InputDecoration(

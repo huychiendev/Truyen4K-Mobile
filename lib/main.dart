@@ -98,7 +98,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                             child: Center(
                               child: Text(
-                                'Tiếp tục',
+                                'Tiếp tục ',
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.black,
@@ -150,7 +150,7 @@ class LoginScreen extends StatelessWidget {
                             widthFactor: 0.9, // Chiếm 90% chiều rộng màn hình
                             child: LoginButton(
                               icon: FontAwesomeIcons.facebookF,
-                              text: 'Đăng nhập với Facebook',
+                              text: 'Đăng nhập với Facebook ',
                               color: Colors.white,
                               textColor: Colors.blue,
                               onPressed: () {

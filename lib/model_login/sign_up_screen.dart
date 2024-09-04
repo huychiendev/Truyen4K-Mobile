@@ -1,6 +1,6 @@
 import 'dart:ui'; // Để sử dụng ImageFilter
 
-import 'package:apptruyenonline/model_login/main.dart';
+import 'package:apptruyenonline/model_login/login.dart';
 import 'package:flutter/material.dart';
 
 class SignUpScreen extends StatelessWidget {

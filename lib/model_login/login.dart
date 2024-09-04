@@ -1,26 +1,11 @@
 import 'dart:ui';
-
-import 'package:apptruyenonline/model_login/forgot_password.dart';
+import 'package:apptruyenonline/main.dart';
 import 'package:apptruyenonline/model_login/sign_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-void main() {
-  runApp(MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Inter',
-      ),
-      home: LoginScreen(),
-    );
-  }
-}
+import 'forgot_password.dart'; // Import MainScreen
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -126,8 +111,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           SizedBox(height: 15),
                           ElevatedButton(
                             onPressed: () {
-                              _showSnackBar(
-                                  context, 'Bạn vừa click vào nút Tiếp tục');
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => MainScreen()), // Chuyển hướng đến MainScreen
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xBD8DDA61),

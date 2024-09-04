@@ -3,9 +3,7 @@ import 'package:apptruyenonline/main.dart';
 import 'package:apptruyenonline/model_login/sign_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-
-import 'forgot_password.dart'; // Import MainScreen
+import 'forgot_password.dart';
 
 class LoginScreen extends StatefulWidget {
   @override

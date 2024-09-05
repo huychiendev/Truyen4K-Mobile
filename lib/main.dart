@@ -1,3 +1,4 @@
+import 'package:apptruyenonline/screens/novel_detail_screen.dart';
 import 'package:flutter/material.dart';
 // import 'model_login/login.dart';
 import 'screens/home_screen.dart';
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginScreen(),
+      home: NovelDetailScreen(),
     );
   }
 }

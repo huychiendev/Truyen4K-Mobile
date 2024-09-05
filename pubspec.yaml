@@ -24,3 +24,4 @@ flutter:
   assets:
     - assets/background.png
     - assets/mock_data.json
+    - assets/300.jpg

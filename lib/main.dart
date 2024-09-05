@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'model_login/login.dart';
+// import 'model_login/login.dart';
 import 'screens/home_screen.dart';
 import 'screens/explore_screen.dart';
 import 'screens/library_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/login_screen.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -13,13 +15,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Audio Truyện 247',
+      title: 'Login',
       theme: ThemeData(
-        primarySwatch: Colors.green,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        primarySwatch: Colors.blue,
       ),
       home: LoginScreen(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }

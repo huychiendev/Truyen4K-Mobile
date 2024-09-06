@@ -33,7 +33,9 @@ class HorizontalListSection extends StatelessWidget {
             height: 200,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              children: items.map((item) => _buildHorizontalListItem(item as Map<String, dynamic>)).toList(),
+              children: items
+                  .map((item) => _buildHorizontalListItem(context, item as Map<String, dynamic>))
+                  .toList(),
             ),
           ),
         ],
@@ -73,5 +75,4 @@ class HorizontalListSection extends StatelessWidget {
       ),
     );
   }
-
 }

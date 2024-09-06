@@ -43,7 +43,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         hintText: 'Tìm kiếm truyện, tác giả...',
         prefixIcon: Icon(Icons.search),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(8),
         ),
       ),
     );
@@ -63,7 +63,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           spacing: 10,
           runSpacing: 10,
           children: [
-            'Tiên Hiệp', 'Khoa Huyễn', 'Võng Du', 'Đô Thị'
+            'Tiên Hiệp', 'Khoa Huyễn', 'Võng Du'
           ].map((category) => Chip(label: Text(category))).toList(),
         ),
       ],
@@ -98,6 +98,36 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ),
         ),
       ],
+    );
+  }
+  Widget _buildSwordplay() {
+  // Placeholder for recommendations
+    return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+    Text(
+    'Kiếm Hiệp',
+    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    ),
+    SizedBox(height: 10),
+    // You can reuse HorizontalListSection here if needed
+    // For now, we'll use a placeholder
+    Container(
+    height: 200,
+    child: ListView.builder(
+    scrollDirection: Axis.horizontal,
+    itemCount: 5,
+    itemBuilder: (context, index) {
+    return Container(
+    width: 120,
+    margin: EdgeInsets.only(right: 10),
+    color: Colors.grey[300],
+    child: Center(child: Text('Book ${index + 1}')),
+    );
+    },
+    ),
+    ),
+    ],
     );
   }
 }

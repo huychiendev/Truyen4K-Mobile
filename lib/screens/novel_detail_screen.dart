@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
 class NovelDetailScreen extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  NovelDetailScreen({required this.title, required this.subtitle});
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -249,4 +255,5 @@ class NovelDetailScreen extends StatelessWidget {
       ),
     );
   }
+
 }

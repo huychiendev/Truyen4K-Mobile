@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../screens/novel_detail_screen.dart';
+
 class HorizontalListSection extends StatelessWidget {
   final String title;
   final String actionText;
@@ -39,31 +41,37 @@ class HorizontalListSection extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontalListItem(Map<String, dynamic> item) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 120,
-            height: 140,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(8),
+  Widget _buildHorizontalListItem(BuildContext context, Map<String, dynamic> item) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => NovelDetailScreen(
+              title: item['title'],
+              subtitle: item['subtitle'],
             ),
           ),
-          SizedBox(height: 8),
-          Text(
-            item['title'] as String? ?? '',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            item['subtitle'] as String? ?? '',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ],
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Your existing widgets, such as images, titles, etc.
+            Text(
+              item['title'],
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              item['subtitle'],
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
       ),
     );
   }
+
 }

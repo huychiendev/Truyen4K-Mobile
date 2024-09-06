@@ -17,4 +17,5 @@ class LoginConstants {
   static const String facebookLoginMessage = 'Bạn vừa click vào nút Đăng nhập với Facebook';
   static const String googleLoginMessage = 'Bạn vừa click vào nút Đăng nhập với Google';
   static const String appleLoginMessage = 'Bạn vừa click vào nút Đăng nhập với Apple';
+  
 }

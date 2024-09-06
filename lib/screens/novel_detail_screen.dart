@@ -6,9 +6,13 @@ class NovelDetailScreen extends StatelessWidget {
 
   NovelDetailScreen({required this.title, required this.subtitle});
 
-
   @override
   Widget build(BuildContext context) {
+    // Hiển thị Snackbar ngay khi trang chi tiết được mở
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showSnackbar(context, title, subtitle);
+    });
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -68,6 +72,15 @@ class NovelDetailScreen extends StatelessWidget {
     );
   }
 
+  // Hàm hiển thị Snackbar
+  void _showSnackbar(BuildContext context, String title, String subtitle) {
+    final snackBar = SnackBar(
+      content: Text('Title: $title\nSubtitle: $subtitle'),
+      duration: Duration(seconds: 3),  // Tự động biến mất sau 3 giây
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   Widget _buildCoverImage() {
     return Stack(
       children: [
@@ -92,7 +105,7 @@ class NovelDetailScreen extends StatelessWidget {
                     label: Text('Đọc tiếp'),
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue
+                        backgroundColor: Colors.blue
                     ),
                   ),
                 ),
@@ -103,7 +116,7 @@ class NovelDetailScreen extends StatelessWidget {
                     label: Text('Nghe Tiếp'),
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[700]
+                        backgroundColor: Colors.grey[700]
                     ),
                   ),
                 ),
@@ -255,5 +268,4 @@ class NovelDetailScreen extends StatelessWidget {
       ),
     );
   }
-
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'all_items_screen.dart'; // Đảm bảo import đúng file
 
 class ExploreScreen extends StatefulWidget {
   @override
@@ -7,32 +8,68 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   @override
+  Widget _buildCategories() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Thể loại',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: ['Tiên Hiệp', 'Khoa Huyễn', 'Võng Du'].map((category) {
+            return Chip(
+              label: Text(category),
+              backgroundColor: Colors.grey[200],
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Khám phá'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        titleTextStyle: TextStyle(
-          color: Colors.black,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      appBar: _buildAppBar(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSearchBar(),
+              _buildSearchBar(),// search
               SizedBox(height: 20),
-              _buildCategories(),
+              _buildCategories(), // Thể loại
               SizedBox(height: 20),
-              _buildRecommendations(),
+              _buildRecommendations(), // Đề xuất
+              SizedBox(height: 20),
+              _buildSwordplay(), // Truyện Kiếm Hiệp
+              SizedBox(height: 20),
+              _buildNovel(), // Truyện Mới
+              SizedBox(height: 20),
+
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // Thêm hàm _buildCategories
+
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: Text('Khám Phá'),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      titleTextStyle: TextStyle(
+        color: Colors.black,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
       ),
     );
   }
@@ -49,85 +86,161 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  Widget _buildCategories() {
-    // Placeholder for categories
+  Widget _buildRecommendations() {
+    List<dynamic> recommendationItems = [
+      {'title': 'Truyện đề xuất 1', 'subtitle': 'Chi tiết 1'},
+      {'title': 'Truyện đề xuất 2', 'subtitle': 'Chi tiết 2'},
+      {'title': 'Truyện đề xuất 1', 'subtitle': 'Chi tiết 1'},
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Thể loại',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Đề xuất cho bạn',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AllItemsScreen(
+                      items: recommendationItems,
+                      category: 'Đề xuất',
+                    ),
+                  ),
+                );
+              },
+              child: Text(
+                'Xem Tất Cả',
+                style: TextStyle(color: Colors.green),
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 10),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            'Tiên Hiệp', 'Khoa Huyễn', 'Võng Du'
-          ].map((category) => Chip(label: Text(category))).toList(),
-        ),
+        _buildHorizontalList(recommendationItems),
       ],
     );
   }
 
-  Widget _buildRecommendations() {
-    // Placeholder for recommendations
+  Widget _buildSwordplay() {
+    List<dynamic> swordplayItems = [
+      {'title': 'Kiếm hiệp 1', 'subtitle': 'Chi tiết 1'},
+      {'title': 'Kiếm hiệp 2', 'subtitle': 'Chi tiết 2'},
+      {'title': 'Kiếm hiệp 3', 'subtitle': 'Chi tiết 3'},
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Đề xuất cho bạn',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Truyện Kiếm Hiệp',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AllItemsScreen(
+                      items: swordplayItems,
+                      category: 'Truyện Kiếm Hiệp',
+                    ),
+                  ),
+                );
+              },
+              child: Text(
+                'Xem Tất Cả',
+                style: TextStyle(color: Colors.green),
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 10),
-        // You can reuse HorizontalListSection here if needed
-        // For now, we'll use a placeholder
-        Container(
-          height: 200,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: 5,
-            itemBuilder: (context, index) {
-              return Container(
-                width: 120,
-                margin: EdgeInsets.only(right: 10),
-                color: Colors.grey[300],
-                child: Center(child: Text('Book ${index + 1}')),
-              );
-            },
-          ),
-        ),
+        _buildHorizontalList(swordplayItems),
       ],
     );
   }
-  Widget _buildSwordplay() {
-  // Placeholder for recommendations
+
+  Widget _buildNovel() {
+    List<dynamic> novelItems = [
+      {'title': 'Truyện mới 1', 'subtitle': 'Chi tiết 1'},
+      {'title': 'Truyện mới 2', 'subtitle': 'Chi tiết 2'},
+      {'title': 'Truyện mới 3', 'subtitle': 'Chi tiết 3'},
+    ];
+
     return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-    Text(
-    'Kiếm Hiệp',
-    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    ),
-    SizedBox(height: 10),
-    // You can reuse HorizontalListSection here if needed
-    // For now, we'll use a placeholder
-    Container(
-    height: 200,
-    child: ListView.builder(
-    scrollDirection: Axis.horizontal,
-    itemCount: 5,
-    itemBuilder: (context, index) {
-    return Container(
-    width: 120,
-    margin: EdgeInsets.only(right: 10),
-    color: Colors.grey[300],
-    child: Center(child: Text('Book ${index + 1}')),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Truyện Tu Tiên',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AllItemsScreen(
+                      items: novelItems,
+                      category: 'Truyện Mới',
+                    ),
+                  ),
+                );
+              },
+              child: Text(
+                'Xem Tất Cả',
+                style: TextStyle(color: Colors.green),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+        _buildHorizontalList(novelItems),
+      ],
     );
-    },
-    ),
-    ),
-    ],
+  }
+
+  Widget _buildHorizontalList(List<dynamic> items) {
+    return Container(
+      height: 150,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index] as Map<String, dynamic>;
+          return Container(
+            width: 120,
+            margin: EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(
+              color: Colors.red[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 100,
+                  color: Colors.pink,
+                ),
+                SizedBox(height: 5),
+                Text(item['title'] ?? 'Title'),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

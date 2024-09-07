@@ -1,0 +1,31 @@
+{
+  "screen_name": "ExploreScreen",
+  "widgets": [
+    {
+      "type": "AppBar",
+      "title": "Khám phá",
+      "background_color": "transparent",
+      "elevation": 0
+    },
+    {
+      "type": "SearchBar",
+      "spacing": "20dp",
+      "method": "_buildSearchBar"
+    },
+    {
+      "type": "Categories",
+      "spacing": "20dp",
+      "method": "_buildCategories"
+    },
+    {
+      "type": "Recommendations",
+      "spacing": "20dp",
+      "method": "_buildRecommendations"
+    },
+    {
+      "type": "Swordplay Section",
+      "spacing": "20dp",
+      "method": "_buildSwordplay"
+    }
+  ]
+}

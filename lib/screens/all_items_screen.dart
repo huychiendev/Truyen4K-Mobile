@@ -40,7 +40,7 @@ class AllItemsScreen extends StatelessWidget {
           final item = items[index] as Map<String, dynamic>;
 
           // Check if required fields are available
-          final coverImage = item['coverImage'] ?? 'assets/placeholder.jpg';
+          final coverImage = item['coverImage'] ?? 'assets/metruyen.jpg';
           final title = item['title'] ?? 'Không có tiêu đề';
           final author = item['author'] ?? 'Không có tác giả';
           final rating = item['rating']?.toDouble() ?? 0.0;

@@ -141,7 +141,14 @@ class CircularIcon extends StatelessWidget {
     );
   }
 }
-class CustomButtons extends StatelessWidget {
+class CustomButtons extends StatefulWidget {
+  @override
+  _CustomButtonsState createState() => _CustomButtonsState();
+}
+
+class _CustomButtonsState extends State<CustomButtons> {
+  int? selectedButtonIndex; // Trạng thái lưu trữ button nào được chọn
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -152,9 +159,10 @@ class CustomButtons extends StatelessWidget {
             width: 100,  // Tùy chỉnh độ rộng ở đây
             height: 40,  // Tùy chỉnh chiều cao ở đây
             child: _buildButton(
+              index: 0,
               icon: Icons.local_fire_department,
               label: 'Xu hướng',
-              color: Colors.green,
+              color: selectedButtonIndex == 0 ? Colors.green : Colors.grey[800]!,
             ),
           ),
           SizedBox(width: 10),
@@ -162,9 +170,10 @@ class CustomButtons extends StatelessWidget {
             width: 120,  // Tùy chỉnh độ rộng ở đây
             height: 40,  // Tùy chỉnh chiều cao ở đây
             child: _buildButton(
+              index: 1,
               icon: Icons.book,
               label: 'Top truyện',
-              color: Colors.grey[800]!,
+              color: selectedButtonIndex == 1 ? Colors.green : Colors.grey[800]!,
             ),
           ),
           SizedBox(width: 10),
@@ -172,9 +181,10 @@ class CustomButtons extends StatelessWidget {
             width: 220,  // Tùy chỉnh độ rộng ở đây
             height: 40,  // Tùy chỉnh chiều cao ở đây
             child: _buildButton(
+              index: 2,
               icon: Icons.person,
               label: 'Người khác cũng đang nghe',
-              color: Colors.grey[800]!,
+              color: selectedButtonIndex == 2 ? Colors.green : Colors.grey[800]!,
             ),
           ),
         ],
@@ -183,6 +193,7 @@ class CustomButtons extends StatelessWidget {
   }
 
   Widget _buildButton({
+    required int index,
     required IconData icon,
     required String label,
     required Color color,
@@ -202,8 +213,12 @@ class CustomButtons extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       ),
       onPressed: () {
-        // Add button action here
+        setState(() {
+          selectedButtonIndex = index; // Cập nhật trạng thái khi button được nhấn
+        });
       },
     );
   }
 }
+
+

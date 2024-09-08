@@ -1,10 +1,89 @@
+import 'dart:convert';
 import 'dart:ui'; // Để sử dụng ImageFilter
-
-import 'package:apptruyenonline/model_login/reset_password.dart';
-import 'package:apptruyenonline/model_login/sign_up_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'reset_password.dart';
+import 'sign_up_screen.dart';
 
 class ForgotPassword extends StatelessWidget {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
+
+  Future<void> _sendOtp(BuildContext context) async {
+    final url = Uri.parse('http://14.225.207.58:9898/api/v1/forgot-password');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': _emailController.text}),
+    );
+
+    if (response.statusCode == 200) {
+      final responseBody = response.body;
+      print('đây là kq'+ responseBody);  // Thêm log để xem chi tiết phản hồi từ server
+      try {
+        final data = jsonDecode(responseBody);
+        if (data is Map && data['status'] == 'INTERNAL_SERVER_ERROR') {
+          _showDialog(context, 'Lỗi', 'Tài khoản không tồn tại.');
+        } else {
+          _showDialog(context, 'Lỗi', data['message'] ?? 'Đã xảy ra lỗi. Vui lòng thử lại.');
+        }
+      } catch (e) {
+        if (responseBody.contains('OTP has been sent to your email.')) {
+          _showDialog(context, 'Thông báo', 'OTP đã được gửi đến email của bạn.');
+        } else {
+          _showDialog(context, 'Lỗi', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+        }
+      }
+    } else {
+      print('Error: ${response.statusCode} - ${response.body}');  // In log lỗi nếu mã trạng thái không phải là 200
+      _showDialog(context, 'Lỗi', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+    }
+
+  }
+
+  Future<void> _verifyOtp(BuildContext context) async {
+    final url = Uri.parse('http://14.225.207.58:9898/api/v1/verify-otp');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': _emailController.text,
+        'otpCode': _otpController.text,
+      }),
+    );
+
+    if (response.statusCode == 200 && response.body == 'OTP is valid') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResetPassword(email: _emailController.text),
+        ),
+      );
+    } else {
+      _showDialog(context, 'Lỗi', 'OTP không hợp lệ.');
+    }
+  }
+
+  void _showDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,9 +126,7 @@ class ForgotPassword extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(
-                              height:
-                                  20), // Thêm khoảng cách giữa các thành phần
+                          SizedBox(height: 20),
                           Text(
                             'Bạn quên mật khẩu? Đừng lo lắng, hãy nhập email của bạn để đặt lại mật khẩu hiện tại.',
                             style: TextStyle(
@@ -58,17 +135,36 @@ class ForgotPassword extends StatelessWidget {
                             ),
                           ),
                           SizedBox(height: 20),
-                          _buildTextField('Email', 'Nhập email của bạn'),
+                          _buildTextField('Email', 'Nhập email của bạn', _emailController),
+                          SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildTextField('Mã OTP', 'Nhập mã OTP của bạn', _otpController),
+                              ),
+                              SizedBox(width: 10),
+                              ElevatedButton(
+                                onPressed: () => _sendOtp(context),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xFF8CD860),
+                                  padding: EdgeInsets.symmetric(vertical: 15),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Gửi',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                           SizedBox(height: 20),
                           ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ResetPassword(),
-                                ),
-                              );
-                            },
+                            onPressed: () => _verifyOtp(context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFF8CD860),
                               padding: EdgeInsets.symmetric(vertical: 15),
@@ -78,7 +174,7 @@ class ForgotPassword extends StatelessWidget {
                             ),
                             child: Center(
                               child: Text(
-                                'Gửi',
+                                'Xác nhận',
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.black,
@@ -86,9 +182,7 @@ class ForgotPassword extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(
-                              height:
-                                  40), // Tạo khoảng cách giữa các thành phần
+                          SizedBox(height: 40),
                           Center(
                             child: GestureDetector(
                               onTap: () {
@@ -129,9 +223,9 @@ class ForgotPassword extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String label, String hint,
-      {bool obscureText = false}) {
+  Widget _buildTextField(String label, String hint, TextEditingController controller, {bool obscureText = false}) {
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
         labelText: label,

@@ -1,12 +1,15 @@
+// lib/widgets/custom_text_field.dart
 import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
+  final TextEditingController controller;
   final String hintText;
   final bool obscureText;
-  final VoidCallback onTap;
+  final Function onTap;
   final Widget? suffixIcon;
 
   CustomTextField({
+    required this.controller,
     required this.hintText,
     this.obscureText = false,
     required this.onTap,
@@ -16,19 +19,13 @@ class CustomTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      onTap: onTap,
+      controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.8),
         hintText: hintText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.white),
-        ),
         suffixIcon: suffixIcon,
       ),
-      style: TextStyle(fontSize: 14),
+      onTap: () => onTap(),
     );
   }
 }

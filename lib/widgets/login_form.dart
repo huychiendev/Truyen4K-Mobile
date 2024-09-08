@@ -7,7 +7,7 @@ import 'custom_text_field.dart';
 import 'custom_button.dart';
 import '../constants/app_colors.dart';
 import '../main.dart';
-
+import '../services/auth_service.dart';
 
 class LoginForm extends StatefulWidget {
   @override
@@ -16,6 +16,9 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   bool _isPasswordVisible = false;
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -29,6 +32,48 @@ class _LoginFormState extends State<LoginForm> {
       duration: Duration(seconds: 2),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.green),
+              SizedBox(width: 10),
+              Text('Login Failed'),
+            ],
+          ),
+          content: Text('Vui lòng kiểm tra lại tên đăng nhập và mật khẩu'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _login() async {
+    try {
+      final result = await _authService.login(
+        _usernameController.text,
+        _passwordController.text,
+      );
+      _showSnackBar(context, 'Login successful: ${result['accessToken']}');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen()),
+      );
+    } catch (e) {
+      _showErrorDialog(context, 'Vui lòng kiểm tra lại tên đăng nhập và mật khẩu');
+    }
   }
 
   @override
@@ -47,11 +92,13 @@ class _LoginFormState extends State<LoginForm> {
         ),
         SizedBox(height: 20),
         CustomTextField(
+          controller: _usernameController,
           hintText: LoginConstants.emailHint,
           onTap: () => _showSnackBar(context, LoginConstants.emailTapMessage),
         ),
         SizedBox(height: 15),
         CustomTextField(
+          controller: _passwordController,
           hintText: LoginConstants.passwordHint,
           obscureText: !_isPasswordVisible,
           onTap: () => _showSnackBar(context, LoginConstants.passwordTapMessage),
@@ -66,12 +113,7 @@ class _LoginFormState extends State<LoginForm> {
         SizedBox(height: 15),
         CustomButton(
           text: LoginConstants.loginButtonText,
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => MainScreen()),
-            );
-          },
+          onPressed: _login,
           color: AppColors.accentGreen,
         ),
         SizedBox(height: 15),

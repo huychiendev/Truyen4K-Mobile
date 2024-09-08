@@ -14,7 +14,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
       children: [
         Text(
           'Thể loại',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white, // Thêm màu trắng
+          ),
         ),
         SizedBox(height: 10),
         Wrap(
@@ -33,6 +37,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: _buildAppBar(),
       body: SingleChildScrollView(
         child: Padding(
@@ -67,7 +72,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       backgroundColor: Colors.transparent,
       elevation: 0,
       titleTextStyle: TextStyle(
-        color: Colors.black,
+        color: Colors.white,
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
@@ -101,8 +106,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Text(
               'Đề xuất cho bạn',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // Thêm màu trắng
+              ),
             ),
+
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -143,7 +153,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Text(
               'Truyện Kiếm Hiệp',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // Thêm màu trắng
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -185,7 +199,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Text(
               'Truyện Tu Tiên',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // Thêm màu trắng
+              ),
             ),
             TextButton(
               onPressed: () {

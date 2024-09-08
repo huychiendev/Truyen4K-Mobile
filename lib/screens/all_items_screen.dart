@@ -10,17 +10,18 @@ class AllItemsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text('$category'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         titleTextStyle: TextStyle(
-          color: Colors.black,
+          color: Colors.white,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -54,7 +55,10 @@ class AllItemsScreen extends StatelessWidget {
         },
       )
           : Center(
-        child: Text('Không có dữ liệu để hiển thị'),
+        child: Text(
+          'Không có dữ liệu để hiển thị',
+          style: TextStyle(color: Colors.white), // Set text color to white
+        ),
       ),
     );
   }
@@ -94,14 +98,21 @@ class ItemCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: Colors.white, // Set text color to white
           ),
         ),
-        Text(author),
+        Text(
+          author,
+          style: TextStyle(color: Colors.white), // Set text color to white
+        ),
         Row(
           children: [
             Icon(Icons.star, color: Colors.yellow, size: 16),
             SizedBox(width: 4),
-            Text(rating.toString()),
+            Text(
+              rating.toString(),
+              style: TextStyle(color: Colors.white), // Set text color to white
+            ),
           ],
         ),
       ],

@@ -33,7 +33,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.black,
+      backgroundColor: Colors.black,
       appBar: _buildAppBar(),
       body: SingleChildScrollView(
         child: Padding(

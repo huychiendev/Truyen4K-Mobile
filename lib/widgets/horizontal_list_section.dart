@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/all_items_screen.dart';
-import '../screens/novel_detail_screen.dart'; // Đảm bảo đường dẫn đúng
+import '../screens/all_items_screen.dart'; // Đảm bảo đường dẫn đúng
 
 class HorizontalListSection extends StatelessWidget {
   final String title;
@@ -54,8 +53,7 @@ class HorizontalListSection extends StatelessWidget {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: items
-                  .map((item) => _buildHorizontalListItem(
-                  context, item as Map<String, dynamic>))
+                  .map((item) => _buildHorizontalListItem(context, item as Map<String, dynamic>))
                   .toList(),
             ),
           ),
@@ -64,12 +62,10 @@ class HorizontalListSection extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontalListItem(
-      BuildContext context, Map<String, dynamic> item) {
+  Widget _buildHorizontalListItem(BuildContext context, Map<String, dynamic> item) {
     return GestureDetector(
       onTap: () {
-        // Hiển thị thông báo SnackBar và tự động biến mất sau 3 giây
-        _showSnackbar(context, item['title'], item['subtitle']);
+        print('Bạn đã nhấn vào ${item['title']}');
       },
       child: Padding(
         padding: const EdgeInsets.only(right: 16.0),
@@ -90,29 +86,5 @@ class HorizontalListSection extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  // Hàm hiển thị Snackbar
-  void _showSnackbar(BuildContext context, String title, String subtitle) {
-    final snackBar = SnackBar(
-      content: Text('Title: $title\nSubtitle: $subtitle'),
-      duration: Duration(seconds: 3), // Tự động biến mất sau 3 giây
-    );
-
-    // Hiển thị SnackBar
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-    // Sau khi hiển thị SnackBar, chuyển sang màn hình chi tiết sau 3 giây
-    Future.delayed(Duration(seconds: 1), () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => NovelDetailScreen(
-            title: title,
-            subtitle: subtitle,
-          ),
-        ),
-      );
-    });
   }
 }

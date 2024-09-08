@@ -98,7 +98,7 @@ class HomeScreen extends StatelessWidget {
           ),
           SizedBox(height: 8),
           Text(
-            '*Ấn vào đây',
+            '*Terms & conditions apply',
             style: TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ],
@@ -164,7 +164,7 @@ class CustomButtons extends StatelessWidget {
             child: _buildButton(
               icon: Icons.book,
               label: 'Top truyện',
-              color: Colors.white,
+              color: Colors.grey[800]!,
             ),
           ),
           SizedBox(width: 10),
@@ -207,4 +207,3 @@ class CustomButtons extends StatelessWidget {
     );
   }
 }
-

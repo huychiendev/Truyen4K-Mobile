@@ -14,11 +14,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       children: [
         Text(
           'Thể loại',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white, // Thêm màu trắng
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         SizedBox(height: 10),
         Wrap(
@@ -37,7 +33,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+        backgroundColor: Colors.black,
       appBar: _buildAppBar(),
       body: SingleChildScrollView(
         child: Padding(
@@ -106,13 +102,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Text(
               'Đề xuất cho bạn',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white, // Thêm màu trắng
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
-
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -153,11 +144,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Text(
               'Truyện Kiếm Hiệp',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white, // Thêm màu trắng
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             TextButton(
               onPressed: () {
@@ -199,11 +186,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Text(
               'Truyện Tu Tiên',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white, // Thêm màu trắng
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             TextButton(
               onPressed: () {

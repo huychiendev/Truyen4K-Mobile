@@ -5,6 +5,8 @@ class AppColors {
   static const Color bgMain = Color(0xFF1A1F36); // BG Main
   static const Color bgDark = Color(0xFF12182B); // BG Dark
   static const Color bgLight = Color(0xFF4A5164); // BG Light
+  static const Color bgLighter = Color(0xFFEAF4F4); // BG Lighter
+
 
   static const Color white = Color(0xFFFFFFFF); // White
   static const Color gray1 = Color(0xFFE0E0E0); // Gray 1

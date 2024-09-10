@@ -1,33 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:apptruyenonline/screens/personal_profile_screen.dart'; // Import the personal profile screen
 
-class ProfileScreen extends StatefulWidget {
-  @override
-  _ProfileScreenState createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
+class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Tôi'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        titleTextStyle: TextStyle(
-          color: Colors.black,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+      body: Container(
+        color: Colors.black87,
+        child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildProfileHeader(),
-              SizedBox(height: 20),
-              _buildMenuItems(),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Tài khoản',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: AssetImage('assets/avt.png'),
+                  radius: 25,
+                ),
+                title: Text('LVuxyz', style: TextStyle(color: Colors.white)),
+                subtitle: Text('lvu.byte@gmail.com',
+                    style: TextStyle(color: Colors.grey)),
+                trailing: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.yellow,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text('VIP',
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              Divider(color: Colors.grey.shade800),
+              _buildMenuItem(Icons.person, 'Xem hồ sơ', context), // Pass context here
+              _buildMenuItem(Icons.payment, 'Quản lý thanh toán', context),
+              _buildMenuItem(Icons.star, 'Đăng ký', context),
+              _buildMenuItem(Icons.help, 'Câu hỏi - hỏi đáp', context),
+              _buildMenuItem(Icons.exit_to_app, 'Đăng xuất', context),
+              Spacer(),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade800,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.headset_mic, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('Hãy hỏi, chúng tôi sẵn sàng trợ giúp',
+                          style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -35,49 +73,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader() {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundColor: Colors.grey[300],
-          child: Icon(Icons.person, size: 40, color: Colors.white),
-        ),
-        SizedBox(width: 20),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Tên người dùng',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text('example@email.com'),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMenuItems() {
-    final menuItems = [
-      {'icon': Icons.notifications, 'title': 'Thông báo'},
-      {'icon': Icons.payment, 'title': 'Thanh toán'},
-      {'icon': Icons.settings, 'title': 'Cài đặt'},
-      {'icon': Icons.help, 'title': 'Trợ giúp'},
-      {'icon': Icons.info, 'title': 'Về chúng tôi'},
-    ];
-
-    return Column(
-      children: menuItems.map((item) =>
-          ListTile(
-            leading: Icon(item['icon'] as IconData, color: Colors.green),
-            title: Text(item['title'] as String),
-            trailing: Icon(Icons.chevron_right),
-            onTap: () {
-              // Handle menu item tap
-            },
-          )
-      ).toList(),
+  ListTile _buildMenuItem(IconData icon, String title, BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.white),
+      title: Text(title, style: TextStyle(color: Colors.white)),
+      onTap: () {
+        if (title == 'Xem hồ sơ') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PersonalProfileScreen()),
+          );
+        }
+        // Add other navigation if needed for other menu items
+      },
     );
   }
 }

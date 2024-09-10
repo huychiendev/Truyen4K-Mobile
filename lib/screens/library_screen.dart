@@ -11,12 +11,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
+        backgroundColor: Colors.black,
         appBar: AppBar(
           title: Text('Thư viện'),
           backgroundColor: Colors.transparent,
           elevation: 0,
           titleTextStyle: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -52,8 +53,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
             height: 70,
             color: Colors.grey[300],
           ),
-          title: Text('Truyện đang đọc ${index + 1}'),
-          subtitle: Text('Tác giả ${index + 1}'),
+          title: Text('Truyện đang đọc ${index + 1}',
+              style: TextStyle(color: Colors.white),
+        ),// Changed text color to white),
+          subtitle: Text('Tác giả ${index + 1}',
+              style: TextStyle(color: Colors.white),
+          ),// Changed text color to white),
           trailing: Icon(Icons.more_vert),
         );
       },
@@ -71,13 +76,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
             height: 70,
             color: Colors.grey[300],
           ),
-          title: Text('Truyện đã tải ${index + 1}'),
-          subtitle: Text('Tác giả ${index + 1}'),
+          title: Text(
+            'Truyện đã tải ${index + 1}',
+            style: TextStyle(color: Colors.white), // Changed text color to white
+          ),
+          subtitle: Text(
+            'Tác giả ${index + 1}',
+            style: TextStyle(color: Colors.white), // Changed subtitle text color to white
+          ),
           trailing: Icon(Icons.file_download_done),
         );
       },
     );
   }
+
 
   Widget _buildHistoryList() {
     // Placeholder for history list
@@ -90,11 +102,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
             height: 70,
             color: Colors.grey[300],
           ),
-          title: Text('Truyện đã đọc ${index + 1}'),
-          subtitle: Text('Đọc lúc: ${DateTime.now().subtract(Duration(days: index)).toString()}'),
+          title: Text(
+            'Truyện đã đọc ${index + 1}',
+            style: TextStyle(color: Colors.white), // Đổi màu chữ thành trắng
+          ),
+          subtitle: Text(
+            'Đọc lúc: ${DateTime.now().subtract(Duration(days: index)).toString()}',
+            style: TextStyle(color: Colors.white), // Đổi màu chữ thành trắng
+          ),
           trailing: Icon(Icons.history),
         );
       },
     );
   }
+
 }

@@ -11,7 +11,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.black87,
         appBar: AppBar(
           title: Text('Thư viện'),
           backgroundColor: Colors.transparent,

@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
-class PersonalProfileScreen extends StatelessWidget { // Renamed from ProfileScreen to PersonalProfileScreen
+class PersonalProfileScreen extends StatefulWidget {
+  @override
+  _PersonalProfileScreenState createState() => _PersonalProfileScreenState();
+}
+
+class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
+  // Controllers to handle text input
+  final TextEditingController _nameController = TextEditingController(text: 'LVuxyz');
+  final TextEditingController _emailController = TextEditingController(text: 'lvu.byte@gmail.com');
+  final TextEditingController _dobController = TextEditingController(text: '19 September, 2003');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,9 +80,47 @@ class PersonalProfileScreen extends StatelessWidget { // Renamed from ProfileScr
                 ),
               ),
               SizedBox(height: 20),
-              ProfileInfoTile(title: 'Tên của bạn', value: 'LVuxyz'),
-              ProfileInfoTile(title: 'Email', value: 'lvu.byte@gmail.com'),
-              ProfileInfoTile(title: 'Ngày sinh', value: '19 September, 2003'),
+
+              // Text titles and editable fields
+              Text(
+                'Tên của bạn',
+                style: TextStyle(color: Colors.white),
+              ),
+              ProfileInfoTile(
+                child: TextFormField(
+                  controller: _nameController,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              Text(
+                'Email',
+                style: TextStyle(color: Colors.white),
+              ),
+              ProfileInfoTile(
+                child: TextFormField(
+                  controller: _emailController,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              Text(
+                'Ngày sinh',
+                style: TextStyle(color: Colors.white),
+              ),
+              ProfileInfoTile(
+                child: TextFormField(
+                  controller: _dobController,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
               SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
@@ -81,7 +129,12 @@ class PersonalProfileScreen extends StatelessWidget { // Renamed from ProfileScr
                     backgroundColor: Colors.green,
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    // Handle save action
+                    print('Saved Name: ${_nameController.text}');
+                    print('Saved Email: ${_emailController.text}');
+                    print('Saved Date of Birth: ${_dobController.text}');
+                  },
                 ),
               ),
             ],
@@ -93,10 +146,9 @@ class PersonalProfileScreen extends StatelessWidget { // Renamed from ProfileScr
 }
 
 class ProfileInfoTile extends StatelessWidget {
-  final String title;
-  final String value;
+  final Widget child;
 
-  const ProfileInfoTile({Key? key, required this.title, required this.value}) : super(key: key);
+  const ProfileInfoTile({Key? key, required this.child}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -107,18 +159,7 @@ class ProfileInfoTile extends StatelessWidget {
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: TextStyle(color: Colors.white)),
-          Row(
-            children: [
-              Text(value, style: TextStyle(color: Colors.white)),
-              Icon(Icons.chevron_right, color: Colors.white),
-            ],
-          ),
-        ],
-      ),
+      child: child, // Editable field
     );
   }
 }

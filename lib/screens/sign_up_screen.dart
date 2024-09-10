@@ -3,7 +3,7 @@ import 'dart:ui'; // Để sử dụng ImageFilter
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../widgets/custom_text_field2.dart';
+import '../widgets/custom_text_field_sign_up.dart';
 import '../widgets/dialogs.dart';
 import '../screens/login_screen.dart';
 

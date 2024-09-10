@@ -6,6 +6,7 @@ class AuthService {
 
   // Existing login function
   Future<Map<String, dynamic>> login(String username, String password) async {
+
     final response = await http.post(
       Uri.parse('$_baseUrl/login'),
       headers: {'Content-Type': 'application/json'},

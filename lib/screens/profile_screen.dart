@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:apptruyenonline/screens/personal_profile_screen.dart'; // Import the personal profile screen
+import 'package:apptruyenonline/screens/personal_profile_screen.dart';
+
+import 'login_screen.dart'; // Import the personal profile screen
 
 class ProfileScreen extends StatelessWidget {
   @override
@@ -83,7 +85,14 @@ class ProfileScreen extends StatelessWidget {
             context,
             MaterialPageRoute(builder: (context) => PersonalProfileScreen()),
           );
+        }else if (title == 'Đăng xuất') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+          );
         }
+
+
         // Add other navigation if needed for other menu items
       },
     );

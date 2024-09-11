@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'add_payment_method_screen.dart'; // Import the new screen
 
 class AccountScreen extends StatelessWidget {
   @override
@@ -14,7 +15,12 @@ class AccountScreen extends StatelessWidget {
         title: Text('Tài Khoản', style: TextStyle(color: Colors.white)),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddPaymentMethodScreen()),
+              );
+            },
             child: Text('Thêm thẻ', style: TextStyle(color: Colors.green)),
           ),
         ],
@@ -38,7 +44,6 @@ class AccountScreen extends StatelessWidget {
               onPressed: () {},
               child: Text('Thêm phương thức thanh toán mới'),
               style: ElevatedButton.styleFrom(
-                //primary: Colors.green,
                 minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),

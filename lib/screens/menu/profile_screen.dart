@@ -1,7 +1,7 @@
-import 'package:apptruyenonline/screens/you_screen/payment_screen/payment1_screen.dart';
-import 'package:apptruyenonline/screens/you_screen/register_screen/prime_screen.dart';
+import 'package:apptruyenonline/screens/self_screen/payment_screen/payment1_screen.dart';
+import 'package:apptruyenonline/screens/self_screen/register_screen/prime_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:apptruyenonline/screens/you_screen/profile_view_screen/personal_profile_screen.dart';
+import 'package:apptruyenonline/screens/self_screen/profile_view_screen/personal_profile_screen.dart';
 import '../login/login_screen.dart'; // Import màn hình đăng nhập
 
 class ProfileScreen extends StatelessWidget {

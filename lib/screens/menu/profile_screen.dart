@@ -2,7 +2,8 @@ import 'package:apptruyenonline/screens/self_screen/payment_screen/account_payme
 import 'package:apptruyenonline/screens/self_screen/register_screen/prime_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:apptruyenonline/screens/self_screen/profile_view_screen/personal_profile_screen.dart';
-import '../login/login_screen.dart'; // Import màn hình đăng nhập
+import '../login/login_screen.dart';
+
 
 class ProfileScreen extends StatelessWidget {
   @override

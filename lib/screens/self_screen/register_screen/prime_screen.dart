@@ -22,7 +22,8 @@ class PremiumScreen1 extends StatelessWidget {
               ),
               SizedBox(height: 10),
               Text(
-                'Thông tin chi tiết không giới hạn từ Truyện,\ntài liệu về các truyện mới cập nhật',
+                'Thông tin chi tiết không giới hạn từ Truyện,\n'
+                    'tài liệu về các truyện mới cập nhật',
                 style: TextStyle(
                   color: Colors.grey[400],
                   fontSize: 16,
@@ -61,11 +62,6 @@ class PremiumScreen1 extends StatelessWidget {
                     style: TextStyle(color: Colors.grey),
                   ),
                 ),
-              ),
-              Spacer(),
-              Text(
-                'Tư cách thành viên của bạn bắt đầu ngay khi bạn thiết lập thanh toán và đăng ký. Khoản phí hàng tháng của bạn sẽ được tính vào ngày cuối cùng của kỳ thanh toán hiện tại. Chúng tôi sẽ gia hạn tư cách thành viên của bạn để bạn có thể quản lý đăng ký của mình hoặc tắt tính năng tự động gia hạn trong cài đặt tài khoản.',
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
               ),
               SizedBox(height: 10),
               Text(
@@ -126,7 +122,6 @@ class PremiumScreen1 extends StatelessWidget {
       onPressed: () {},
       child: Text(text),
       style: ElevatedButton.styleFrom(
-        //primary: Colors.green,
         minimumSize: Size(double.infinity, 50),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(25),

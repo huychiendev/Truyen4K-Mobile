@@ -1,8 +1,8 @@
+import 'package:apptruyenonline/screens/you_screen/payment_screen/payment1_screen.dart';
 import 'package:apptruyenonline/screens/you_screen/register_screen/prime_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:apptruyenonline/screens/you_screen/profile_view_screen/personal_profile_screen.dart';
-
-import '../login/login_screen.dart'; // Import the personal profile screen
+import '../login/login_screen.dart'; // Import màn hình đăng nhập
 
 class ProfileScreen extends StatelessWidget {
   @override
@@ -44,9 +44,9 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               Divider(color: Colors.grey.shade800),
-              _buildMenuItem(Icons.person, 'Xem hồ sơ', context), // Pass context here
+              _buildMenuItem(Icons.person, 'Xem hồ sơ', context),
               _buildMenuItem(Icons.payment, 'Quản lý thanh toán', context),
-              _buildMenuItem(Icons.star, 'Đăng ký', context),
+              _buildMenuItem(Icons.star, 'Đăng ký', context), // Sửa lại chữ "Đăng ký"
               _buildMenuItem(Icons.help, 'Câu hỏi - hỏi đáp', context),
               _buildMenuItem(Icons.exit_to_app, 'Đăng xuất', context),
               Spacer(),
@@ -89,17 +89,12 @@ class ProfileScreen extends StatelessWidget {
         } else if (title == 'Quản lý thanh toán') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PaymentManagementScreen()), // Thay thế YourNewScreen bằng màn hình đăng ký
+            MaterialPageRoute(builder: (context) => AccountScreen()), // Đảm bảo màn hình PaymentScreen1 đã được định nghĩa
           );
-        } else if (title == 'Đăng Kí') {
+        } else if (title == 'Đăng ký') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PremiumScreen1()), // Thay thế PaymentManagementScreen bằng màn hình quản lý thanh toán
-          );
-        } else if (title == 'Câu hỏi - hỏi đáp') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => FAQScreen()), // Thay thế FAQScreen bằng màn hình câu hỏi - hỏi đáp
+            MaterialPageRoute(builder: (context) => PremiumScreen1()), // Thay thế bằng màn hình đăng ký chính xác
           );
         } else if (title == 'Đăng xuất') {
           Navigator.pushReplacement(
@@ -110,4 +105,11 @@ class ProfileScreen extends StatelessWidget {
       },
     );
   }
+}
 
+// else if (title == 'Câu hỏi - hỏi đáp') {
+  // Navigator.push(
+  // context,
+  // MaterialPageRoute(builder: (context) => FAQScreen()), // Thay thế FAQScreen bằng màn hình câu hỏi - hỏi đáp
+  // );
+  // }

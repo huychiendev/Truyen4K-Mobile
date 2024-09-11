@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 // import 'model_login/login.dart';
-import 'screens/home_screen.dart';
-import 'screens/explore_screen.dart';
-import 'screens/library_screen.dart';
-import 'screens/profile_screen/profile_screen.dart';
+import 'screens/menu/home_screen.dart';
+import 'screens/menu/explore_screen.dart';
+import 'screens/menu/library_screen.dart';
+import 'screens/menu/profile_screen.dart';
 import 'screens/login/login_screen.dart';
 
 void main() {

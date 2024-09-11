@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/banner_section.dart';
-import '../widgets/horizontal_list_section.dart';
-import '../services/data_service.dart';
+import '../../widgets/banner_section.dart';
+import '../../widgets/horizontal_list_section.dart';
+import '../../services/data_service.dart';
 
 class HomeScreen extends StatelessWidget {
   @override

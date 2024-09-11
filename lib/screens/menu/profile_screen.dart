@@ -1,5 +1,6 @@
+import 'package:apptruyenonline/screens/you_screen/register_screen/prime_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:apptruyenonline/screens/profile_screen/personal_profile_screen.dart';
+import 'package:apptruyenonline/screens/you_screen/profile_view_screen/personal_profile_screen.dart';
 
 import '../login/login_screen.dart'; // Import the personal profile screen
 
@@ -85,16 +86,28 @@ class ProfileScreen extends StatelessWidget {
             context,
             MaterialPageRoute(builder: (context) => PersonalProfileScreen()),
           );
-        }else if (title == 'Đăng xuất') {
+        } else if (title == 'Quản lý thanh toán') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PaymentManagementScreen()), // Thay thế YourNewScreen bằng màn hình đăng ký
+          );
+        } else if (title == 'Đăng Kí') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PremiumScreen1()), // Thay thế PaymentManagementScreen bằng màn hình quản lý thanh toán
+          );
+        } else if (title == 'Câu hỏi - hỏi đáp') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => FAQScreen()), // Thay thế FAQScreen bằng màn hình câu hỏi - hỏi đáp
+          );
+        } else if (title == 'Đăng xuất') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => LoginScreen()),
           );
         }
-
-
-        // Add other navigation if needed for other menu items
       },
     );
   }
-}
+

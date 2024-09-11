@@ -1,4 +1,4 @@
-import 'package:apptruyenonline/screens/self_screen/payment_screen/payment1_screen.dart';
+import 'package:apptruyenonline/screens/self_screen/payment_screen/account_payment_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/register_screen/prime_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:apptruyenonline/screens/self_screen/profile_view_screen/personal_profile_screen.dart';

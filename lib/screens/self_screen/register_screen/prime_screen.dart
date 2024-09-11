@@ -1,3 +1,4 @@
+import 'package:apptruyenonline/screens/menu/profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class PremiumScreen1 extends StatelessWidget {
@@ -49,7 +50,12 @@ class PremiumScreen1 extends StatelessWidget {
               SizedBox(height: 10),
               Center(
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProfileScreen()),
+                    );
+                  },
                   child: Text(
                     'KHÔNG, CẢM ƠN',
                     style: TextStyle(color: Colors.grey),

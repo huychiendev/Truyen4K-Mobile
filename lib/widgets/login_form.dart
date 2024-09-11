@@ -1,4 +1,4 @@
-import 'package:apptruyenonline/screens/sign_up_screen.dart';
+import 'package:apptruyenonline/screens/login/sign_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../constants/login_constants.dart';
@@ -6,7 +6,7 @@ import '../constants/login_constants.dart';
 //import '../model_login/sign_up_screen.dart';
 
 // import '../model_login/forgot_password.dart';
-import '../screens/forgot_password_screen.dart';
+import '../screens/login/forgot_password_screen.dart';
 import 'custom_text_field.dart';
 import 'custom_button.dart';
 import '../constants/app_colors.dart';

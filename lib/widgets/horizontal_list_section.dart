@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/all_items_screen.dart'; // Đảm bảo đường dẫn đúng
+import '../screens/item_truyen/all_items_screen.dart'; // Đảm bảo đường dẫn đúng
 
 class HorizontalListSection extends StatelessWidget {
   final String title;

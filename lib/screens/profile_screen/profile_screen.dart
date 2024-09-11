@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:apptruyenonline/screens/personal_profile_screen.dart';
+import 'package:apptruyenonline/screens/profile_screen/personal_profile_screen.dart';
 
-import 'login_screen.dart'; // Import the personal profile screen
+import '../login/login_screen.dart'; // Import the personal profile screen
 
 class ProfileScreen extends StatelessWidget {
   @override

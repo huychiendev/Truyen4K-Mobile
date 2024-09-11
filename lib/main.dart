@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/explore_screen.dart';
 import 'screens/library_screen.dart';
-import 'screens/profile_screen.dart';
-import 'screens/login_screen.dart';
+import 'screens/profile_screen/profile_screen.dart';
+import 'screens/login/login_screen.dart';
 
 void main() {
   runApp(MyApp());

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'all_items_screen.dart'; // Đảm bảo import đúng file
+import 'item_truyen/all_items_screen.dart'; // Đảm bảo import đúng file
 
 class ExploreScreen extends StatefulWidget {
   @override

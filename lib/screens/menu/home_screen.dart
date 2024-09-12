@@ -54,11 +54,11 @@ class HomeScreen extends StatelessWidget {
                   bannerData: {
                     'images': [
                       'assets/avt.png',
-                      'assets/metruyen.jpg',
-                      'assets/metruyen.jpg',
-                      'assets/metruyen.jpg',
-                      'assets/metruyen.jpg',
-                      'assets/metruyen.jpg',
+                      'assets/avt.png',
+                      'assets/avt.png',
+                      'assets/avt.png',
+                      'assets/avt.png',
+                      'assets/avt.png',
                     ],
                   },
                 ),

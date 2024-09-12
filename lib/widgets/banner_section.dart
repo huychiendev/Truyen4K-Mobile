@@ -9,8 +9,8 @@ class BannerSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (bannerData == null || !bannerData!.containsKey('images')) return SizedBox.shrink();
 
-    // Lấy tối đa 4 hình ảnh từ danh sách
-    final images = (bannerData!['images'] as List<dynamic>).take(4).toList();
+    // Lấy tối đa 6 hình ảnh từ danh sách
+    final images = (bannerData!['images'] as List<dynamic>).take(6).toList();
 
     // Danh sách kích thước tương ứng cho từng hình ảnh
     final List<Size> imageSizes = [
@@ -18,6 +18,8 @@ class BannerSection extends StatelessWidget {
       Size(60, 85), // Kích thước hình ảnh 2
       Size(60, 85),  // Kích thước hình ảnh 3
       Size(60, 85),  // Kích thước hình ảnh 4
+      Size(60, 85),  // Kích thước hình ảnh 5
+      Size(60, 85),  // Kích thước hình ảnh 6
     ];
 
     return Padding(
@@ -49,7 +51,7 @@ class BannerSection extends StatelessWidget {
                   height: 150, // Tăng chiều cao container để chứa nhiều hình ảnh xếp chồng
                   child: Stack(
                     children: [
-                      // Hình ảnh 1 ở trên
+                      // Hình ảnh 1
                       Positioned(
                         top: 20,
                         left: 40,
@@ -63,10 +65,10 @@ class BannerSection extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // Hình ảnh 2 bên dưới hình ảnh 1
+                      // Hình ảnh 2
                       Positioned(
-                        top: 10, // Điều chỉnh vị trí
-                        left: 105, // Điều chỉnh vị trí ngang
+                        top: 10,
+                        left: 105,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.asset(
@@ -79,8 +81,8 @@ class BannerSection extends StatelessWidget {
                       ),
                       // Hình ảnh 3
                       Positioned(
-                        top: 0, // Điều chỉnh vị trí
-                        left: 170, // Điều chỉnh vị trí ngang
+                        top: 0,
+                        left: 170,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.asset(
@@ -93,8 +95,8 @@ class BannerSection extends StatelessWidget {
                       ),
                       // Hình ảnh 4
                       Positioned(
-                        top: 110, // Điều chỉnh vị trí
-                        left: 40, // Điều chỉnh vị trí ngang
+                        top: 110,
+                        left: 40,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.asset(
@@ -105,12 +107,39 @@ class BannerSection extends StatelessWidget {
                           ),
                         ),
                       ),
+                      // Hình ảnh 5
+                      Positioned(
+                        top: 100,
+                        left: 105,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            images[4],
+                            width: imageSizes[4].width,
+                            height: imageSizes[4].height,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      // Hình ảnh 6
+                      Positioned(
+                        top: 90,
+                        left: 170,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            images[5],
+                            width: imageSizes[5].width,
+                            height: imageSizes[5].height,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
-
             SizedBox(height: 12),
             Text(
               "Điều khoản và điều kiện áp dụng",

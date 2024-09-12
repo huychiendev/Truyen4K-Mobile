@@ -53,12 +53,12 @@ class HomeScreen extends StatelessWidget {
                 BannerSection(  // Replaced with BannerSection
                   bannerData: {
                     'images': [
-                      'assets/avt.png',
-                      'assets/avt.png',
-                      'assets/avt.png',
-                      'assets/avt.png',
-                      'assets/avt.png',
-                      'assets/avt.png',
+                      'assets/300.jpg',
+                      'assets/300.jpg',
+                      'assets/300.jpg',
+                      'assets/300.jpg',
+                      'assets/300.jpg',
+                      'assets/300.jpg',
                     ],
                   },
                 ),

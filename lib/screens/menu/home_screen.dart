@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/banner_section.dart';
 import '../../widgets/horizontal_list_section.dart';
 import '../../services/data_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -9,7 +10,34 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: AppBar(
-        title: Text('Audio Truyện 247'),
+        title: GestureDetector(
+          onTap: () async {
+            // Lấy token từ SharedPreferences
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            String? token = prefs.getString('auth_token');
+
+            // Hiển thị token trong AlertDialog
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Token của bạn'),
+                  content: Text(token ?? 'Không tìm thấy token!'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Đóng'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+          child: Text('Audio Truyện 247'),
+        ),
+
         backgroundColor: Colors.transparent,
         elevation: 0,
         titleTextStyle: TextStyle(

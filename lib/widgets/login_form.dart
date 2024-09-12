@@ -2,6 +2,7 @@ import 'package:apptruyenonline/screens/login/sign_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../constants/login_constants.dart';
+
 //import '../model_login/forgot_password.dart';
 //import '../model_login/sign_up_screen.dart';
 
@@ -12,6 +13,7 @@ import 'custom_button.dart';
 import '../constants/app_colors.dart';
 import '../main.dart';
 import '../services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginForm extends StatefulWidget {
   @override
@@ -64,19 +66,29 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
+  // Hàm login đã được cập nhật
   Future<void> _login() async {
     try {
       final result = await _authService.login(
         _usernameController.text,
         _passwordController.text,
       );
-      _showSnackBar(context, 'Login successful: ${result['accessToken']}');
+
+      // Lấy token từ kết quả đăng nhập
+      final String accessToken = result['accessToken'];
+
+      // Lưu token vào SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', accessToken);
+
+      // _showSnackBar(context, 'Login successful: ${result['accessToken']}');
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MainScreen()),
       );
     } catch (e) {
-      _showErrorDialog(context, 'Vui lòng kiểm tra lại tên đăng nhập và mật khẩu');
+      _showErrorDialog(
+          context, 'Vui lòng kiểm tra lại tên đăng nhập và mật khẩu');
     }
   }
 
@@ -105,7 +117,8 @@ class _LoginFormState extends State<LoginForm> {
           controller: _passwordController,
           hintText: LoginConstants.passwordHint,
           obscureText: !_isPasswordVisible,
-          onTap: () => _showSnackBar(context, LoginConstants.passwordTapMessage),
+          onTap: () =>
+              _showSnackBar(context, LoginConstants.passwordTapMessage),
           suffixIcon: IconButton(
             icon: Icon(
               _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -160,21 +173,24 @@ class _LoginFormState extends State<LoginForm> {
         CustomButton(
           icon: FontAwesomeIcons.facebookF,
           text: LoginConstants.facebookLoginText,
-          onPressed: () => _showSnackBar(context, LoginConstants.facebookLoginMessage),
+          onPressed: () =>
+              _showSnackBar(context, LoginConstants.facebookLoginMessage),
           color: Colors.white,
           textColor: Colors.blue,
         ),
         CustomButton(
           icon: FontAwesomeIcons.google,
           text: LoginConstants.googleLoginText,
-          onPressed: () => _showSnackBar(context, LoginConstants.googleLoginMessage),
+          onPressed: () =>
+              _showSnackBar(context, LoginConstants.googleLoginMessage),
           color: Colors.white,
           textColor: Colors.red,
         ),
         CustomButton(
           icon: FontAwesomeIcons.apple,
           text: LoginConstants.appleLoginText,
-          onPressed: () => _showSnackBar(context, LoginConstants.appleLoginMessage),
+          onPressed: () =>
+              _showSnackBar(context, LoginConstants.appleLoginMessage),
           color: Colors.white,
           textColor: Colors.black,
         ),

@@ -50,7 +50,18 @@ class HomeScreen extends StatelessWidget {
               children: [
                 CustomButtons(),
                 SizedBox(height: 16),
-                _buildFullReadSection(),
+                BannerSection(  // Replaced with BannerSection
+                  bannerData: {
+                    'images': [
+                      'assets/avt.png',
+                      'assets/metruyen.jpg',
+                      'assets/metruyen.jpg',
+                      'assets/metruyen.jpg',
+                      'assets/metruyen.jpg',
+                      'assets/metruyen.jpg',
+                    ],
+                  },
+                ),
                 SizedBox(height: 16),
                 for (var section in data['sections'] as List<dynamic>)
                   HorizontalListSection(
@@ -73,35 +84,6 @@ class HomeScreen extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: titles.map((title) => CircularIcon(label: title as String)).toList(),
-      ),
-    );
-  }
-
-  Widget _buildFullReadSection() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Đọc full truyện và audio\nkhông giới hạn chỉ với',
-            style: TextStyle(color: Colors.white, fontSize: 16),
-          ),
-          SizedBox(height: 8),
-          Text(
-            '55K',
-            style: TextStyle(color: Colors.green, fontSize: 32, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8),
-          Text(
-            '*Terms & conditions apply',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-          ),
-        ],
       ),
     );
   }
@@ -141,23 +123,24 @@ class CircularIcon extends StatelessWidget {
     );
   }
 }
+
 class CustomButtons extends StatefulWidget {
   @override
   _CustomButtonsState createState() => _CustomButtonsState();
 }
 
 class _CustomButtonsState extends State<CustomButtons> {
-  int? selectedButtonIndex; // Trạng thái lưu trữ button nào được chọn
+  int? selectedButtonIndex;
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal, // Đặt hướng cuộn ngang
+      scrollDirection: Axis.horizontal,
       child: Row(
         children: [
           Container(
-            width: 100,  // Tùy chỉnh độ rộng ở đây
-            height: 40,  // Tùy chỉnh chiều cao ở đây
+            width: 100,
+            height: 40,
             child: _buildButton(
               index: 0,
               icon: Icons.local_fire_department,
@@ -167,8 +150,8 @@ class _CustomButtonsState extends State<CustomButtons> {
           ),
           SizedBox(width: 10),
           Container(
-            width: 120,  // Tùy chỉnh độ rộng ở đây
-            height: 40,  // Tùy chỉnh chiều cao ở đây
+            width: 120,
+            height: 40,
             child: _buildButton(
               index: 1,
               icon: Icons.book,
@@ -178,8 +161,8 @@ class _CustomButtonsState extends State<CustomButtons> {
           ),
           SizedBox(width: 10),
           Container(
-            width: 220,  // Tùy chỉnh độ rộng ở đây
-            height: 40,  // Tùy chỉnh chiều cao ở đây
+            width: 220,
+            height: 40,
             child: _buildButton(
               index: 2,
               icon: Icons.person,
@@ -206,7 +189,6 @@ class _CustomButtonsState extends State<CustomButtons> {
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        foregroundColor: color == Colors.white ? Colors.black : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -214,11 +196,9 @@ class _CustomButtonsState extends State<CustomButtons> {
       ),
       onPressed: () {
         setState(() {
-          selectedButtonIndex = index; // Cập nhật trạng thái khi button được nhấn
+          selectedButtonIndex = index;
         });
       },
     );
   }
 }
-
-

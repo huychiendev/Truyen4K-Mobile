@@ -25,8 +25,9 @@ class HorizontalListSection extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), // Added color
               ),
+
               TextButton(
                 onPressed: () {
                   // Điều hướng tới màn hình "Xem Tất Cả" và truyền cả items lẫn category
@@ -80,8 +81,8 @@ class HorizontalListSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            SizedBox(height: 8),
-            Text(item['title'] ?? 'Title', style: TextStyle(fontSize: 16)),
+            SizedBox(height: 16),
+            Text(item['title'] ?? 'Title', style: TextStyle(fontSize: 16, color: Colors.white)),
           ],
         ),
       ),

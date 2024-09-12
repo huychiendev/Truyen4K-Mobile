@@ -1,5 +1,8 @@
-import 'package:apptruyenonline/screens/menu/profile_screen.dart';
+
+import 'package:apptruyenonline/screens/menu/home_screen.dart';
 import 'package:flutter/material.dart';
+
+import '../../menu/profile_screen.dart';
 
 class PremiumScreen1 extends StatelessWidget {
   @override

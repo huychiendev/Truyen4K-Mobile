@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import '../screens/item_truyen/all_items_screen.dart'; // Đảm bảo đường dẫn đúng
+import '../screens/item_truyen/all_items_screen.dart';
 
 class HorizontalListSection extends StatelessWidget {
   final String title;
   final List<dynamic> items;
-  final String category; // Thêm tham số category
+  final String category;
 
   const HorizontalListSection({
     Key? key,
     required this.title,
     required this.items,
-    required this.category, // Đảm bảo category được truyền từ màn hình cha
+    required this.category,
   }) : super(key: key);
 
   @override
@@ -25,9 +25,8 @@ class HorizontalListSection extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white), // Added color
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
               ),
-
               TextButton(
                 onPressed: () {
                   // Điều hướng tới màn hình "Xem Tất Cả" và truyền cả items lẫn category
@@ -53,9 +52,7 @@ class HorizontalListSection extends StatelessWidget {
             height: 200,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              children: items
-                  .map((item) => _buildHorizontalListItem(context, item as Map<String, dynamic>))
-                  .toList(),
+              children: items.map((item) => _buildHorizontalListItem(context, item)).toList(),
             ),
           ),
         ],
@@ -77,12 +74,23 @@ class HorizontalListSection extends StatelessWidget {
               width: 120,
               height: 140,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: NetworkImage(item['thumbnailImageUrl']),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-            SizedBox(height: 16),
-            Text(item['title'] ?? 'Title', style: TextStyle(fontSize: 16, color: Colors.white)),
+            SizedBox(height: 8),
+            Container(
+              width: 120,
+              child: Text(
+                item['title'] ?? 'Title',
+                style: TextStyle(fontSize: 14, color: Colors.white),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),

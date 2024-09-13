@@ -1,9 +1,81 @@
 import 'package:flutter/material.dart';
-import '../../widgets/banner_section.dart';
-import '../../widgets/horizontal_list_section.dart';
-import '../../services/data_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../widgets/banner_section.dart';
+import '../item_truyen/all_items_screen.dart';
+
+// DataService
+class DataService {
+  static Future<Map<String, dynamic>> loadData() async {
+    // Assume this method loads your local JSON data
+    // For now, we'll return a mock structure
+    return {
+      "circularIcons": ["Mới", "Hot", "Hoàn thành", "Kiếm hiệp"],
+      "sections": [
+        {"title": "Xu hướng", "items": []}
+      ]
+    };
+  }
+  static Future<List<dynamic>> fetchNewReleasedNovels() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/novels/new-released?page=0&size=10'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return jsonData['content'] as List<dynamic>;
+    } else {
+      throw Exception('Failed to load new released novels');
+    }
+  }
+  static Future<List<dynamic>> fetchTrendingNovels() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/novels/trending?page=0&size=10'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return jsonData['content'] as List<dynamic>;
+    } else {
+      throw Exception('Failed to load trending novels');
+    }
+  }
+
+  static Future<List<dynamic>> fetchTopReadNovels() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/novels/top-read?page=0&size=10'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return jsonData['content'] as List<dynamic>;
+    } else {
+      throw Exception('Failed to load top-read novels');
+    }
+  }
+}
+
+// HomeScreen
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -12,11 +84,8 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: GestureDetector(
           onTap: () async {
-            // Lấy token từ SharedPreferences
             SharedPreferences prefs = await SharedPreferences.getInstance();
             String? token = prefs.getString('auth_token');
-
-            // Hiển thị token trong AlertDialog
             showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -25,9 +94,7 @@ class HomeScreen extends StatelessWidget {
                   content: Text(token ?? 'Không tìm thấy token!'),
                   actions: [
                     TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
+                      onPressed: () => Navigator.of(context).pop(),
                       child: Text('Đóng'),
                     ),
                   ],
@@ -37,7 +104,6 @@ class HomeScreen extends StatelessWidget {
           },
           child: Text('Audio Truyện 247'),
         ),
-
         backgroundColor: Colors.transparent,
         elevation: 0,
         titleTextStyle: TextStyle(
@@ -47,11 +113,11 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
-        future: DataService.loadData(),
+        future: _loadAllData(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
-              return Center(child: Text('Error loading data'));
+              return Center(child: Text('Error loading data: ${snapshot.error}'));
             } else if (snapshot.hasData) {
               return _buildBody(context, snapshot.data!);
             } else {
@@ -63,6 +129,25 @@ class HomeScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<Map<String, dynamic>> _loadAllData() async {
+    final jsonData = await DataService.loadData();
+    final trendingNovels = await DataService.fetchTrendingNovels();
+    final topReadNovels = await DataService.fetchTopReadNovels();
+    final newReleasedNovels = await DataService.fetchNewReleasedNovels();
+
+    jsonData['sections'][0]['items'] = trendingNovels;
+    jsonData['sections'].add({
+      'title': 'Truyện Đọc Nhiều Nhất',
+      'items': topReadNovels,
+    });
+    jsonData['sections'].add({
+      'title': 'Truyện Mới Cập Nhật',
+      'items': newReleasedNovels,
+    });
+
+    return jsonData;
   }
 
   Widget _buildBody(BuildContext context, Map<String, dynamic> data) {
@@ -78,7 +163,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 CustomButtons(),
                 SizedBox(height: 16),
-                BannerSection(  // Replaced with BannerSection
+                BannerSection(
                   bannerData: {
                     'images': [
                       'assets/300.jpg',
@@ -117,6 +202,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+// CircularIcon
 class CircularIcon extends StatelessWidget {
   final String label;
 
@@ -152,6 +238,7 @@ class CircularIcon extends StatelessWidget {
   }
 }
 
+// CustomButtons
 class CustomButtons extends StatefulWidget {
   @override
   _CustomButtonsState createState() => _CustomButtonsState();
@@ -166,37 +253,22 @@ class _CustomButtonsState extends State<CustomButtons> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          Container(
-            width: 100,
-            height: 40,
-            child: _buildButton(
-              index: 0,
-              icon: Icons.local_fire_department,
-              label: 'Xu hướng',
-              color: selectedButtonIndex == 0 ? Colors.green : Colors.grey[800]!,
-            ),
+          _buildButton(
+            index: 0,
+            icon: Icons.local_fire_department,
+            label: 'Xu hướng',
           ),
           SizedBox(width: 10),
-          Container(
-            width: 120,
-            height: 40,
-            child: _buildButton(
-              index: 1,
-              icon: Icons.book,
-              label: 'Top truyện',
-              color: selectedButtonIndex == 1 ? Colors.green : Colors.grey[800]!,
-            ),
+          _buildButton(
+            index: 1,
+            icon: Icons.book,
+            label: 'Top truyện',
           ),
           SizedBox(width: 10),
-          Container(
-            width: 220,
-            height: 40,
-            child: _buildButton(
-              index: 2,
-              icon: Icons.person,
-              label: 'Người khác cũng đang nghe',
-              color: selectedButtonIndex == 2 ? Colors.green : Colors.grey[800]!,
-            ),
+          _buildButton(
+            index: 2,
+            icon: Icons.person,
+            label: 'Người khác cũng đang nghe',
           ),
         ],
       ),
@@ -207,16 +279,16 @@ class _CustomButtonsState extends State<CustomButtons> {
     required int index,
     required IconData icon,
     required String label,
-    required Color color,
   }) {
+    final isSelected = selectedButtonIndex == index;
     return ElevatedButton.icon(
-      icon: Icon(icon, color: color == Colors.white ? Colors.black : Colors.white, size: 18),
+      icon: Icon(icon, color: isSelected ? Colors.black : Colors.white, size: 18),
       label: Text(
         label,
-        style: TextStyle(color: color == Colors.white ? Colors.black : Colors.white, fontSize: 12),
+        style: TextStyle(color: isSelected ? Colors.black : Colors.white, fontSize: 12),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: color,
+        backgroundColor: isSelected ? Colors.green : Colors.grey[800],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -227,6 +299,104 @@ class _CustomButtonsState extends State<CustomButtons> {
           selectedButtonIndex = index;
         });
       },
+    );
+  }
+}
+
+
+class HorizontalListSection extends StatelessWidget {
+  final String title;
+  final List<dynamic> items;
+  final String category;
+
+  const HorizontalListSection({
+    Key? key,
+    required this.title,
+    required this.items,
+    required this.category,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Điều hướng tới màn hình "Xem Tất Cả" và truyền cả items lẫn category
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AllItemsScreen(
+                        items: items,
+                        category: category, // Truyền danh mục
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Xem Tất Cả',
+                  style: TextStyle(color: Colors.green),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Container(
+            height: 200,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: items.map((item) => _buildHorizontalListItem(context, item)).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHorizontalListItem(BuildContext context, Map<String, dynamic> item) {
+    return GestureDetector(
+      onTap: () {
+        print('Bạn đã nhấn vào ${item['title']}');
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 120,
+              height: 140,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: NetworkImage(item['thumbnailImageUrl'] ?? 'https://via.placeholder.com/120x140'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            SizedBox(height: 8),
+            Container(
+              width: 120,
+              child: Text(
+                item['title'] ?? 'Title',
+                style: TextStyle(fontSize: 14, color: Colors.white),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

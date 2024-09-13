@@ -55,7 +55,7 @@ class PremiumScreen1 extends StatelessWidget {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    Navigator.push(
+                    Navigator.pop(
                       context,
                       MaterialPageRoute(builder: (context) => ProfileScreen()),
                     );
@@ -77,7 +77,6 @@ class PremiumScreen1 extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildPlanCard(bool isSelected) {
     return Container(
       padding: EdgeInsets.all(16),

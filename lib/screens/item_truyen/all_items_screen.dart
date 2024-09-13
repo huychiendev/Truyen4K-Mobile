@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'novel_detail_screen.dart';
 
 class AllItemsScreen extends StatelessWidget {
   final List<dynamic> items;
@@ -12,7 +13,7 @@ class AllItemsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: AppBar(
-        title: Text('$category'),
+        title: Text(category),
         backgroundColor: Colors.transparent,
         elevation: 0,
         titleTextStyle: TextStyle(
@@ -29,35 +30,41 @@ class AllItemsScreen extends StatelessWidget {
       ),
       body: items.isNotEmpty
           ? GridView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.65,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: items.length,
-          itemBuilder: (context, index) {
+        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.65,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: items.length,
+        itemBuilder: (context, index) {
           final item = items[index] as Map<String, dynamic>;
 
-          // Check if required fields are available
-          final coverImage = item['coverImage'] ?? 'assets/metruyen.jpg';
-          final title = item['title'] ?? 'Không có tiêu đề';
-          final author = item['author'] ?? 'Không có tác giả';
-          final rating = item['rating']?.toDouble() ?? 0.0;
-
-          return ItemCard(
-            coverImage: coverImage,
-            title: title,
-            author: author,
-            rating: rating,
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NovelDetailScreen(
+                    novelData: item,
+                  ),
+                ),
+              );
+            },
+            child: ItemCard(
+              coverImage: item['coverImage'] ?? 'assets/metruyen.jpg',
+              title: item['title'] ?? 'Không có tiêu đề',
+              author: item['author'] ?? 'Không có tác giả',
+              rating: (item['rating'] as num?)?.toDouble() ?? 0.0,
+            ),
           );
         },
       )
           : Center(
         child: Text(
           'Không có dữ liệu để hiển thị',
-          style: TextStyle(color: Colors.white), // Set text color to white
+          style: TextStyle(color: Colors.white),
         ),
       ),
     );
@@ -86,9 +93,15 @@ class ItemCard extends StatelessWidget {
         Expanded(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
-            child: Image.asset(
+            child: Image.network(
               coverImage,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'assets/metruyen.jpg',
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
         ),
@@ -98,20 +111,24 @@ class ItemCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.white, // Set text color to white
+            color: Colors.white,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         Text(
           author,
-          style: TextStyle(color: Colors.white), // Set text color to white
+          style: TextStyle(color: Colors.white),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         Row(
           children: [
             Icon(Icons.star, color: Colors.yellow, size: 16),
             SizedBox(width: 4),
             Text(
-              rating.toString(),
-              style: TextStyle(color: Colors.white), // Set text color to white
+              rating.toStringAsFixed(1),
+              style: TextStyle(color: Colors.white),
             ),
           ],
         ),

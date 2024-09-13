@@ -56,7 +56,7 @@ class BannerSection extends StatelessWidget {
                         top: 20,
                         left: 40,
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(1),
                           child: Image.asset(
                             images[0],
                             width: imageSizes[0].width,

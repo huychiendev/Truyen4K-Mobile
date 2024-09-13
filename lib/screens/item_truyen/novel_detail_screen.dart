@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
 
 class NovelDetailScreen extends StatelessWidget {
-  final String title;
-  final String subtitle;
+  final Map<String, dynamic> novelData;
 
-  NovelDetailScreen({required this.title, required this.subtitle});
+  const NovelDetailScreen({Key? key, required this.novelData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Hiển thị Snackbar ngay khi trang chi tiết được mở
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showSnackbar(context, title, subtitle);
+      _showSnackbar(context, novelData['title'] ?? 'Unknown Title', novelData['author'] ?? 'Unknown Author');
     });
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(novelData['title'] ?? 'Novel Details'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCoverImage(),
+            _buildCoverImage(novelData['coverImage'] ?? ''),
             Padding(
               padding: EdgeInsets.all(16),
               child: Column(
@@ -28,7 +31,7 @@ class NovelDetailScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Tận Thế Thập Phòng: Phòng Ngự Của Ta Thập Quá Mức Cần Thân!',
+                          novelData['title'] ?? 'Unknown Title',
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -38,10 +41,14 @@ class NovelDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Text('Nhữ Hữu Thần Trụ', style: TextStyle(fontSize: 16)),
-                  Text('1900 Chương', style: TextStyle(color: Colors.grey)),
+                  Text(novelData['author'] ?? 'Unknown Author', style: TextStyle(fontSize: 16)),
+                  Text('${novelData['chapterCount'] ?? 'Unknown'} Chương', style: TextStyle(color: Colors.grey)),
                   SizedBox(height: 8),
-                  _buildStatsRow(),
+                  _buildStatsRow(
+                      novelData['readTime']?.toString() ?? 'Unknown',
+                      (novelData['rating'] as num?)?.toDouble() ?? 0.0,
+                      (novelData['likes'] as num?)?.toInt() ?? 0
+                  ),
                   SizedBox(height: 16),
                   Text(
                     'Về cuốn truyện này',
@@ -49,20 +56,20 @@ class NovelDetailScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Ngày tận thế tới, mỗi người trưởng thành đều phải tiến vào tháp phòng thế giới ngăn cản Zombie xâm lấn...\nLuôn luôn cẩn thận Lục Vân thức tỉnh duy nhất thiên phú như giám trên bảng mộng, cũng dẫn đến hắn tháp phòng ngự đêu đi theo bất đẩu cẩn thận...',
+                    novelData['description'] ?? 'No description available.',
                     style: TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 16),
-                  _buildTags(),
+                  _buildTags(novelData['tags'] as List<dynamic>? ?? []),
                   SizedBox(height: 24),
                   Text(
-                    '56 Chapters',
+                    '${novelData['availableChapters'] ?? 'Unknown'} Chapters',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
-                  _buildChapterList(),
+                  _buildChapterList(novelData['chapters'] as List<dynamic>? ?? []),
                   SizedBox(height: 16),
-                  _buildSimilarContent(),
+                  _buildSimilarContent(novelData['similarNovels'] as List<dynamic>? ?? []),
                 ],
               ),
             ),
@@ -72,23 +79,29 @@ class NovelDetailScreen extends StatelessWidget {
     );
   }
 
-  // Hàm hiển thị Snackbar
-  void _showSnackbar(BuildContext context, String title, String subtitle) {
+  void _showSnackbar(BuildContext context, String title, String author) {
     final snackBar = SnackBar(
-      content: Text('Title: $title\nSubtitle: $subtitle'),
-      duration: Duration(seconds: 3),  // Tự động biến mất sau 3 giây
+      content: Text('Title: $title\nAuthor: $author'),
+      duration: Duration(seconds: 3),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  Widget _buildCoverImage() {
+  Widget _buildCoverImage(String imageUrl) {
     return Stack(
       children: [
-        Image.asset(
-          'assets/300.jpg',
+        Image.network(
+          imageUrl,
           height: 250,
           width: double.infinity,
           fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              height: 250,
+              color: Colors.grey,
+              child: Center(child: Text('Image not available')),
+            );
+          },
         ),
         Positioned(
           bottom: 0,
@@ -105,7 +118,7 @@ class NovelDetailScreen extends StatelessWidget {
                     label: Text('Đọc tiếp'),
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue
+                      backgroundColor: Colors.blue,
                     ),
                   ),
                 ),
@@ -116,7 +129,7 @@ class NovelDetailScreen extends StatelessWidget {
                     label: Text('Nghe Tiếp'),
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[700]
+                      backgroundColor: Colors.grey[700],
                     ),
                   ),
                 ),
@@ -128,34 +141,29 @@ class NovelDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(String readTime, double rating, int likes) {
     return Row(
       children: [
         Icon(Icons.access_time, size: 16, color: Colors.grey),
         SizedBox(width: 4),
-        Text('18 phút', style: TextStyle(color: Colors.grey)),
+        Text(readTime, style: TextStyle(color: Colors.grey)),
         SizedBox(width: 16),
         Icon(Icons.star, size: 16, color: Colors.grey),
         SizedBox(width: 4),
-        Text('4.1', style: TextStyle(color: Colors.grey)),
+        Text(rating.toStringAsFixed(1), style: TextStyle(color: Colors.grey)),
         SizedBox(width: 16),
         Icon(Icons.thumb_up, size: 16, color: Colors.grey),
         SizedBox(width: 4),
-        Text('106.2K', style: TextStyle(color: Colors.grey)),
+        Text('${likes}K', style: TextStyle(color: Colors.grey)),
       ],
     );
   }
 
-  Widget _buildTags() {
+  Widget _buildTags(List<dynamic> tags) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: [
-        _buildTag('Cờ tích'),
-        _buildTag('Đông Phương Huyền Huyễn'),
-        _buildTag('Xuyên Qua'),
-        _buildTag('Khoa Huyễn'),
-      ],
+      children: tags.map((tag) => _buildTag(tag.toString())).toList(),
     );
   }
 
@@ -170,17 +178,16 @@ class NovelDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChapterList() {
+  Widget _buildChapterList(List<dynamic> chapters) {
     return Column(
-      children: [
-        _buildChapterItem('01', 'Thích cờ bạc chả, xã hội muội, chính nghĩa hán!', false),
-        _buildChapterItem('02', 'Nhập môn tháp giới, cẩn thận thăng cấp', true),
-        _buildChapterItem('03', 'Phàn liệt tiên cung xuyên thấu tiên', true),
-        ListTile(
-          title: Text('Tóm tắt', style: TextStyle(fontWeight: FontWeight.bold)),
-          trailing: Icon(Icons.lock, color: Colors.grey),
-        ),
-      ],
+      children: chapters.map((chapter) {
+        final chapterData = chapter as Map<String, dynamic>;
+        return _buildChapterItem(
+          chapterData['number']?.toString() ?? 'Unknown',
+          chapterData['title']?.toString() ?? 'Untitled',
+          chapterData['isLocked'] as bool? ?? false,
+        );
+      }).toList(),
     );
   }
 
@@ -206,7 +213,7 @@ class NovelDetailScreen extends StatelessWidget {
                 ),
                 if (isLocked)
                   Text(
-                    'Đăng ký để mở khóa tất cả 2 ý tưởng chính tử...',
+                    'Đăng ký để mở khóa chương này',
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
               ],
@@ -218,7 +225,7 @@ class NovelDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSimilarContent() {
+  Widget _buildSimilarContent(List<dynamic> similarNovels) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -236,11 +243,13 @@ class NovelDetailScreen extends StatelessWidget {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: [
-              _buildSimilarItem('Futurama', 'Bach Y Thiết Tương'),
-              _buildSimilarItem('Explore your create...', 'Trung ha nguyet ban'),
-              _buildSimilarItem('Hoàng Hôn Phần q', 'Nhữ Hữu Thần Trụ'),
-            ],
+            children: similarNovels.map((novel) {
+              final novelData = novel as Map<String, dynamic>;
+              return _buildSimilarItem(
+                novelData['title']?.toString() ?? 'Untitled',
+                novelData['author']?.toString() ?? 'Unknown Author',
+              );
+            }).toList(),
           ),
         ),
       ],
@@ -262,8 +271,8 @@ class NovelDetailScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 8),
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-          Text(author, style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(author, style: TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
         ],
       ),
     );

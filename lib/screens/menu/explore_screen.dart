@@ -1,12 +1,68 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../item_truyen/all_items_screen.dart'; // Đảm bảo import đúng file
+import '../item_truyen/novel_detail_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ExploreScreen extends StatefulWidget {
   @override
   _ExploreScreenState createState() => _ExploreScreenState();
 }
 
+const Map<int, String> genreMap = {
+  7: 'Tiên Hiệp',
+  8: 'Đồng Nhân',
+  9: 'Kiếm Hiệp',
+  10: 'Hiện Đại Ngôn Tình',
+  11: 'Võng Du',
+  12: 'Đô Thị',
+  13: 'Huyền Huyễn',
+  14: 'Dã Sử',
+};
+
 class _ExploreScreenState extends State<ExploreScreen> {
+  Future<List<Novel>> fetchTopReadNovels() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/novels/top-read?page=0&size=10'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> data =
+          jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      return data.map((json) => Novel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load novels');
+    }
+  }
+
+  Future<List<Novel>> fetchNovelsByGenre(List<int> genreIds) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse(
+          'http://14.225.207.58:9898/api/novels/filter-by-genre?genreIds=${genreIds.join(",")}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> data =
+          jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      return data.map((json) => Novel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load novels');
+    }
+  }
+
   @override
   Widget _buildCategories() {
     return Column(
@@ -14,7 +70,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
       children: [
         Text(
           'Thể loại',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         SizedBox(height: 10),
         Wrap(
@@ -41,7 +98,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSearchBar(),// search
+              _buildSearchBar(), // search
               SizedBox(height: 20),
               _buildCategories(), // Thể loại
               SizedBox(height: 20),
@@ -51,16 +108,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
               SizedBox(height: 20),
               _buildNovel(), // Truyện Mới
               SizedBox(height: 20),
-
             ],
           ),
         ),
       ),
     );
   }
-
-  // Thêm hàm _buildCategories
-
 
   AppBar _buildAppBar() {
     return AppBar(
@@ -87,161 +140,266 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  Widget _buildRecommendations() {
-    List<dynamic> recommendationItems = [
-      {'title': 'Truyện đề xuất 1', 'subtitle': 'Chi tiết 1'},
-      {'title': 'Truyện đề xuất 2', 'subtitle': 'Chi tiết 2'},
-      {'title': 'Truyện đề xuất 1', 'subtitle': 'Chi tiết 1'},
-    ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Đề xuất cho bạn',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AllItemsScreen(
-                      items: recommendationItems,
-                      category: 'Đề xuất',
+  Widget _buildRecommendations() {
+    return FutureBuilder<List<Novel>>(
+      future: fetchTopReadNovels(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.hasData) {
+          List<Novel> novels = snapshot.data!;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Đề xuất cho bạn',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AllItemsScreen(
+                            items: novels
+                                .map((novel) => {
+                              'slug': novel.slug,
+                              'title': novel.title,
+                              'authorName': novel.description,
+                              'thumbnailImageUrl': novel.thumbnailImageUrl,
+                              'averageRatings': novel.averageRatings,
+                            })
+                                .toList(),
+                            category: 'Đề xuất',
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Xem Tất Cả',
+                      style: TextStyle(color: Colors.green),
                     ),
                   ),
-                );
-              },
-              child: Text(
-                'Xem Tất Cả',
-                style: TextStyle(color: Colors.green),
+                ],
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
-        _buildHorizontalList(recommendationItems),
-      ],
+              SizedBox(height: 10),
+              _buildHorizontalList(context, novels),
+            ],
+          );
+        } else {
+          return Text('No novels found.');
+        }
+      },
     );
   }
 
   Widget _buildSwordplay() {
-    List<dynamic> swordplayItems = [
-      {'title': 'Kiếm hiệp 1', 'subtitle': 'Chi tiết 1'},
-      {'title': 'Kiếm hiệp 2', 'subtitle': 'Chi tiết 2'},
-      {'title': 'Kiếm hiệp 3', 'subtitle': 'Chi tiết 3'},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Truyện Kiếm Hiệp',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AllItemsScreen(
-                      items: swordplayItems,
-                      category: 'Truyện Kiếm Hiệp',
+    return FutureBuilder<List<Novel>>(
+      future: fetchNovelsByGenre([13]), // ID của thể loại Kiếm Hiệp
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.hasData) {
+          List<Novel> novels = snapshot.data!;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Truyện Kiếm Hiệp',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AllItemsScreen(
+                            items: novels
+                                .map((novel) => {
+                              'slug': novel.slug,
+                              'title': novel.title,
+                              'authorName': novel.description,
+                              'thumbnailImageUrl': novel.thumbnailImageUrl,
+                              'averageRatings': novel.averageRatings,
+                            })
+                                .toList(),
+                            category: 'Truyện Kiếm Hiệp',
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Xem Tất Cả',
+                      style: TextStyle(color: Colors.green),
                     ),
                   ),
-                );
-              },
-              child: Text(
-                'Xem Tất Cả',
-                style: TextStyle(color: Colors.green),
+                ],
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
-        _buildHorizontalList(swordplayItems),
-      ],
+              SizedBox(height: 10),
+              _buildHorizontalList(context, novels),
+            ],
+          );
+        } else {
+          return Text('No novels found.');
+        }
+      },
     );
   }
 
   Widget _buildNovel() {
-    List<dynamic> novelItems = [
-      {'title': 'Truyện mới 1', 'subtitle': 'Chi tiết 1'},
-      {'title': 'Truyện mới 2', 'subtitle': 'Chi tiết 2'},
-      {'title': 'Truyện mới 3', 'subtitle': 'Chi tiết 3'},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Truyện Tu Tiên',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AllItemsScreen(
-                      items: novelItems,
-                      category: 'Truyện Mới',
+    return FutureBuilder<List<Novel>>(
+      future: fetchNovelsByGenre([12]),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.hasData) {
+          List<Novel> novels = snapshot.data!;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Truyện Tu Tiên',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AllItemsScreen(
+                            items: novels
+                                .map((novel) => {
+                              'slug': novel.slug,
+                              'title': novel.title,
+                              'authorName': novel.description,
+                              'thumbnailImageUrl': novel.thumbnailImageUrl,
+                              'averageRatings':novel.averageRatings,
+                            })
+                                .toList(),
+                            category: 'Truyện Tu Tiên',
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Xem Tất Cả',
+                      style: TextStyle(color: Colors.green),
                     ),
                   ),
-                );
-              },
-              child: Text(
-                'Xem Tất Cả',
-                style: TextStyle(color: Colors.green),
+                ],
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
-        _buildHorizontalList(novelItems),
-      ],
+              SizedBox(height: 10),
+              _buildHorizontalList(context, novels),
+            ],
+          );
+        } else {
+          return Text('No novels found.');
+        }
+      },
     );
   }
 
-  Widget _buildHorizontalList(List<dynamic> items) {
+  Widget _buildHorizontalList(BuildContext context, List<Novel> novels) {
     return Container(
-      height: 150,
+      height: 200,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: items.length,
+        itemCount: novels.length,
         itemBuilder: (context, index) {
-          final item = items[index] as Map<String, dynamic>;
-          return Container(
-            width: 120,
-            margin: EdgeInsets.only(right: 10),
-            decoration: BoxDecoration(
-              color: Colors.red[200],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  height: 100,
-                  color: Colors.pink,
+          final novel = novels[index];
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NovelDetailScreen(slug: novel.slug),
                 ),
-                SizedBox(height: 5),
-                Text(item['title'] ?? 'Title'),
-              ],
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: NetworkImage(novel.thumbnailImageUrl),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    width: 120,
+                    child: Text(
+                      novel.title,
+                      style: TextStyle(fontSize: 14, color: Colors.white),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
       ),
+    );
+  }
+}
+
+class Novel {
+  final String slug;
+  final String title;
+  final String description;
+  final String thumbnailImageUrl;
+  final double averageRatings;
+
+  Novel({
+    required this.slug,
+    required this.title,
+    required this.description,
+    required this.thumbnailImageUrl,
+    required this.averageRatings,
+
+  });
+
+  factory Novel.fromJson(Map<String, dynamic> json) {
+    return Novel(
+      slug: json['slug'],
+      title: json['title'],
+      description: json['description'],
+      thumbnailImageUrl: json['thumbnailImageUrl'],
+      averageRatings: json['averageRatings'],
     );
   }
 }

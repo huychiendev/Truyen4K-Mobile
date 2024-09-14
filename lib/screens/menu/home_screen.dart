@@ -14,7 +14,8 @@ class DataService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/new-released?page=0&size=10'),
+      Uri.parse(
+          'http://14.225.207.58:9898/api/novels/new-released?page=0&size=10'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -142,23 +143,23 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTopSection(data['newReleased']['content'] as List<dynamic>?),
+          _buildTopSection(context, data['newReleased']['content'] as List<dynamic>?),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomButtons(),
+                CustomButtons(data: data),
                 SizedBox(height: 16),
                 BannerSection(
                   bannerData: {
                     'images': [
-                      'assets/300.jpg',
-                      'assets/300.jpg',
-                      'assets/300.jpg',
-                      'assets/300.jpg',
-                      'assets/300.jpg',
-                      'assets/300.jpg',
+                      'assets/bn1.jpg',
+                      'assets/bn2.jpg',
+                      'assets/bn3.jpg',
+                      'assets/bn4.jpg',
+                      'assets/bn5.jpg',
+                      'assets/bn6.jpg',
                     ],
                   },
                 ),
@@ -186,15 +187,34 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopSection(List<dynamic>? titles) {
+  Widget _buildTopSection(BuildContext context, List<dynamic>? titles) {
     if (titles == null || titles.isEmpty) return SizedBox.shrink();
     return Container(
       height: 100,
-      child: ListView(
+      child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        children: titles
-            .map((title) => CircularIcon(label: title['title'] as String))
-            .toList(),
+        child: Row(
+          children: titles.map((title) {
+            final label = title['title'] as String? ?? 'No Title';
+            final imageUrl = title['thumbnailImageUrl'] as String? ?? 'https://via.placeholder.com/60';
+            final slug = title['slug'] as String? ?? '';
+
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NovelDetailScreen(slug: slug),
+                  ),
+                );
+              },
+              child: CircularIcon(
+                label: label,
+                imageUrl: imageUrl,
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -203,41 +223,55 @@ class HomeScreen extends StatelessWidget {
 // CircularIcon
 class CircularIcon extends StatelessWidget {
   final String label;
+  final String imageUrl;
 
-  const CircularIcon({Key? key, required this.label}) : super(key: key);
+  const CircularIcon({Key? key, required this.label, required this.imageUrl})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey[800],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey[800],
+                image: DecorationImage(
+                  image: NetworkImage(imageUrl),
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
-            child: Center(
-              child: Icon(Icons.book, color: Colors.white),
+            SizedBox(height: 4),
+            Container(
+              width: 60,
+              child: Text(
+                label,
+                style: TextStyle(fontSize: 12, color: Colors.white),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-          SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(fontSize: 12, color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-// CustomButtons
 class CustomButtons extends StatefulWidget {
+  final Map<String, dynamic> data;
+
+  const CustomButtons({Key? key, required this.data}) : super(key: key);
+
   @override
   _CustomButtonsState createState() => _CustomButtonsState();
 }
@@ -260,13 +294,13 @@ class _CustomButtonsState extends State<CustomButtons> {
           _buildButton(
             index: 1,
             icon: Icons.book,
-            label: 'Top truyện',
+            label: 'Truyện đọc nhiều nhất',
           ),
           SizedBox(width: 10),
           _buildButton(
             index: 2,
             icon: Icons.person,
-            label: 'Người khác cũng đang nghe',
+            label: 'Truyện mới cập nhật',
           ),
         ],
       ),
@@ -280,8 +314,7 @@ class _CustomButtonsState extends State<CustomButtons> {
   }) {
     final isSelected = selectedButtonIndex == index;
     return ElevatedButton.icon(
-      icon:
-          Icon(icon, color: isSelected ? Colors.black : Colors.white, size: 18),
+      icon: Icon(icon, color: isSelected ? Colors.black : Colors.white, size: 18),
       label: Text(
         label,
         style: TextStyle(
@@ -298,6 +331,36 @@ class _CustomButtonsState extends State<CustomButtons> {
         setState(() {
           selectedButtonIndex = index;
         });
+
+        // Điều hướng đến AllItemsScreen với danh mục tương ứng
+        String category;
+        List<dynamic> items;
+        switch (index) {
+          case 0:
+            category = 'Xu hướng';
+            items = widget.data['trending']['content'];
+            break;
+          case 1:
+            category = 'Truyện đọc nhiều nhất';
+            items = widget.data['topRead']['content'];
+            break;
+          case 2:
+            category = 'Truyện mới cập nhật';
+            items = widget.data['newReleased']['content'];
+            break;
+          default:
+            return;
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AllItemsScreen(
+              items: items,
+              category: category,
+            ),
+          ),
+        );
       },
     );
   }
@@ -367,7 +430,8 @@ class HorizontalListSection extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontalListItem(BuildContext context, Map<String, dynamic> item) {
+  Widget _buildHorizontalListItem(
+      BuildContext context, Map<String, dynamic> item) {
     return GestureDetector(
       onTap: () {
         Navigator.push(

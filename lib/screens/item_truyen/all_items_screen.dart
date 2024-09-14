@@ -55,10 +55,10 @@ class AllItemsScreen extends StatelessWidget {
               );
             },
             child: ItemCard(
-              coverImage: item['coverImage'] ?? 'assets/metruyen.jpg',
+              coverImage: item['thumbnailImageUrl'] ?? 'assets/metruyen.jpg',
               title: item['title'] ?? 'Không có tiêu đề',
-              author: item['author'] ?? 'Không có tác giả',
-              rating: (item['rating'] as num?)?.toDouble() ?? 0.0,
+              author: item['authorName'] ?? 'Không có tác giả',
+              rating: (item['averageRatings'] as num?)?.toDouble() ?? 0.0,
             ),
           );
         },
@@ -93,7 +93,7 @@ class ItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         image: DecorationImage(
-          image: AssetImage(coverImage),
+          image: NetworkImage(coverImage),
           fit: BoxFit.cover,
         ),
       ),

@@ -9,6 +9,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
+  bool _isDefaultImage = true;
 
   @override
   Widget build(BuildContext context) {
@@ -45,15 +46,18 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         children: [
                           CircleAvatar(
                             radius: 50,
-                            backgroundImage: AssetImage('assets/avt.png'),
+                            backgroundImage: AssetImage(_isDefaultImage ? 'assets/avt.png' : 'assets/avt_alternative.png'),
                           ),
                           Positioned(
                             bottom: 0,
                             right: 0,
-                            child: Container(
-                              padding: EdgeInsets.all(4),
-                              decoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle),
-                              child: Icon(Icons.edit, color: Colors.white, size: 20),
+                            child: GestureDetector(
+                              onTap: _changeProfilePicture,
+                              child: Container(
+                                padding: EdgeInsets.all(4),
+                                decoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                                child: Icon(Icons.edit, color: Colors.white, size: 20),
+                              ),
                             ),
                           ),
                         ],
@@ -61,7 +65,10 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                     ),
                     SizedBox(height: 10),
                     Center(
-                      child: Text('Thay đổi ảnh hồ sơ', style: TextStyle(color: Colors.green)),
+                      child: GestureDetector(
+                        onTap: _changeProfilePicture,
+                        child: Text('Thay đổi ảnh hồ sơ', style: TextStyle(color: Colors.green)),
+                      ),
                     ),
                     SizedBox(height: 20),
                     _buildTextField('Tên của bạn', 'Nhập tên của bạn', _nameController),
@@ -80,7 +87,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         onPressed: _saveProfile,
                       ),
                     ),
-                    Spacer(), // This will push the content to the top
+                    Spacer(),
                   ],
                 ),
               ),
@@ -118,9 +125,16 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     );
   }
 
+  void _changeProfilePicture() {
+    setState(() {
+      _isDefaultImage = !_isDefaultImage;
+    });
+  }
+
   void _saveProfile() {
     print('Saved Name: ${_nameController.text}');
     print('Saved Email: ${_emailController.text}');
     print('Saved Date of Birth: ${_dobController.text}');
+    print('Profile Picture: ${_isDefaultImage ? "Default" : "Alternative"}');
   }
 }

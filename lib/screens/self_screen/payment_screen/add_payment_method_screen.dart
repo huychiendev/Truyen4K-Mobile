@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
-class AddPaymentMethodScreen extends StatelessWidget {
+class AddPaymentMethodScreen extends StatefulWidget {
+  @override
+  _AddPaymentMethodScreenState createState() => _AddPaymentMethodScreenState();
+}
+
+class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
+  final TextEditingController _cardNumberController = TextEditingController();
+  final TextEditingController _cardHolderController = TextEditingController();
+  final TextEditingController _cvvController = TextEditingController();
+  final TextEditingController _expiryController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,23 +38,23 @@ class AddPaymentMethodScreen extends StatelessWidget {
               style: TextStyle(color: Colors.grey),
             ),
             SizedBox(height: 20),
-            _buildInputField('Số thẻ'),
+            _buildInputField('Số thẻ', _cardNumberController),
             SizedBox(height: 10),
-            _buildInputField('Tên chủ thẻ'),
+            _buildInputField('Tên chủ thẻ', _cardHolderController),
             SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _buildInputField('CVV')),
+                Expanded(child: _buildInputField('CVV', _cvvController)),
                 SizedBox(width: 10),
-                Expanded(child: _buildInputField('MM/YY')),
+                Expanded(child: _buildInputField('MM/YY', _expiryController)),
               ],
             ),
             Spacer(),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: _addPaymentMethod,
               child: Text('Thêm phương thức thanh toán'),
               style: ElevatedButton.styleFrom(
-                //primary: Colors.green,
+                backgroundColor: Colors.green,
                 minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
@@ -57,8 +67,9 @@ class AddPaymentMethodScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInputField(String hint) {
+  Widget _buildInputField(String hint, TextEditingController controller) {
     return TextField(
+      controller: controller,
       style: TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: hint,
@@ -71,5 +82,23 @@ class AddPaymentMethodScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _addPaymentMethod() {
+    if (_cardNumberController.text.isNotEmpty &&
+        _cardHolderController.text.isNotEmpty &&
+        _cvvController.text.isNotEmpty &&
+        _expiryController.text.isNotEmpty) {
+      Navigator.pop(context, {
+        'cardNumber': _cardNumberController.text,
+        'cardHolder': _cardHolderController.text,
+        'cvv': _cvvController.text,
+        'expiry': _expiryController.text,
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vui lòng điền đầy đủ thông tin thẻ')),
+      );
+    }
   }
 }

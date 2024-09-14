@@ -54,23 +54,44 @@ class ProfileScreen extends StatelessWidget {
               Spacer(),
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade800,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.headset_mic, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text('Hãy hỏi, chúng tôi sẵn sàng trợ giúp',
-                          style: TextStyle(color: Colors.white)),
-                    ],
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Thông báo'),
+                          content: Text('Tính năng đang phát triển \n Thông cảm heng :)'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade800,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.headset_mic, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text('Hãy hỏi, chúng tôi sẵn sàng trợ giúp',
+                            style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              )
             ],
           ),
         ),
@@ -91,12 +112,30 @@ class ProfileScreen extends StatelessWidget {
         } else if (title == 'Quản lý thanh toán') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AccountScreen()), // Đảm bảo màn hình PaymentScreen1 đã được định nghĩa
+            MaterialPageRoute(builder: (context) => AccountScreen()),
           );
         } else if (title == 'Đăng ký') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PremiumScreen1()), // Thay thế bằng màn hình đăng ký chính xác
+            MaterialPageRoute(builder: (context) => PremiumScreen1()),
+          );
+        } else if (title == 'Câu hỏi - hỏi đáp') {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Thông báo'),
+                content: Text('Tính năng đang phát triển \n Thông cảm heng :)'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
           );
         } else if (title == 'Đăng xuất') {
           Navigator.pushReplacement(

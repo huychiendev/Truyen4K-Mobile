@@ -54,7 +54,10 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
             ElevatedButton(
               onPressed: _addNewPaymentMethod,
-              child: Text('Thêm phương thức thanh toán mới'),
+              child: Text(
+                'Thêm phương thức thanh toán mới',
+                style: TextStyle(color: Colors.white),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: Size(double.infinity, 50),

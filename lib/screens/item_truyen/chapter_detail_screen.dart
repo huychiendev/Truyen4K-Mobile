@@ -116,6 +116,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                     child: Text('Previous Chapter'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white, // Set text color to white
                     ),
                   ),
                 ElevatedButton(
@@ -134,6 +135,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                   child: Text('Next Chapter'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white, // Set text color to white
                   ),
                 ),
               ],

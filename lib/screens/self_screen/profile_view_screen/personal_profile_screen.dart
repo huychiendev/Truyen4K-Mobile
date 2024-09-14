@@ -132,9 +132,16 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   }
 
   void _saveProfile() {
-    print('Saved Name: ${_nameController.text}');
-    print('Saved Email: ${_emailController.text}');
-    print('Saved Date of Birth: ${_dobController.text}');
-    print('Profile Picture: ${_isDefaultImage ? "Default" : "Alternative"}');
-  }
+  print('Saved Name: ${_nameController.text}');
+  print('Saved Email: ${_emailController.text}');
+  print('Saved Date of Birth: ${_dobController.text}');
+  print('Profile Picture: ${_isDefaultImage ? "Default" : "Alternative"}');
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Thông tin đã được lưu thành công!'),
+      backgroundColor: Colors.green,
+    ),
+  );
+}
 }

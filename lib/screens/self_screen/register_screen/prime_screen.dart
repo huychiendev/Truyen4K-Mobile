@@ -136,7 +136,26 @@ class _PremiumScreen1State extends State<PremiumScreen1> {
 
   Widget _buildButton(String text) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Thông báo'),
+              content: Text('Đang Miễn Phí cứ đọc thoải mái !'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Đóng AlertDialog
+                    Navigator.pop(context); // Quay lại màn hình trước đó
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      },
       child: Text(text),
       style: ElevatedButton.styleFrom(
         minimumSize: Size(double.infinity, 50),

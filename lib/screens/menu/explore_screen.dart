@@ -128,17 +128,19 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: 'Tìm kiếm truyện, tác giả...',
-        prefixIcon: Icon(Icons.search),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+ Widget _buildSearchBar() {
+  return TextField(
+    decoration: InputDecoration(
+      hintText: 'Tìm kiếm truyện, tác giả...',
+      hintStyle: TextStyle(color: Colors.grey), // Đổi màu chữ gợi ý thành màu trắng
+      prefixIcon: Icon(Icons.search, color: Colors.white), // Đổi màu icon thành màu trắng
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
       ),
-    );
-  }
+    ),
+    style: TextStyle(color: Colors.white), // Đổi màu chữ nhập vào thành màu trắng
+  );
+}
 
 
   Widget _buildRecommendations() {

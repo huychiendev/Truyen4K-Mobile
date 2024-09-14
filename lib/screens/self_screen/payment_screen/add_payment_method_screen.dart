@@ -84,6 +84,7 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
     );
   }
 
+
   void _addPaymentMethod() {
     if (_cardNumberController.text.isNotEmpty &&
         _cardHolderController.text.isNotEmpty &&

@@ -1,3 +1,5 @@
+// lib/screens/item_truyen/all_items_screen.dart
+
 import 'package:flutter/material.dart';
 import 'novel_detail_screen.dart';
 
@@ -47,7 +49,7 @@ class AllItemsScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => NovelDetailScreen(
-                    novelData: item,
+                    slug: item['slug'],
                   ),
                 ),
               );
@@ -87,52 +89,51 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              coverImage,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                  'assets/metruyen.jpg',
-                  fit: BoxFit.cover,
-                );
-              },
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        image: DecorationImage(
+          image: AssetImage(coverImage),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            color: Colors.black.withOpacity(0.7),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  author,
+                  style: TextStyle(color: Colors.white),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.star, color: Colors.yellow, size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      rating.toStringAsFixed(1),
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        Text(
-          author,
-          style: TextStyle(color: Colors.white),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        Row(
-          children: [
-            Icon(Icons.star, color: Colors.yellow, size: 16),
-            SizedBox(width: 4),
-            Text(
-              rating.toStringAsFixed(1),
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

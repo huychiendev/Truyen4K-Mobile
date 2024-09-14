@@ -1,19 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class NovelDetailScreen extends StatelessWidget {
-  final Map<String, dynamic> novelData;
+import 'chapter_detail_screen.dart';
 
-  const NovelDetailScreen({Key? key, required this.novelData}) : super(key: key);
+class NovelDetailScreen extends StatefulWidget {
+  final String slug;
+
+  const NovelDetailScreen({Key? key, required this.slug}) : super(key: key);
+
+  @override
+  _NovelDetailScreenState createState() => _NovelDetailScreenState();
+}
+
+class _NovelDetailScreenState extends State<NovelDetailScreen> {
+  Map<String, dynamic>? novelData;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNovelDetails();
+  }
+
+  Future<void> _fetchNovelDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/novels/${widget.slug}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        novelData = jsonDecode(utf8.decode(response.bodyBytes));
+      });
+    } else {
+      throw Exception('Failed to load novel details');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showSnackbar(context, novelData['title'] ?? 'Unknown Title', novelData['author'] ?? 'Unknown Author');
-    });
+    if (novelData == null) {
+      return Scaffold(
+        backgroundColor: Colors.black87,
+        appBar: AppBar(
+          title: Text('Loading...'),
+          backgroundColor: Colors.transparent,
+        ),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final uniqueGenres = novelData!['genreNames'].toSet().toList();
 
     return Scaffold(
+      backgroundColor: Colors.black87,
       appBar: AppBar(
-        title: Text(novelData['title'] ?? 'Novel Details'),
+        title: Text(
+          novelData!['title'] ?? 'Novel Details',
+          style: TextStyle(color: Colors.white), // Updated text color
+        ),
+
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -21,7 +75,7 @@ class NovelDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCoverImage(novelData['coverImage'] ?? ''),
+            _buildCoverImage(novelData!['thumbnailImageUrl'] ?? ''),
             Padding(
               padding: EdgeInsets.all(16),
               child: Column(
@@ -31,45 +85,44 @@ class NovelDetailScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          novelData['title'] ?? 'Unknown Title',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          novelData!['title'] ?? 'Unknown Title',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.bookmark_border),
-                        onPressed: () {},
+                        icon: Icon(Icons.bookmark_border, color: Colors.white),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Truyện chưa được note lại đâu nhá !'),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
-                  Text(novelData['author'] ?? 'Unknown Author', style: TextStyle(fontSize: 16)),
-                  Text('${novelData['chapterCount'] ?? 'Unknown'} Chương', style: TextStyle(color: Colors.grey)),
+                  Text('Tác giả: ' + novelData!['authorName'] ?? 'Unknown Author',
+                      style: TextStyle(fontSize: 16, color: Colors.white70)),
+                  Text('${novelData!['totalChapters'] ?? 'Unknown'} Chương',
+                      style: TextStyle(color: Colors.grey)),
                   SizedBox(height: 8),
                   _buildStatsRow(
-                      novelData['readTime']?.toString() ?? 'Unknown',
-                      (novelData['rating'] as num?)?.toDouble() ?? 0.0,
-                      (novelData['likes'] as num?)?.toInt() ?? 0
-                  ),
+                      novelData!['readCounts']?.toString() ?? 'Unknown',
+                      (novelData!['averageRatings'] as num?)?.toDouble() ?? 0.0,
+                      (novelData!['likeCounts'] as num?)?.toInt() ?? 0),
                   SizedBox(height: 16),
                   Text(
                     'Về cuốn truyện này',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    novelData['description'] ?? 'No description available.',
-                    style: TextStyle(fontSize: 16),
+                    novelData!['description'] ?? 'No description available.',
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
                   ),
                   SizedBox(height: 16),
-                  _buildTags(novelData['tags'] as List<dynamic>? ?? []),
-                  SizedBox(height: 24),
-                  Text(
-                    '${novelData['availableChapters'] ?? 'Unknown'} Chapters',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  _buildChapterList(novelData['chapters'] as List<dynamic>? ?? []),
-                  SizedBox(height: 16),
-                  _buildSimilarContent(novelData['similarNovels'] as List<dynamic>? ?? []),
+                  _buildTags(uniqueGenres),
                 ],
               ),
             ),
@@ -77,14 +130,6 @@ class NovelDetailScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _showSnackbar(BuildContext context, String title, String author) {
-    final snackBar = SnackBar(
-      content: Text('Title: $title\nAuthor: $author'),
-      duration: Duration(seconds: 3),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   Widget _buildCoverImage(String imageUrl) {
@@ -99,7 +144,7 @@ class NovelDetailScreen extends StatelessWidget {
             return Container(
               height: 250,
               color: Colors.grey,
-              child: Center(child: Text('Image not available')),
+              child: Center(child: Text('Image not available', style: TextStyle(color: Colors.white))),
             );
           },
         ),
@@ -114,22 +159,44 @@ class NovelDetailScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    icon: Icon(Icons.book),
-                    label: Text('Đọc tiếp'),
-                    onPressed: () {},
+                    icon: Icon(Icons.book, color: Colors.white),
+                    label: Text('Đọc tiếp', style: TextStyle(color: Colors.white)),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChapterDetailScreen(
+                            slug: widget.slug,
+                            chapterNo: 1, // Start with the first chapter
+                            novelName: novelData!['title'] ?? 'Unknown Title',
+                          ),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Color(0xFF232538),
                     ),
                   ),
                 ),
                 SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton.icon(
-                    icon: Icon(Icons.headphones),
-                    label: Text('Nghe Tiếp'),
-                    onPressed: () {},
+                    icon: Icon(Icons.headphones, color: Colors.white),
+                    label: Text('Nghe Tiếp', style: TextStyle(color: Colors.white)),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChapterDetailScreen(
+                            slug: widget.slug,
+                            chapterNo: 1, // Start with the first chapter
+                            novelName: novelData!['title'] ?? 'Unknown Title',
+                          ),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[700],
+                      backgroundColor: Color(0xFF232538),
                     ),
                   ),
                 ),
@@ -141,12 +208,12 @@ class NovelDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow(String readTime, double rating, int likes) {
+  Widget _buildStatsRow(String readCounts, double rating, int likes) {
     return Row(
       children: [
         Icon(Icons.access_time, size: 16, color: Colors.grey),
         SizedBox(width: 4),
-        Text(readTime, style: TextStyle(color: Colors.grey)),
+        Text(readCounts, style: TextStyle(color: Colors.grey)),
         SizedBox(width: 16),
         Icon(Icons.star, size: 16, color: Colors.grey),
         SizedBox(width: 4),
@@ -175,106 +242,6 @@ class NovelDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(tag, style: TextStyle(color: Colors.white)),
-    );
-  }
-
-  Widget _buildChapterList(List<dynamic> chapters) {
-    return Column(
-      children: chapters.map((chapter) {
-        final chapterData = chapter as Map<String, dynamic>;
-        return _buildChapterItem(
-          chapterData['number']?.toString() ?? 'Unknown',
-          chapterData['title']?.toString() ?? 'Untitled',
-          chapterData['isLocked'] as bool? ?? false,
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildChapterItem(String number, String title, bool isLocked) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Text(
-            number,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(fontSize: 16),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (isLocked)
-                  Text(
-                    'Đăng ký để mở khóa chương này',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-              ],
-            ),
-          ),
-          Icon(isLocked ? Icons.lock : Icons.play_arrow, color: Colors.grey),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSimilarContent(List<dynamic> similarNovels) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Nội dung tương tự', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            TextButton(
-              child: Text('Tất cả >', style: TextStyle(color: Colors.blue)),
-              onPressed: () {},
-            ),
-          ],
-        ),
-        SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: similarNovels.map((novel) {
-              final novelData = novel as Map<String, dynamic>;
-              return _buildSimilarItem(
-                novelData['title']?.toString() ?? 'Untitled',
-                novelData['author']?.toString() ?? 'Unknown Author',
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSimilarItem(String title, String author) {
-    return Container(
-      width: 120,
-      margin: EdgeInsets.only(right: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 160,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-          Text(author, style: TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
-        ],
-      ),
     );
   }
 }

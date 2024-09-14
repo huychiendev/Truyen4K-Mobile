@@ -5,20 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/banner_section.dart';
 import '../item_truyen/all_items_screen.dart';
+import '../item_truyen/novel_detail_screen.dart';
 
 // DataService
 class DataService {
-  static Future<Map<String, dynamic>> loadData() async {
-    // Assume this method loads your local JSON data
-    // For now, we'll return a mock structure
-    return {
-      "circularIcons": ["Mới", "Hot", "Hoàn thành", "Kiếm hiệp"],
-      "sections": [
-        {"title": "Xu hướng", "items": []}
-      ]
-    };
-  }
-  static Future<List<dynamic>> fetchNewReleasedNovels() async {
+  static Future<Map<String, dynamic>> fetchNewReleasedNovels() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
@@ -30,13 +21,13 @@ class DataService {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      return jsonData['content'] as List<dynamic>;
+      return jsonDecode(utf8.decode(response.bodyBytes));
     } else {
       throw Exception('Failed to load new released novels');
     }
   }
-  static Future<List<dynamic>> fetchTrendingNovels() async {
+
+  static Future<Map<String, dynamic>> fetchTrendingNovels() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
@@ -48,14 +39,13 @@ class DataService {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      return jsonData['content'] as List<dynamic>;
+      return jsonDecode(utf8.decode(response.bodyBytes));
     } else {
       throw Exception('Failed to load trending novels');
     }
   }
 
-  static Future<List<dynamic>> fetchTopReadNovels() async {
+  static Future<Map<String, dynamic>> fetchTopReadNovels() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
@@ -67,8 +57,7 @@ class DataService {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      return jsonData['content'] as List<dynamic>;
+      return jsonDecode(utf8.decode(response.bodyBytes));
     } else {
       throw Exception('Failed to load top-read novels');
     }
@@ -117,8 +106,13 @@ class HomeScreen extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
-              return Center(child: Text('Error loading data: ${snapshot.error}'));
+              return Center(
+                  child: Text('Error loading data: ${snapshot.error}'));
             } else if (snapshot.hasData) {
+              // Print the data
+              print('New Released Novels: ${snapshot.data!['newReleased']}');
+              print('Trending Novels: ${snapshot.data!['trending']}');
+              print('Top Read Novels: ${snapshot.data!['topRead']}');
               return _buildBody(context, snapshot.data!);
             } else {
               return Center(child: Text('No data available'));
@@ -132,22 +126,15 @@ class HomeScreen extends StatelessWidget {
   }
 
   Future<Map<String, dynamic>> _loadAllData() async {
-    final jsonData = await DataService.loadData();
+    final newReleasedNovels = await DataService.fetchNewReleasedNovels();
     final trendingNovels = await DataService.fetchTrendingNovels();
     final topReadNovels = await DataService.fetchTopReadNovels();
-    final newReleasedNovels = await DataService.fetchNewReleasedNovels();
 
-    jsonData['sections'][0]['items'] = trendingNovels;
-    jsonData['sections'].add({
-      'title': 'Truyện Đọc Nhiều Nhất',
-      'items': topReadNovels,
-    });
-    jsonData['sections'].add({
-      'title': 'Truyện Mới Cập Nhật',
-      'items': newReleasedNovels,
-    });
-
-    return jsonData;
+    return {
+      'newReleased': newReleasedNovels,
+      'trending': trendingNovels,
+      'topRead': topReadNovels,
+    };
   }
 
   Widget _buildBody(BuildContext context, Map<String, dynamic> data) {
@@ -155,7 +142,7 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTopSection(data['circularIcons'] as List<dynamic>?),
+          _buildTopSection(data['newReleased']['content'] as List<dynamic>?),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
@@ -176,12 +163,21 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
                 SizedBox(height: 16),
-                for (var section in data['sections'] as List<dynamic>)
-                  HorizontalListSection(
-                    title: section['title'] as String,
-                    items: section['items'] as List<dynamic>,
-                    category: section['title'] as String,
-                  ),
+                HorizontalListSection(
+                  title: 'Xu hướng',
+                  items: data['trending']['content'] as List<dynamic>,
+                  category: 'Xu hướng',
+                ),
+                HorizontalListSection(
+                  title: 'Truyện Đọc Nhiều Nhất',
+                  items: data['topRead']['content'] as List<dynamic>,
+                  category: 'Truyện Đọc Nhiều Nhất',
+                ),
+                HorizontalListSection(
+                  title: 'Truyện Mới Cập Nhật',
+                  items: data['newReleased']['content'] as List<dynamic>,
+                  category: 'Truyện Mới Cập Nhật',
+                ),
               ],
             ),
           ),
@@ -196,7 +192,9 @@ class HomeScreen extends StatelessWidget {
       height: 100,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        children: titles.map((title) => CircularIcon(label: title as String)).toList(),
+        children: titles
+            .map((title) => CircularIcon(label: title['title'] as String))
+            .toList(),
       ),
     );
   }
@@ -282,10 +280,12 @@ class _CustomButtonsState extends State<CustomButtons> {
   }) {
     final isSelected = selectedButtonIndex == index;
     return ElevatedButton.icon(
-      icon: Icon(icon, color: isSelected ? Colors.black : Colors.white, size: 18),
+      icon:
+          Icon(icon, color: isSelected ? Colors.black : Colors.white, size: 18),
       label: Text(
         label,
-        style: TextStyle(color: isSelected ? Colors.black : Colors.white, fontSize: 12),
+        style: TextStyle(
+            color: isSelected ? Colors.black : Colors.white, fontSize: 12),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: isSelected ? Colors.green : Colors.grey[800],
@@ -302,7 +302,6 @@ class _CustomButtonsState extends State<CustomButtons> {
     );
   }
 }
-
 
 class HorizontalListSection extends StatelessWidget {
   final String title;
@@ -328,7 +327,10 @@ class HorizontalListSection extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               TextButton(
                 onPressed: () {
@@ -355,7 +357,9 @@ class HorizontalListSection extends StatelessWidget {
             height: 200,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              children: items.map((item) => _buildHorizontalListItem(context, item)).toList(),
+              children: items
+                  .map((item) => _buildHorizontalListItem(context, item))
+                  .toList(),
             ),
           ),
         ],
@@ -366,7 +370,12 @@ class HorizontalListSection extends StatelessWidget {
   Widget _buildHorizontalListItem(BuildContext context, Map<String, dynamic> item) {
     return GestureDetector(
       onTap: () {
-        print('Bạn đã nhấn vào ${item['title']}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => NovelDetailScreen(slug: item['slug']),
+          ),
+        );
       },
       child: Padding(
         padding: const EdgeInsets.only(right: 16.0),
@@ -379,7 +388,7 @@ class HorizontalListSection extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 image: DecorationImage(
-                  image: NetworkImage(item['thumbnailImageUrl'] ?? 'https://via.placeholder.com/120x140'),
+                  image: NetworkImage(item['thumbnailImageUrl']),
                   fit: BoxFit.cover,
                 ),
               ),

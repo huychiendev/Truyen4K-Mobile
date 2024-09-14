@@ -1,10 +1,14 @@
-
-import 'package:apptruyenonline/screens/menu/home_screen.dart';
 import 'package:flutter/material.dart';
-
 import '../../menu/profile_screen.dart';
 
-class PremiumScreen1 extends StatelessWidget {
+class PremiumScreen1 extends StatefulWidget {
+  @override
+  _PremiumScreen1State createState() => _PremiumScreen1State();
+}
+
+class _PremiumScreen1State extends State<PremiumScreen1> {
+  bool isMonthlySelected = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,9 +48,9 @@ class PremiumScreen1 extends StatelessWidget {
               SizedBox(height: 20),
               Row(
                 children: [
-                  Expanded(child: _buildPlanCard(false)),
-                  SizedBox(width: 10),
                   Expanded(child: _buildPlanCard(true)),
+                  SizedBox(width: 10),
+                  Expanded(child: _buildPlanCard(false)),
                 ],
               ),
               SizedBox(height: 20),
@@ -77,44 +81,55 @@ class PremiumScreen1 extends StatelessWidget {
       ),
     );
   }
-  Widget _buildPlanCard(bool isSelected) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(10),
-        border: isSelected ? Border.all(color: Colors.green, width: 2) : null,
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Hàng Tháng',
-            style: TextStyle(color: Colors.white, fontSize: 16),
-          ),
-          SizedBox(height: 10),
-          Text(
-            isSelected ? '37.500 VND' : '50.000 VND',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+
+  Widget _buildPlanCard(bool isMonthly) {
+    bool isSelected = isMonthly == isMonthlySelected;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          isMonthlySelected = isMonthly;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(10),
+          border: isSelected ? Border.all(color: Colors.green, width: 2) : null,
+        ),
+        child: Column(
+          children: [
+            Text(
+              isMonthly ? 'Hàng Tháng' : 'Hàng Năm',
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Thanh toán và định kỳ\nhàng tháng\nHủy bất cứ lúc nào',
-            style: TextStyle(color: Colors.grey[400], fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
-          if (isSelected)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Text(
-                'Tiết kiệm 75%',
-                style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+            SizedBox(height: 10),
+            Text(
+              isMonthly ? (isSelected ? '37.500 VND' : '50.000 VND') : (isSelected ? '450.000 VND' : '600.000 VND'),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-        ],
+            SizedBox(height: 10),
+            Text(
+              isMonthly
+                  ? 'Thanh toán và định kỳ\nhàng tháng\nHủy bất cứ lúc nào'
+                  : 'Thanh toán và định kỳ\nhàng năm\nHủy bất cứ lúc nào',
+              style: TextStyle(color: Colors.grey[400], fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+            if (isSelected)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  'Tiết kiệm 75%',
+                  style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

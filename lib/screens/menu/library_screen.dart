@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../item_truyen/novel_detail_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   @override
@@ -14,7 +17,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/new-released?page=0&size=100'),
+      Uri.parse('http://14.225.207.58:9898/api/novels/new-released?page=0&size=20'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -22,7 +25,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      return data['content'];
+      List<dynamic> novels = data['content'];
+      novels.shuffle(Random());
+      return novels;
     } else {
       throw Exception('Failed to load new released novels');
     }
@@ -31,7 +36,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 5,
       child: Scaffold(
         backgroundColor: Colors.black87,
         appBar: AppBar(
@@ -95,6 +100,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   style: TextStyle(color: Colors.white),
                 ),
                 trailing: Icon(Icons.more_vert),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NovelDetailScreen(slug: novel['slug']),
+                    ),
+                  );
+                },
               );
             },
           );
@@ -134,6 +147,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   style: TextStyle(color: Colors.white),
                 ),
                 trailing: Icon(Icons.file_download_done),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NovelDetailScreen(slug: novel['slug']),
+                    ),
+                  );
+                },
               );
             },
           );
@@ -173,6 +194,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   style: TextStyle(color: Colors.white),
                 ),
                 trailing: Icon(Icons.history),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NovelDetailScreen(slug: novel['slug']),
+                    ),
+                  );
+                },
               );
             },
           );

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LibraryScreen extends StatefulWidget {
   @override
@@ -6,6 +9,25 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
+  Future<List<dynamic>> fetchNovels() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/novels/new-released?page=0&size=100'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      return data['content'];
+    } else {
+      throw Exception('Failed to load new released novels');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -25,9 +47,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             labelColor: Colors.green,
             unselectedLabelColor: Colors.grey,
             tabs: [
-              Tab(text: 'Đang đọc'),
-              Tab(text: 'Đã tải'),
-              Tab(text: 'Lịch sử'),
+              Tab(text: 'Truyện đã lưu'),
+              Tab(text: 'Đang nghe'),
+              Tab(text: 'Đã Đọc Xong'),
             ],
           ),
         ),
@@ -43,77 +65,119 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   Widget _buildReadingList() {
-    // Placeholder for reading list
-    return ListView.builder(
-      itemCount: 10,
-      itemBuilder: (context, index) {
-        return ListTile(
-          leading: Container(
-            width: 50,
-            height: 70,
-            color: Colors.grey[300],
-          ),
-          title: Text('Truyện đang đọc ${index + 1}',
-              style: TextStyle(color: Colors.white),
-        ),// Changed text color to white),
-          subtitle: Text('Tác giả ${index + 1}',
-              style: TextStyle(color: Colors.white),
-          ),// Changed text color to white),
-          trailing: Icon(Icons.more_vert),
-        );
+    return FutureBuilder<List<dynamic>>(
+      future: fetchNovels(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text('No novels found.'));
+        } else {
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              final novel = snapshot.data![index];
+              return ListTile(
+                leading: Container(
+                  width: 50,
+                  height: 70,
+                  color: Colors.grey[300],
+                  child: Image.network(novel['thumbnailImageUrl'], fit: BoxFit.cover),
+                ),
+                title: Text(
+                  novel['title'],
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  novel['authorName'],
+                  style: TextStyle(color: Colors.white),
+                ),
+                trailing: Icon(Icons.more_vert),
+              );
+            },
+          );
+        }
       },
     );
   }
 
   Widget _buildDownloadedList() {
-    // Placeholder for downloaded list
-    return ListView.builder(
-      itemCount: 5,
-      itemBuilder: (context, index) {
-        return ListTile(
-          leading: Container(
-            width: 50,
-            height: 70,
-            color: Colors.grey[300],
-          ),
-          title: Text(
-            'Truyện đã tải ${index + 1}',
-            style: TextStyle(color: Colors.white), // Changed text color to white
-          ),
-          subtitle: Text(
-            'Tác giả ${index + 1}',
-            style: TextStyle(color: Colors.white), // Changed subtitle text color to white
-          ),
-          trailing: Icon(Icons.file_download_done),
-        );
+    return FutureBuilder<List<dynamic>>(
+      future: fetchNovels(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text('No novels found.'));
+        } else {
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              final novel = snapshot.data![index];
+              return ListTile(
+                leading: Container(
+                  width: 50,
+                  height: 70,
+                  color: Colors.grey[300],
+                  child: Image.network(novel['thumbnailImageUrl'], fit: BoxFit.cover),
+                ),
+                title: Text(
+                  novel['title'],
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  novel['authorName'],
+                  style: TextStyle(color: Colors.white),
+                ),
+                trailing: Icon(Icons.file_download_done),
+              );
+            },
+          );
+        }
       },
     );
   }
-
 
   Widget _buildHistoryList() {
-    // Placeholder for history list
-    return ListView.builder(
-      itemCount: 15,
-      itemBuilder: (context, index) {
-        return ListTile(
-          leading: Container(
-            width: 50,
-            height: 70,
-            color: Colors.grey[300],
-          ),
-          title: Text(
-            'Truyện đã đọc ${index + 1}',
-            style: TextStyle(color: Colors.white), // Đổi màu chữ thành trắng
-          ),
-          subtitle: Text(
-            'Đọc lúc: ${DateTime.now().subtract(Duration(days: index)).toString()}',
-            style: TextStyle(color: Colors.white), // Đổi màu chữ thành trắng
-          ),
-          trailing: Icon(Icons.history),
-        );
+    return FutureBuilder<List<dynamic>>(
+      future: fetchNovels(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text('No novels found.'));
+        } else {
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              final novel = snapshot.data![index];
+              return ListTile(
+                leading: Container(
+                  width: 50,
+                  height: 70,
+                  color: Colors.grey[300],
+                  child: Image.network(novel['thumbnailImageUrl'], fit: BoxFit.cover),
+                ),
+                title: Text(
+                  novel['title'],
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  'Đọc lúc: ${DateTime.now().subtract(Duration(days: index)).toString()}',
+                  style: TextStyle(color: Colors.white),
+                ),
+                trailing: Icon(Icons.history),
+              );
+            },
+          );
+        }
       },
     );
   }
-
 }

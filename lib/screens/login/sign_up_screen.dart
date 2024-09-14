@@ -82,8 +82,8 @@ class SignUpScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 20),
                           CustomTextField(
-                            label: 'Tên',
-                            hint: 'Nhập tên của bạn',
+                            label: 'Username',
+                            hint: 'Nhập tên đăng nhập của bạn',
                             controller: _usernameController,
                           ),
                           SizedBox(height: 15),

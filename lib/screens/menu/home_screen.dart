@@ -15,7 +15,7 @@ class DataService {
 
     final response = await http.get(
       Uri.parse(
-          'http://14.225.207.58:9898/api/novels/new-released?page=0&size=10'),
+          'http://14.225.207.58:9898/api/novels/new-released?page=0&size=100'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -33,7 +33,7 @@ class DataService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/trending?page=0&size=10'),
+      Uri.parse('http://14.225.207.58:9898/api/novels/trending?page=0&size=100'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -51,7 +51,7 @@ class DataService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/top-read?page=0&size=10'),
+      Uri.parse('http://14.225.207.58:9898/api/novels/top-read?page=0&size=100'),
       headers: {
         'Authorization': 'Bearer $token',
       },

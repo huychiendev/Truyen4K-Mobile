@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../item_truyen/novel_detail_screen.dart';
+import '../item_truyen/view_screen/novel_detail_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   @override
@@ -36,7 +36,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      length: 3,
       child: Scaffold(
         backgroundColor: Colors.black87,
         appBar: AppBar(

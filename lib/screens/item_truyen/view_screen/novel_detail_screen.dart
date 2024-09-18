@@ -1,9 +1,10 @@
+import 'package:apptruyenonline/screens/item_truyen/view_screen/mobile_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'chapter_detail_screen.dart';
+import '../chapter_detail_screen.dart';
+import 'miniplayer.dart'; // Import MiniPlayer
 
 class NovelDetailScreen extends StatefulWidget {
   final String slug;
@@ -16,11 +17,29 @@ class NovelDetailScreen extends StatefulWidget {
 
 class _NovelDetailScreenState extends State<NovelDetailScreen> {
   Map<String, dynamic>? novelData;
+  bool _showMiniPlayer = false;
+  bool _isPlaying = false;
+  double _progress = 0.0;
+  String? currentChapter;
+  String? currentNovelName;
 
   @override
   void initState() {
     super.initState();
     _fetchNovelDetails();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      setState(() {
+        _showMiniPlayer = args['showMiniPlayer'] ?? false;
+        currentChapter = args['currentChapter'];
+        currentNovelName = args['currentNovelName'];
+      });
+    }
   }
 
   Future<void> _fetchNovelDetails() async {
@@ -65,9 +84,8 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       appBar: AppBar(
         title: Text(
           novelData!['title'] ?? 'Novel Details',
-          style: TextStyle(color: Colors.white), // Updated text color
+          style: TextStyle(color: Colors.white),
         ),
-
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -129,6 +147,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: _showMiniPlayer ? _buildMiniPlayer() : null,
     );
   }
 
@@ -144,7 +163,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
             return Container(
               height: 250,
               color: Colors.grey,
-              child: Center(child: Text('Image not available', style: TextStyle(color: Colors.white))),
+              child: Center(child: Text('Hình ảnh không khả dụng', style: TextStyle(color: Colors.white))),
             );
           },
         ),
@@ -182,18 +201,28 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: Icon(Icons.headphones, color: Colors.white),
-                    label: Text('Nghe Tiếp', style: TextStyle(color: Colors.white)),
-                    onPressed: () {
-                      Navigator.push(
+                    label: Text('Nghe tiếp', style: TextStyle(color: Colors.white)),
+                    onPressed: () async {
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ChapterDetailScreen(
+                          builder: (context) => MobileAudioPlayer(
                             slug: widget.slug,
-                            chapterNo: 1, // Start with the first chapter
-                            novelName: novelData!['title'] ?? 'Unknown Title',
+                            chapterNo: currentChapter != null ? int.parse(currentChapter!) : 1,
+                            novelName: novelData!['title'] ?? 'Tiêu đề không xác định',
+                            thumbnailImageUrl: novelData!['thumbnailImageUrl'] ?? '',
                           ),
                         ),
                       );
+                      if (result != null && result is Map<String, dynamic>) {
+                        setState(() {
+                          _showMiniPlayer = result['showMiniPlayer'] ?? false;
+                          currentChapter = result['currentChapter'];
+                          currentNovelName = result['currentNovelName'];
+                          _isPlaying = result['isPlaying'] ?? false;
+                          _progress = result['progress'] ?? 0.0;
+                        });
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF232538),
@@ -205,6 +234,46 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildMiniPlayer() {
+    return MiniPlayer(
+      title: currentNovelName ?? '',
+      artist: 'Chương ${currentChapter ?? ''}',
+      imageUrl: novelData?['thumbnailImageUrl'] ?? '',
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MobileAudioPlayer(
+              slug: widget.slug,
+              chapterNo: currentChapter != null ? int.parse(currentChapter!) : 1,
+              novelName: novelData!['title'] ?? 'Tiêu đề không xác định',
+              thumbnailImageUrl: novelData!['thumbnailImageUrl'] ?? '',
+            ),
+          ),
+        );
+        if (result != null && result is Map<String, dynamic>) {
+          setState(() {
+            _showMiniPlayer = result['showMiniPlayer'] ?? false;
+            currentChapter = result['currentChapter'];
+            currentNovelName = result['currentNovelName'];
+            _isPlaying = result['isPlaying'] ?? false;
+            _progress = result['progress'] ?? 0.0;
+          });
+        }
+      },
+      onPlayPause: () {
+        setState(() {
+          _isPlaying = !_isPlaying;
+        });
+        // Xử lý việc phát/tạm dừng
+      },
+      onNext: () {
+        // Xử lý chuyển sang chương tiếp theo
+      },
+      isPlaying: _isPlaying,
     );
   }
 

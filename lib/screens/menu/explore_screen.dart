@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../item_truyen/all_items_screen.dart'; // Đảm bảo import đúng file
-import '../item_truyen/novel_detail_screen.dart';
+import '../item_truyen/all_items_screen.dart';
+import '../item_truyen/view_screen/novel_detail_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:apptruyenonline/screens/item_truyen/view_screen/miniplayer.dart'; // Import MiniPlayer
 
 class ExploreScreen extends StatefulWidget {
   @override
@@ -22,6 +23,12 @@ const Map<int, String> genreMap = {
 };
 
 class _ExploreScreenState extends State<ExploreScreen> {
+  bool _showMiniPlayer = false;
+  String _currentTitle = '';
+  String _currentArtist = '';
+  String _currentImageUrl = '';
+  bool _isPlaying = false;
+
   Future<List<Novel>> fetchTopReadNovels() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
@@ -35,7 +42,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     if (response.statusCode == 200) {
       List<dynamic> data =
-          jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      jsonDecode(utf8.decode(response.bodyBytes))['content'];
       return data.map((json) => Novel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load novels');
@@ -56,7 +63,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     if (response.statusCode == 200) {
       List<dynamic> data =
-          jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      jsonDecode(utf8.decode(response.bodyBytes))['content'];
       return data.map((json) => Novel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load novels');
@@ -92,27 +99,64 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSearchBar(), // search
-              SizedBox(height: 20),
-              _buildCategories(), // Thể loại
-              SizedBox(height: 20),
-              _buildRecommendations(), // Đề xuất
-              SizedBox(height: 20),
-              _buildSwordplay(), // Truyện Kiếm Hiệp
-              SizedBox(height: 20),
-              _buildNovel(), // Truyện Mới
-              SizedBox(height: 20),
-            ],
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSearchBar(), // search
+                  SizedBox(height: 20),
+                  _buildCategories(), // Thể loại
+                  SizedBox(height: 20),
+                  _buildRecommendations(), // Đề xuất
+                  SizedBox(height: 20),
+                  _buildSwordplay(), // Truyện Kiếm Hiệp
+                  SizedBox(height: 20),
+                  _buildNovel(), // Truyện Mới
+                  SizedBox(height: 20),
+                ],
+              ),
+            ),
           ),
-        ),
+          if (_showMiniPlayer)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: MiniPlayer(
+                title: _currentTitle,
+                artist: _currentArtist,
+                imageUrl: _currentImageUrl,
+                isPlaying: _isPlaying,
+                onTap: () {
+                  print('MiniPlayer tapped');
+                },
+                onPlayPause: () {
+                  setState(() {
+                    _isPlaying = !_isPlaying;
+                  });
+                },
+                onNext: () {
+                  print('Next button pressed');
+                },
+              ),
+            ),
+        ],
       ),
     );
+  }
+
+  void _startPlayingNovel(Novel novel) {
+    setState(() {
+      _showMiniPlayer = true;
+      _currentTitle = novel.title;
+      _currentArtist = 'Chương 1'; // Hoặc bất kỳ thông tin chương nào phù hợp
+      _currentImageUrl = novel.thumbnailImageUrl;
+      _isPlaying = true;
+    });
   }
 
   AppBar _buildAppBar() {
@@ -128,20 +172,19 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
- Widget _buildSearchBar() {
-  return TextField(
-    decoration: InputDecoration(
-      hintText: 'Tìm kiếm truyện, tác giả...',
-      hintStyle: TextStyle(color: Colors.grey), // Đổi màu chữ gợi ý thành màu trắng
-      prefixIcon: Icon(Icons.search, color: Colors.white), // Đổi màu icon thành màu trắng
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+  Widget _buildSearchBar() {
+    return TextField(
+      decoration: InputDecoration(
+        hintText: 'Tìm kiếm truyện, tác giả...',
+        hintStyle: TextStyle(color: Colors.grey), // Đổi màu chữ gợi ý thành màu trắng
+        prefixIcon: Icon(Icons.search, color: Colors.white), // Đổi màu icon thành màu trắng
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
       ),
-    ),
-    style: TextStyle(color: Colors.white), // Đổi màu chữ nhập vào thành màu trắng
-  );
-}
-
+      style: TextStyle(color: Colors.white), // Đổi màu chữ nhập vào thành màu trắng
+    );
+  }
 
   Widget _buildRecommendations() {
     return FutureBuilder<List<Novel>>(
@@ -348,16 +391,28 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 120,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: DecorationImage(
-                        image: NetworkImage(novel.thumbnailImageUrl),
-                        fit: BoxFit.cover,
+                  Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: NetworkImage(novel.thumbnailImageUrl),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                    ),
+                      Positioned(
+                        right: 5,
+                        bottom: 5,
+                        child: IconButton(
+                          icon: Icon(Icons.play_circle_filled, color: Colors.white),
+                          onPressed: () => _startPlayingNovel(novel),
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 8),
                   Container(
@@ -392,7 +447,6 @@ class Novel {
     required this.description,
     required this.thumbnailImageUrl,
     required this.averageRatings,
-
   });
 
   factory Novel.fromJson(Map<String, dynamic> json) {

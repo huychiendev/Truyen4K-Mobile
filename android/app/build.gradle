@@ -28,7 +28,6 @@ android {
     }
 
 
-
     signingConfigs {
         release {
             keyAlias 'upload'
@@ -39,9 +38,14 @@ android {
     }
     buildTypes {
         release {
+            // Đặt false nếu bạn không cần tối ưu hóa mã nguồn và tài nguyên
+            minifyEnabled false
+            shrinkResources false
             signingConfig signingConfigs.release
         }
     }
+
+
 }
 
 flutter {

@@ -43,3 +43,19 @@ app.*.map.json
 /android/app/release
 !/assets/
 !/assets/
+
+
+
+
+
+# Bỏ qua thư mục web
+web/
+
+# Bỏ qua thư mục windows
+windows/
+
+# Bỏ qua thư mục linux
+linux/
+
+# Bỏ qua thư mục macos
+macos/

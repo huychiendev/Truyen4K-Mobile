@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../widgets/banner_section.dart';
 import '../item_truyen/all_items_screen.dart';
+import '../item_truyen/view_screen/miniplayer.dart';
 import '../item_truyen/view_screen/novel_detail_screen.dart';
 
 // DataService
@@ -66,7 +66,18 @@ class DataService {
 }
 
 // HomeScreen
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _showMiniPlayer = false;
+  String _currentTitle = '';
+  String _currentArtist = '';
+  String _currentImageUrl = '';
+  bool _isPlaying = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,26 +113,49 @@ class HomeScreen extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _loadAllData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              return Center(
-                  child: Text('Error loading data: ${snapshot.error}'));
-            } else if (snapshot.hasData) {
-              // Print the data
-              // print('New Released Novels: ${snapshot.data!['newReleased']}');
-              // print('Trending Novels: ${snapshot.data!['trending']}');
-              // print('Top Read Novels: ${snapshot.data!['topRead']}');
-              return _buildBody(context, snapshot.data!);
-            } else {
-              return Center(child: Text('No data available'));
-            }
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
+      body: Stack(
+        children: [
+          FutureBuilder<Map<String, dynamic>>(
+            future: _loadAllData(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.hasError) {
+                  return Center(
+                      child: Text('Error loading data: ${snapshot.error}'));
+                } else if (snapshot.hasData) {
+                  return _buildBody(context, snapshot.data!);
+                } else {
+                  return Center(child: Text('No data available'));
+                }
+              } else {
+                return Center(child: CircularProgressIndicator());
+              }
+            },
+          ),
+          if (_showMiniPlayer)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: MiniPlayer(
+                title: _currentTitle,
+                artist: _currentArtist,
+                imageUrl: _currentImageUrl,
+                isPlaying: _isPlaying,
+                onTap: () {
+                  print('MiniPlayer tapped');
+                },
+                onPlayPause: () {
+                  setState(() {
+                    _isPlaying = !_isPlaying;
+                  });
+                },
+                onNext: () {
+                  print('Next button pressed');
+                },
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -168,16 +202,19 @@ class HomeScreen extends StatelessWidget {
                   title: 'Xu hướng',
                   items: data['trending']['content'] as List<dynamic>,
                   category: 'Xu hướng',
+                  onPlayTap: _startPlayingNovel,
                 ),
                 HorizontalListSection(
                   title: 'Truyện Đọc Nhiều Nhất',
                   items: data['topRead']['content'] as List<dynamic>,
                   category: 'Truyện Đọc Nhiều Nhất',
+                  onPlayTap: _startPlayingNovel,
                 ),
                 HorizontalListSection(
                   title: 'Truyện Mới Cập Nhật',
                   items: data['newReleased']['content'] as List<dynamic>,
                   category: 'Truyện Mới Cập Nhật',
+                  onPlayTap: _startPlayingNovel,
                 ),
               ],
             ),
@@ -185,6 +222,16 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _startPlayingNovel(Map<String, dynamic> novel) {
+    setState(() {
+      _showMiniPlayer = true;
+      _currentTitle = novel['title'];
+      _currentArtist = 'Chương 1'; // Or any appropriate chapter info
+      _currentImageUrl = novel['thumbnailImageUrl'];
+      _isPlaying = true;
+    });
   }
 
   Widget _buildTopSection(BuildContext context, List<dynamic>? titles) {
@@ -370,12 +417,14 @@ class HorizontalListSection extends StatelessWidget {
   final String title;
   final List<dynamic> items;
   final String category;
+  final Function(Map<String, dynamic>) onPlayTap;
 
   const HorizontalListSection({
     Key? key,
     required this.title,
     required this.items,
     required this.category,
+    required this.onPlayTap,
   }) : super(key: key);
 
   @override
@@ -397,13 +446,12 @@ class HorizontalListSection extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  // Điều hướng tới màn hình "Xem Tất Cả" và truyền cả items lẫn category
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => AllItemsScreen(
                         items: items,
-                        category: category, // Truyền danh mục
+                        category: category,
                       ),
                     ),
                   );
@@ -446,16 +494,28 @@ class HorizontalListSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 120,
-              height: 140,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: NetworkImage(item['thumbnailImageUrl']),
-                  fit: BoxFit.cover,
+            Stack(
+              children: [
+                Container(
+                  width: 120,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: NetworkImage(item['thumbnailImageUrl']),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(
+                  right: 5,
+                  bottom: 5,
+                  child: IconButton(
+                    icon: Icon(Icons.play_circle_filled, color: Colors.white),
+                    onPressed: () => onPlayTap(item),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 8),
             Container(

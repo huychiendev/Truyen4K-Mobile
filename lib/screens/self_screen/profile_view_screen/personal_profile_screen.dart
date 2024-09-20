@@ -27,8 +27,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
     int? userId = prefs.getInt('user_id');
-    print('Token: $token');
-    print('User ID: $userId');
+    // print('Token: $token');
+    // print('User ID: $userId');
 
     if (token != null && userId != null) {
       try {

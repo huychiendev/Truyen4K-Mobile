@@ -111,9 +111,9 @@ class HomeScreen extends StatelessWidget {
                   child: Text('Error loading data: ${snapshot.error}'));
             } else if (snapshot.hasData) {
               // Print the data
-              print('New Released Novels: ${snapshot.data!['newReleased']}');
-              print('Trending Novels: ${snapshot.data!['trending']}');
-              print('Top Read Novels: ${snapshot.data!['topRead']}');
+              // print('New Released Novels: ${snapshot.data!['newReleased']}');
+              // print('Trending Novels: ${snapshot.data!['trending']}');
+              // print('Top Read Novels: ${snapshot.data!['topRead']}');
               return _buildBody(context, snapshot.data!);
             } else {
               return Center(child: Text('No data available'));

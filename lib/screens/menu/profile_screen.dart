@@ -1,12 +1,61 @@
-import 'package:apptruyenonline/screens/self_screen/payment_screen/account_payment_screen.dart';
-import 'package:apptruyenonline/screens/self_screen/register_screen/prime2_screen.dart';
-import 'package:apptruyenonline/screens/self_screen/register_screen/prime_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:apptruyenonline/screens/self_screen/profile_view_screen/personal_profile_screen.dart';
+import '../../models/ProfileModel.dart';
 import '../login/login_screen.dart';
+import '../self_screen/payment_screen/account_payment_screen.dart';
+import '../self_screen/register_screen/prime_screen.dart';
 
+class ProfileScreen extends StatefulWidget {
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
 
-class ProfileScreen extends StatelessWidget {
+class _ProfileScreenState extends State<ProfileScreen> {
+  String? _email;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAndSaveProfileData();
+  }
+
+  Future<void> _fetchAndSaveProfileData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    if (token != null) {
+      final response = await http.get(
+        Uri.parse('http://14.225.207.58:9898/api/v1/profile/huychien'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final profileData = json.decode(response.body);
+        UserProfile userProfile = UserProfile.fromJson(profileData);
+
+        // Save profile data and id to SharedPreferences
+        await prefs.setString('user_profile', json.encode(userProfile.toJson()));
+        await prefs.setInt('user_id', userProfile.id);
+
+        // Load email from SharedPreferences
+        setState(() {
+          _email = userProfile.email;
+        });
+
+        // Print the user ID to verify
+        print('User ID: ${userProfile.id}');
+      } else {
+        // Handle error
+        print('Failed to load profile data');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +81,7 @@ class ProfileScreen extends StatelessWidget {
                   radius: 25,
                 ),
                 title: Text('LVuxyz', style: TextStyle(color: Colors.white)),
-                subtitle: Text('lvu.byte@gmail.com',
+                subtitle: Text(_email ?? 'Loading...',
                     style: TextStyle(color: Colors.grey)),
                 trailing: Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -48,7 +97,7 @@ class ProfileScreen extends StatelessWidget {
               Divider(color: Colors.grey.shade800),
               _buildMenuItem(Icons.person, 'Xem hồ sơ', context),
               _buildMenuItem(Icons.payment, 'Quản lý thanh toán', context),
-              _buildMenuItem(Icons.star, 'Đăng ký', context), // Sửa lại chữ "Đăng ký"
+              _buildMenuItem(Icons.star, 'Đăng ký', context),
               _buildMenuItem(Icons.help, 'Câu hỏi - hỏi đáp', context),
               _buildMenuItem(Icons.exit_to_app, 'Đăng xuất', context),
               Spacer(),
@@ -61,7 +110,8 @@ class ProfileScreen extends StatelessWidget {
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: Text('Thông báo'),
-                          content: Text('Tính năng đang phát triển \n Thông cảm heng :)'),
+                          content: Text(
+                              'Tính năng đang phát triển \n Thông cảm heng :)'),
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -103,7 +153,7 @@ class ProfileScreen extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: TextStyle(color: Colors.white)),
-      onTap: () {
+      onTap: () async {
         if (title == 'Xem hồ sơ') {
           Navigator.push(
             context,
@@ -138,6 +188,8 @@ class ProfileScreen extends StatelessWidget {
             },
           );
         } else if (title == 'Đăng xuất') {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.remove('auth_token');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -147,10 +199,3 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-
-// else if (title == 'Câu hỏi - hỏi đáp') {
-  // Navigator.push(
-  // context,
-  // MaterialPageRoute(builder: (context) => FAQScreen()), // Thay thế FAQScreen bằng màn hình câu hỏi - hỏi đáp
-  // );
-  // }

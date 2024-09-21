@@ -220,21 +220,41 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   }
 
   Widget _buildMiniPlayer(BuildContext context, PlayerState playerState) {
-    return MiniPlayer(
-      title: playerState.currentTitle,
-      artist: playerState.currentArtist,
-      imageUrl: playerState.currentImageUrl,
-      isPlaying: playerState.isPlaying,
-      onTap: () => _onMiniPlayerTap(context, playerState),
-      onPlayPause: () {
+    return Dismissible(
+      key: Key('mini-player'),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) {
         context.read<PlayerState>().updatePlayerState(
-          isPlaying: !playerState.isPlaying,
+          showMiniPlayer: false,
         );
       },
-      onNext: () {
-        // Xử lý logic chuyển sang chương tiếp theo
-        print('Next button pressed');
-      },
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.only(right: 16.0),
+        child: Icon(Icons.close, color: Colors.white),
+      ),
+      child: MiniPlayer(
+        title: playerState.currentTitle,
+        artist: playerState.currentArtist,
+        imageUrl: playerState.currentImageUrl,
+        isPlaying: playerState.isPlaying,
+        onTap: () => _onMiniPlayerTap(context, playerState),
+        onPlayPause: () {
+          context.read<PlayerState>().updatePlayerState(
+            isPlaying: !playerState.isPlaying,
+          );
+        },
+        onNext: () {
+          // Xử lý logic chuyển sang chương tiếp theo
+          print('Next button pressed');
+        },
+        onDismiss: () {
+          context.read<PlayerState>().updatePlayerState(
+            showMiniPlayer: false,
+          );
+        },
+      ),
     );
   }
 

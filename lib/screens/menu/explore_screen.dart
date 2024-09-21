@@ -95,6 +95,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black87,
@@ -107,15 +108,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSearchBar(), // search
+                  _buildSearchBar(),
                   SizedBox(height: 20),
-                  _buildCategories(), // Thể loại
+                  _buildCategories(),
                   SizedBox(height: 20),
-                  _buildRecommendations(), // Đề xuất
+                  _buildRecommendations(),
                   SizedBox(height: 20),
-                  _buildSwordplay(), // Truyện Kiếm Hiệp
+                  _buildSwordplay(),
                   SizedBox(height: 20),
-                  _buildNovel(), // Truyện Mới
+                  _buildNovel(),
                   SizedBox(height: 20),
                 ],
               ),
@@ -126,22 +127,42 @@ class _ExploreScreenState extends State<ExploreScreen> {
               left: 0,
               right: 0,
               bottom: 0,
-              child: MiniPlayer(
-                title: _currentTitle,
-                artist: _currentArtist,
-                imageUrl: _currentImageUrl,
-                isPlaying: _isPlaying,
-                onTap: () {
-                  print('MiniPlayer tapped');
-                },
-                onPlayPause: () {
+              child: Dismissible(
+                key: Key('mini-player'),
+                direction: DismissDirection.endToStart,
+                onDismissed: (_) {
                   setState(() {
-                    _isPlaying = !_isPlaying;
+                    _showMiniPlayer = false;
                   });
                 },
-                onNext: () {
-                  print('Next button pressed');
-                },
+                background: Container(
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  padding: EdgeInsets.only(right: 16.0),
+                  child: Icon(Icons.close, color: Colors.white),
+                ),
+                child: MiniPlayer(
+                  title: _currentTitle,
+                  artist: _currentArtist,
+                  imageUrl: _currentImageUrl,
+                  isPlaying: _isPlaying,
+                  onTap: () {
+                    print('MiniPlayer tapped');
+                  },
+                  onPlayPause: () {
+                    setState(() {
+                      _isPlaying = !_isPlaying;
+                    });
+                  },
+                  onNext: () {
+                    print('Next button pressed');
+                  },
+                  onDismiss: () {
+                    setState(() {
+                      _showMiniPlayer = false;
+                    });
+                  },
+                ),
               ),
             ),
         ],

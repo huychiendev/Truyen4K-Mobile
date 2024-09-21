@@ -233,10 +233,31 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     return MiniPlayer(
       title: currentNovelName ?? '',
       artist: 'Chương ${currentChapter ?? ''}',
-      imageUrl: 'https://example.com/novel_thumbnail.jpg', // URL động
+      imageUrl: novelData?['thumbnailImageUrl'] ?? 'https://example.com/novel_thumbnail.jpg',
       isPlaying: _isPlaying,
       onTap: () {
         // Xử lý khi nhấn vào MiniPlayer
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MobileAudioPlayer(
+              slug: widget.slug,
+              chapterNo: currentChapter != null ? int.parse(currentChapter!) : 1,
+              novelName: currentNovelName ?? '',
+              thumbnailImageUrl: novelData?['thumbnailImageUrl'] ?? '',
+            ),
+          ),
+        ).then((result) {
+          if (result != null && result is Map<String, dynamic>) {
+            setState(() {
+              _showMiniPlayer = result['showMiniPlayer'] ?? false;
+              currentChapter = result['currentChapter'];
+              currentNovelName = result['currentNovelName'];
+              _isPlaying = result['isPlaying'] ?? false;
+              _progress = result['progress'] ?? 0.0;
+            });
+          }
+        });
       },
       onPlayPause: () {
         setState(() {
@@ -245,6 +266,11 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       },
       onNext: () {
         // Xử lý chức năng chuyển sang chương tiếp theo
+      },
+      onDismiss: () {
+        setState(() {
+          _showMiniPlayer = false;
+        });
       },
     );
   }

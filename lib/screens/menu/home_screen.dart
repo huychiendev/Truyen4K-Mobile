@@ -7,16 +7,15 @@ import '../item_truyen/all_items_screen.dart';
 import '../item_truyen/view_screen/miniplayer.dart';
 import '../item_truyen/view_screen/novel_detail_screen.dart';
 import 'package:apptruyenonline/screens/item_truyen/view_screen/mobile_audio_player.dart';
+import 'package:provider/provider.dart';
 
-// DataService
 class DataService {
-  static Future<Map<String, dynamic>> fetchNewReleasedNovels() async {
+  static Future<Map<String, dynamic>> fetchData(String endpoint) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse(
-          'http://14.225.207.58:9898/api/novels/new-released?page=0&size=100'),
+      Uri.parse('http://14.225.207.58:9898/api/$endpoint'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -25,54 +24,25 @@ class DataService {
     if (response.statusCode == 200) {
       return jsonDecode(utf8.decode(response.bodyBytes));
     } else {
-      throw Exception('Failed to load new released novels');
+      throw Exception('Failed to load data from $endpoint');
     }
+  }
+
+  static Future<Map<String, dynamic>> fetchNewReleasedNovels() async {
+    return fetchData('novels/new-released?page=0&size=100');
   }
 
   static Future<Map<String, dynamic>> fetchTrendingNovels() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
-
-    final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/trending?page=0&size=100'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
-    } else {
-      throw Exception('Failed to load trending novels');
-    }
+    return fetchData('novels/trending?page=0&size=100');
   }
 
   static Future<Map<String, dynamic>> fetchTopReadNovels() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
-
-    final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/top-read?page=0&size=100'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
-    } else {
-      throw Exception('Failed to load top-read novels');
-    }
+    return fetchData('novels/top-read?page=0&size=100');
   }
 }
 
-// HomeScreen
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
+// Tạo một PlayerState để quản lý trạng thái của player
+class PlayerState with ChangeNotifier {
   bool _showMiniPlayer = false;
   String _currentTitle = '';
   String _currentArtist = '';
@@ -80,85 +50,53 @@ class _HomeScreenState extends State<HomeScreen> {
   String _currentSlug = '';
   bool _isPlaying = false;
 
+  bool get showMiniPlayer => _showMiniPlayer;
+  String get currentTitle => _currentTitle;
+  String get currentArtist => _currentArtist;
+  String get currentImageUrl => _currentImageUrl;
+  String get currentSlug => _currentSlug;
+  bool get isPlaying => _isPlaying;
+
+  void updatePlayerState({
+    bool? showMiniPlayer,
+    String? currentTitle,
+    String? currentArtist,
+    String? currentImageUrl,
+    String? currentSlug,
+    bool? isPlaying,
+  }) {
+    _showMiniPlayer = showMiniPlayer ?? _showMiniPlayer;
+    _currentTitle = currentTitle ?? _currentTitle;
+    _currentArtist = currentArtist ?? _currentArtist;
+    _currentImageUrl = currentImageUrl ?? _currentImageUrl;
+    _currentSlug = currentSlug ?? _currentSlug;
+    _isPlaying = isPlaying ?? _isPlaying;
+    notifyListeners();
+  }
+}
+
+class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black87,
-      appBar: AppBar(
-        title: GestureDetector(
-          onTap: () async {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            String? token = prefs.getString('auth_token');
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text('Token của bạn'),
-                  content: Text(token ?? 'Không tìm thấy token!'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text('Đóng'),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-          child: Text('Audio Truyện 247'),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      body: Stack(
-        children: [
-          FutureBuilder<Map<String, dynamic>>(
-            future: _loadAllData(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                if (snapshot.hasError) {
-                  return Center(
-                      child: Text('Error loading data: ${snapshot.error}'));
-                } else if (snapshot.hasData) {
-                  return _buildBody(context, snapshot.data!);
-                } else {
-                  return Center(child: Text('No data available'));
-                }
-              } else {
-                return Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
-          if (_showMiniPlayer)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: MiniPlayer(
-                title: _currentTitle,
-                artist: _currentArtist,
-                imageUrl: _currentImageUrl,
-                isPlaying: _isPlaying,
-                onTap: _onMiniPlayerTap,
-                onPlayPause: () {
-                  setState(() {
-                    _isPlaying = !_isPlaying;
-                  });
-                },
-                onNext: () {
-                  // Xử lý logic chuyển sang chương tiếp theo
-                  print('Next button pressed');
-                },
-              ),
-            ),
-        ],
-      ),
+    return ChangeNotifierProvider(
+      create: (context) => PlayerState(),
+      child: _HomeScreenContent(),
     );
+  }
+}
+
+class _HomeScreenContent extends StatefulWidget {
+  @override
+  _HomeScreenContentState createState() => _HomeScreenContentState();
+}
+
+class _HomeScreenContentState extends State<_HomeScreenContent> {
+  late Future<Map<String, dynamic>> _dataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _dataFuture = _loadAllData();
   }
 
   Future<Map<String, dynamic>> _loadAllData() async {
@@ -173,13 +111,54 @@ class _HomeScreenState extends State<HomeScreen> {
     };
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black87,
+      appBar: AppBar(
+        title: Text('Audio Truyện 247'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _dataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return Center(child: Text('Error loading data: ${snapshot.error}'));
+            } else if (snapshot.hasData) {
+              return _buildBody(context, snapshot.data!);
+            } else {
+              return Center(child: Text('No data available'));
+            }
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+      bottomNavigationBar: Consumer<PlayerState>(
+        builder: (context, playerState, child) {
+          return playerState.showMiniPlayer
+              ? _buildMiniPlayer(context, playerState)
+              : SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
   Widget _buildBody(BuildContext context, Map<String, dynamic> data) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTopSection(context, data['newReleased']['content'] as List<dynamic>?),
-          Padding(
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: _buildTopSection(context, data['newReleased']['content'] as List<dynamic>?),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,62 +178,85 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 SizedBox(height: 16),
-                HorizontalListSection(
-                  title: 'Xu hướng',
-                  items: data['trending']['content'] as List<dynamic>,
-                  category: 'Xu hướng',
-                  onPlayTap: _startPlayingNovel,
-                ),
-                HorizontalListSection(
-                  title: 'Truyện Đọc Nhiều Nhất',
-                  items: data['topRead']['content'] as List<dynamic>,
-                  category: 'Truyện Đọc Nhiều Nhất',
-                  onPlayTap: _startPlayingNovel,
-                ),
-                HorizontalListSection(
-                  title: 'Truyện Mới Cập Nhật',
-                  items: data['newReleased']['content'] as List<dynamic>,
-                  category: 'Truyện Mới Cập Nhật',
-                  onPlayTap: _startPlayingNovel,
-                ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+        SliverList(
+          delegate: SliverChildListDelegate([
+            HorizontalListSection(
+              title: 'Xu hướng',
+              items: data['trending']['content'] as List<dynamic>,
+              category: 'Xu hướng',
+              onPlayTap: (novel) => _startPlayingNovel(context, novel),
+            ),
+            HorizontalListSection(
+              title: 'Truyện Đọc Nhiều Nhất',
+              items: data['topRead']['content'] as List<dynamic>,
+              category: 'Truyện Đọc Nhiều Nhất',
+              onPlayTap: (novel) => _startPlayingNovel(context, novel),
+            ),
+            HorizontalListSection(
+              title: 'Truyện Mới Cập Nhật',
+              items: data['newReleased']['content'] as List<dynamic>,
+              category: 'Truyện Mới Cập Nhật',
+              onPlayTap: (novel) => _startPlayingNovel(context, novel),
+            ),
+          ]),
+        ),
+      ],
     );
   }
 
-  void _startPlayingNovel(Map<String, dynamic> novel) {
-    setState(() {
-      _showMiniPlayer = true;
-      _currentTitle = novel['title'];
-      _currentArtist = 'Chương 1'; // Or any appropriate chapter info
-      _currentImageUrl = novel['thumbnailImageUrl'];
-      _currentSlug = novel['slug'];
-      _isPlaying = true;
-    });
+  void _startPlayingNovel(BuildContext context, Map<String, dynamic> novel) {
+    context.read<PlayerState>().updatePlayerState(
+      showMiniPlayer: true,
+      currentTitle: novel['title'],
+      currentArtist: 'Chương 1',
+      currentImageUrl: novel['thumbnailImageUrl'],
+      currentSlug: novel['slug'],
+      isPlaying: true,
+    );
   }
 
-  void _onMiniPlayerTap() {
+  Widget _buildMiniPlayer(BuildContext context, PlayerState playerState) {
+    return MiniPlayer(
+      title: playerState.currentTitle,
+      artist: playerState.currentArtist,
+      imageUrl: playerState.currentImageUrl,
+      isPlaying: playerState.isPlaying,
+      onTap: () => _onMiniPlayerTap(context, playerState),
+      onPlayPause: () {
+        context.read<PlayerState>().updatePlayerState(
+          isPlaying: !playerState.isPlaying,
+        );
+      },
+      onNext: () {
+        // Xử lý logic chuyển sang chương tiếp theo
+        print('Next button pressed');
+      },
+    );
+  }
+
+  void _onMiniPlayerTap(BuildContext context, PlayerState playerState) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MobileAudioPlayer(
-          slug: _currentSlug,
+          slug: playerState.currentSlug,
           chapterNo: 1, // Hoặc số chương hiện tại
-          novelName: _currentTitle,
-          thumbnailImageUrl: _currentImageUrl,
+          novelName: playerState.currentTitle,
+          thumbnailImageUrl: playerState.currentImageUrl,
         ),
       ),
     ).then((result) {
       if (result != null && result is Map<String, dynamic>) {
-        setState(() {
-          _showMiniPlayer = result['showMiniPlayer'] ?? false;
-          _currentTitle = result['currentNovelName'] ?? _currentTitle;
-          _currentArtist = 'Chương ${result['currentChapter'] ?? '1'}';
-          _isPlaying = result['isPlaying'] ?? _isPlaying;
-        });
+        context.read<PlayerState>().updatePlayerState(
+          showMiniPlayer: result['showMiniPlayer'] ?? false,
+          currentTitle: result['currentNovelName'] ?? playerState.currentTitle,
+          currentArtist: 'Chương ${result['currentChapter'] ?? '1'}',
+          isPlaying: result['isPlaying'] ?? playerState.isPlaying,
+        );
       }
     });
   }
@@ -263,35 +265,37 @@ class _HomeScreenState extends State<HomeScreen> {
     if (titles == null || titles.isEmpty) return SizedBox.shrink();
     return Container(
       height: 100,
-      child: SingleChildScrollView(
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        child: Row(
-          children: titles.map((title) {
-            final label = title['title'] as String? ?? 'No Title';
-            final imageUrl = title['thumbnailImageUrl'] as String? ?? 'https://via.placeholder.com/60';
-            final slug = title['slug'] as String? ?? '';
+        itemCount: titles.length,
+        itemBuilder: (context, index) {
+          final title = titles[index];
+          final label = title['title'] as String? ?? 'No Title';
+          final imageUrl = title['thumbnailImageUrl'] as String? ?? 'https://via.placeholder.com/60';
+          final slug = title['slug'] as String? ?? '';
 
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NovelDetailScreen(slug: slug),
-                  ),
-                );
-              },
-              child: CircularIcon(
-                label: label,
-                imageUrl: imageUrl,
-              ),
-            );
-          }).toList(),
-        ),
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NovelDetailScreen(slug: slug),
+                ),
+              );
+            },
+            child: CircularIcon(
+              label: label,
+              imageUrl: imageUrl,
+            ),
+          );
+        },
       ),
     );
   }
 }
 
+// Các class khác như CircularIcon, CustomButtons, và HorizontalListSection
+// giữ nguyên như trong code ban đầu
 // CircularIcon
 class CircularIcon extends StatelessWidget {
   final String label;

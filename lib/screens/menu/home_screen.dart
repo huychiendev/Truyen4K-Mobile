@@ -1,3 +1,4 @@
+import 'package:apptruyenonline/screens/menu/audio_player_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -78,10 +79,7 @@ class PlayerState with ChangeNotifier {
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => PlayerState(),
-      child: _HomeScreenContent(),
-    );
+    return _HomeScreenContent();
   }
 }
 
@@ -141,15 +139,16 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
           }
         },
       ),
-      bottomNavigationBar: Consumer<PlayerState>(
-        builder: (context, playerState, child) {
-          return playerState.showMiniPlayer
-              ? _buildMiniPlayer(context, playerState)
+      bottomNavigationBar: Consumer<AudioPlayerProvider>(
+        builder: (context, audioPlayerProvider, child) {
+          return audioPlayerProvider.showMiniPlayer
+              ? _buildMiniPlayer(context, audioPlayerProvider)
               : SizedBox.shrink();
         },
       ),
     );
   }
+
 
   Widget _buildBody(BuildContext context, Map<String, dynamic> data) {
     return CustomScrollView(
@@ -209,7 +208,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   }
 
   void _startPlayingNovel(BuildContext context, Map<String, dynamic> novel) {
-    context.read<PlayerState>().updatePlayerState(
+    context.read<AudioPlayerProvider>().updatePlayerState(
       showMiniPlayer: true,
       currentTitle: novel['title'],
       currentArtist: 'Chương 1',
@@ -219,14 +218,12 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     );
   }
 
-  Widget _buildMiniPlayer(BuildContext context, PlayerState playerState) {
+  Widget _buildMiniPlayer(BuildContext context, AudioPlayerProvider audioPlayerProvider) {
     return Dismissible(
       key: Key('mini-player'),
       direction: DismissDirection.endToStart,
       onDismissed: (_) {
-        context.read<PlayerState>().updatePlayerState(
-          showMiniPlayer: false,
-        );
+        audioPlayerProvider.updatePlayerState(showMiniPlayer: false);
       },
       background: Container(
         color: Colors.red,
@@ -235,47 +232,43 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
         child: Icon(Icons.close, color: Colors.white),
       ),
       child: MiniPlayer(
-        title: playerState.currentTitle,
-        artist: playerState.currentArtist,
-        imageUrl: playerState.currentImageUrl,
-        isPlaying: playerState.isPlaying,
-        onTap: () => _onMiniPlayerTap(context, playerState),
+        title: audioPlayerProvider.currentTitle,
+        artist: audioPlayerProvider.currentArtist,
+        imageUrl: audioPlayerProvider.currentImageUrl,
+        isPlaying: audioPlayerProvider.isPlaying,
+        onTap: () => _onMiniPlayerTap(context, audioPlayerProvider),
         onPlayPause: () {
-          context.read<PlayerState>().updatePlayerState(
-            isPlaying: !playerState.isPlaying,
+          audioPlayerProvider.updatePlayerState(
+            isPlaying: !audioPlayerProvider.isPlaying,
           );
         },
         onNext: () {
-          // Xử lý logic chuyển sang chương tiếp theo
-          print('Next button pressed');
+          // Handle next track
         },
         onDismiss: () {
-          context.read<PlayerState>().updatePlayerState(
-            showMiniPlayer: false,
-          );
+          audioPlayerProvider.updatePlayerState(showMiniPlayer: false);
         },
       ),
     );
   }
-
-  void _onMiniPlayerTap(BuildContext context, PlayerState playerState) {
+  void _onMiniPlayerTap(BuildContext context, AudioPlayerProvider audioPlayerProvider) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MobileAudioPlayer(
-          slug: playerState.currentSlug,
-          chapterNo: 1, // Hoặc số chương hiện tại
-          novelName: playerState.currentTitle,
-          thumbnailImageUrl: playerState.currentImageUrl,
+          slug: audioPlayerProvider.currentSlug,
+          chapterNo: 1,
+          novelName: audioPlayerProvider.currentTitle,
+          thumbnailImageUrl: audioPlayerProvider.currentImageUrl,
         ),
       ),
     ).then((result) {
       if (result != null && result is Map<String, dynamic>) {
-        context.read<PlayerState>().updatePlayerState(
+        audioPlayerProvider.updatePlayerState(
           showMiniPlayer: result['showMiniPlayer'] ?? false,
-          currentTitle: result['currentNovelName'] ?? playerState.currentTitle,
+          currentTitle: result['currentNovelName'] ?? audioPlayerProvider.currentTitle,
           currentArtist: 'Chương ${result['currentChapter'] ?? '1'}',
-          isPlaying: result['isPlaying'] ?? playerState.isPlaying,
+          isPlaying: result['isPlaying'] ?? audioPlayerProvider.isPlaying,
         );
       }
     });

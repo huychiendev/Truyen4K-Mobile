@@ -5,12 +5,14 @@ class HorizontalListSection extends StatelessWidget {
   final String title;
   final List<dynamic> items;
   final String category;
+  final Function(Map<String, dynamic>) onPlayTap;  // Thêm tham số onPlayTap
 
   const HorizontalListSection({
     Key? key,
     required this.title,
     required this.items,
     required this.category,
+    required this.onPlayTap,  // Đảm bảo onPlayTap được yêu cầu
   }) : super(key: key);
 
   @override
@@ -29,13 +31,12 @@ class HorizontalListSection extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  // Điều hướng tới màn hình "Xem Tất Cả" và truyền cả items lẫn category
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => AllItemsScreen(
                         items: items,
-                        category: category, // Truyền danh mục
+                        category: category,
                       ),
                     ),
                   );
@@ -70,16 +71,28 @@ class HorizontalListSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 120,
-              height: 140,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: NetworkImage(item['thumbnailImageUrl']),
-                  fit: BoxFit.cover,
+            Stack(
+              children: [
+                Container(
+                  width: 120,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: NetworkImage(item['thumbnailImageUrl']),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(
+                  right: 5,
+                  bottom: 5,
+                  child: IconButton(
+                    icon: Icon(Icons.play_circle_filled, color: Colors.white),
+                    onPressed: () => onPlayTap(item),  // Gọi hàm onPlayTap khi nhấn nút Play
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 8),
             Container(

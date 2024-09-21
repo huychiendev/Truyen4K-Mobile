@@ -6,6 +6,7 @@ import '../../widgets/banner_section.dart';
 import '../item_truyen/all_items_screen.dart';
 import '../item_truyen/view_screen/miniplayer.dart';
 import '../item_truyen/view_screen/novel_detail_screen.dart';
+import 'package:apptruyenonline/screens/item_truyen/view_screen/mobile_audio_player.dart';
 
 // DataService
 class DataService {
@@ -76,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _currentTitle = '';
   String _currentArtist = '';
   String _currentImageUrl = '';
+  String _currentSlug = '';
   bool _isPlaying = false;
 
   @override
@@ -142,15 +144,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 artist: _currentArtist,
                 imageUrl: _currentImageUrl,
                 isPlaying: _isPlaying,
-                onTap: () {
-                  print('MiniPlayer tapped');
-                },
+                onTap: _onMiniPlayerTap,
                 onPlayPause: () {
                   setState(() {
                     _isPlaying = !_isPlaying;
                   });
                 },
                 onNext: () {
+                  // Xử lý logic chuyển sang chương tiếp theo
                   print('Next button pressed');
                 },
               ),
@@ -230,7 +231,31 @@ class _HomeScreenState extends State<HomeScreen> {
       _currentTitle = novel['title'];
       _currentArtist = 'Chương 1'; // Or any appropriate chapter info
       _currentImageUrl = novel['thumbnailImageUrl'];
+      _currentSlug = novel['slug'];
       _isPlaying = true;
+    });
+  }
+
+  void _onMiniPlayerTap() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MobileAudioPlayer(
+          slug: _currentSlug,
+          chapterNo: 1, // Hoặc số chương hiện tại
+          novelName: _currentTitle,
+          thumbnailImageUrl: _currentImageUrl,
+        ),
+      ),
+    ).then((result) {
+      if (result != null && result is Map<String, dynamic>) {
+        setState(() {
+          _showMiniPlayer = result['showMiniPlayer'] ?? false;
+          _currentTitle = result['currentNovelName'] ?? _currentTitle;
+          _currentArtist = 'Chương ${result['currentChapter'] ?? '1'}';
+          _isPlaying = result['isPlaying'] ?? _isPlaying;
+        });
+      }
     });
   }
 
@@ -444,6 +469,7 @@ class HorizontalListSection extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: Colors.white),
               ),
+
               TextButton(
                 onPressed: () {
                   Navigator.push(

@@ -16,30 +16,17 @@ class NovelDetailScreen extends StatefulWidget {
 }
 
 class _NovelDetailScreenState extends State<NovelDetailScreen> {
-  Map<String, dynamic>? novelData;
   bool _showMiniPlayer = false;
-  bool _isPlaying = false;
-  double _progress = 0.0;
   String? currentChapter;
   String? currentNovelName;
+  bool _isPlaying = false;
+  double _progress = 0.0;
+  Map<String, dynamic>? novelData;
 
   @override
   void initState() {
     super.initState();
     _fetchNovelDetails();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null) {
-      setState(() {
-        _showMiniPlayer = args['showMiniPlayer'] ?? false;
-        currentChapter = args['currentChapter'];
-        currentNovelName = args['currentNovelName'];
-      });
-    }
   }
 
   Future<void> _fetchNovelDetails() async {
@@ -64,90 +51,93 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (novelData == null) {
-      return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, {
+          'showMiniPlayer': _showMiniPlayer,
+          'currentChapter': currentChapter,
+          'currentNovelName': currentNovelName,
+          'isPlaying': _isPlaying,
+          'progress': _progress,
+        });
+        return false;
+      },
+      child: novelData == null
+          ? Center(child: CircularProgressIndicator())
+          : Scaffold(
         backgroundColor: Colors.black87,
         appBar: AppBar(
-          title: Text('Loading...'),
+          title: Text(
+            novelData!['title'] ?? 'Novel Details',
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.transparent,
+          elevation: 0,
         ),
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    final uniqueGenres = novelData!['genreNames'].toSet().toList();
-
-    return Scaffold(
-      backgroundColor: Colors.black87,
-      appBar: AppBar(
-        title: Text(
-          novelData!['title'] ?? 'Novel Details',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildCoverImage(novelData!['thumbnailImageUrl'] ?? ''),
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          novelData!['title'] ?? 'Unknown Title',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildCoverImage(novelData!['thumbnailImageUrl'] ?? ''),
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            novelData!['title'] ?? 'Unknown Title',
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.bookmark_border, color: Colors.white),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Truyện chưa được note lại đâu nhá !'),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  Text('Tác giả: ' + novelData!['authorName'] ?? 'Unknown Author',
-                      style: TextStyle(fontSize: 16, color: Colors.white70)),
-                  Text('${novelData!['totalChapters'] ?? 'Unknown'} Chương',
-                      style: TextStyle(color: Colors.grey)),
-                  SizedBox(height: 8),
-                  _buildStatsRow(
-                      novelData!['readCounts']?.toString() ?? 'Unknown',
-                      (novelData!['averageRatings'] as num?)?.toDouble() ?? 0.0,
-                      (novelData!['likeCounts'] as num?)?.toInt() ?? 0),
-                  SizedBox(height: 16),
-                  Text(
-                    'Về cuốn truyện này',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    novelData!['description'] ?? 'No description available.',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
-                  ),
-                  SizedBox(height: 16),
-                  _buildTags(uniqueGenres),
-                ],
+                        IconButton(
+                          icon: Icon(Icons.bookmark_border,
+                              color: Colors.white),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    'Truyện chưa được note lại đâu nhá !'),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    Text('Tác giả: ' + (novelData!['authorName'] ?? 'Unknown Author'),
+                        style: TextStyle(fontSize: 16, color: Colors.white70)),
+                    Text('${novelData!['totalChapters'] ?? 'Unknown'} Chương',
+                        style: TextStyle(color: Colors.grey)),
+                    SizedBox(height: 8),
+                    _buildStatsRow(
+                        novelData!['readCounts']?.toString() ?? 'Unknown',
+                        (novelData!['averageRatings'] as num?)?.toDouble() ?? 0.0,
+                        (novelData!['likeCounts'] as num?)?.toInt() ?? 0),
+                    SizedBox(height: 16),
+                    Text(
+                      'Về cuốn truyện này',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      novelData!['description'] ?? 'No description available.',
+                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                    ),
+                    SizedBox(height: 16),
+                    _buildTags(novelData!['genreNames'].toSet().toList()),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        bottomNavigationBar: _showMiniPlayer ? _buildMiniPlayer() : null,
       ),
-      bottomNavigationBar: _showMiniPlayer ? _buildMiniPlayer() : null,
     );
   }
 
@@ -163,7 +153,9 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
             return Container(
               height: 250,
               color: Colors.grey,
-              child: Center(child: Text('Hình ảnh không khả dụng', style: TextStyle(color: Colors.white))),
+              child: Center(
+                  child: Text('Hình ảnh không khả dụng',
+                      style: TextStyle(color: Colors.white))),
             );
           },
         ),
@@ -241,39 +233,19 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     return MiniPlayer(
       title: currentNovelName ?? '',
       artist: 'Chương ${currentChapter ?? ''}',
-      imageUrl: novelData?['thumbnailImageUrl'] ?? '',
-      onTap: () async {
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MobileAudioPlayer(
-              slug: widget.slug,
-              chapterNo: currentChapter != null ? int.parse(currentChapter!) : 1,
-              novelName: novelData!['title'] ?? 'Tiêu đề không xác định',
-              thumbnailImageUrl: novelData!['thumbnailImageUrl'] ?? '',
-            ),
-          ),
-        );
-        if (result != null && result is Map<String, dynamic>) {
-          setState(() {
-            _showMiniPlayer = result['showMiniPlayer'] ?? false;
-            currentChapter = result['currentChapter'];
-            currentNovelName = result['currentNovelName'];
-            _isPlaying = result['isPlaying'] ?? false;
-            _progress = result['progress'] ?? 0.0;
-          });
-        }
+      imageUrl: 'https://example.com/novel_thumbnail.jpg', // URL động
+      isPlaying: _isPlaying,
+      onTap: () {
+        // Xử lý khi nhấn vào MiniPlayer
       },
       onPlayPause: () {
         setState(() {
-          _isPlaying = !_isPlaying;
+          _isPlaying = !_isPlaying; // Chuyển đổi trạng thái play/pause
         });
-        // Xử lý việc phát/tạm dừng
       },
       onNext: () {
-        // Xử lý chuyển sang chương tiếp theo
+        // Xử lý chức năng chuyển sang chương tiếp theo
       },
-      isPlaying: _isPlaying,
     );
   }
 

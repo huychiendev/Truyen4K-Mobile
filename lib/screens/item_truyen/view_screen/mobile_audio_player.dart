@@ -1,6 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -80,7 +79,7 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
   void dispose() {
     _animationController.dispose();
     _timer?.cancel();
-    _audioPlayer.dispose(); // Giải phóng AudioPlayer
+    _audioPlayer.dispose();
     super.dispose();
   }
 

@@ -145,6 +145,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
         child: Icon(Icons.close, color: Colors.white),
       ),
       child: MiniPlayer(
+        slug: audioPlayerProvider.currentSlug,
+        chapterNo: 1,
         title: audioPlayerProvider.currentTitle,
         artist: audioPlayerProvider.currentArtist,
         imageUrl: audioPlayerProvider.currentImageUrl,

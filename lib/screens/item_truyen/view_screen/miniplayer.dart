@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class MiniPlayer extends StatefulWidget {
   final String title;
@@ -10,6 +13,8 @@ class MiniPlayer extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onDismiss;
   final bool isPlaying;
+  final String slug;
+  final int chapterNo;
 
   const MiniPlayer({
     Key? key,
@@ -21,15 +26,46 @@ class MiniPlayer extends StatefulWidget {
     required this.onNext,
     required this.onDismiss,
     required this.isPlaying,
+    required this.slug,
+    required this.chapterNo,
   }) : super(key: key);
 
   @override
   _MiniPlayerState createState() => _MiniPlayerState();
 }
 
-class _MiniPlayerState extends State<MiniPlayer> with SingleTickerProviderStateMixin {
+class _MiniPlayerState extends State<MiniPlayer>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  late AudioPlayer _audioPlayer;
+  bool _isPlaying = false;
+
+  Future<String> fetchAudioUrl(String slug, int chapterNo) async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://167.71.207.135:3000/audio/${slug}_chapter_$chapterNo.mp3'),
+      );
+
+      if (response.statusCode == 200) {
+        if (response.headers['content-type']?.contains('audio/mpeg') ?? false) {
+          return response.request!.url.toString();
+        } else {
+          print('Unexpected content type: ${response.headers['content-type']}');
+          throw Exception('Failed to load audio');
+        }
+      } else if (response.statusCode == 404) {
+        print('Audio not found: ${response.statusCode}');
+        throw Exception('Audio not found');
+      } else {
+        print('Server error: ${response.statusCode}');
+        throw Exception('Failed to load audio');
+      }
+    } catch (e) {
+      print('Error fetching audio URL: $e');
+      throw Exception('Failed to load audio');
+    }
+  }
 
   @override
   void initState() {
@@ -43,12 +79,40 @@ class _MiniPlayerState extends State<MiniPlayer> with SingleTickerProviderStateM
       curve: Curves.easeInOut,
     );
     _controller.forward();
+
+    _audioPlayer = AudioPlayer();
+
+    // Fetch the audio URL and start playing
+    fetchAudioUrl(widget.slug, widget.chapterNo).then((audioUrl) {
+      _playAudio(audioUrl);
+    }).catchError((error) {
+      print('Failed to load audio: $error');
+    });
+
+    _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+      setState(() {
+        _isPlaying = state == PlayerState.playing;
+      });
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  void _playAudio(String url) async {
+    await _audioPlayer.play(UrlSource(url));
+  }
+
+  void _pauseAudio() async {
+    await _audioPlayer.pause();
+  }
+
+  void _stopAudio() async {
+    await _audioPlayer.stop();
   }
 
   @override
@@ -88,8 +152,10 @@ class _MiniPlayerState extends State<MiniPlayer> with SingleTickerProviderStateM
                           child: CachedNetworkImage(
                             imageUrl: widget.imageUrl,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(color: Colors.grey[800]),
-                            errorWidget: (context, url, error) => Icon(Icons.error),
+                            placeholder: (context, url) =>
+                                Container(color: Colors.grey[800]),
+                            errorWidget: (context, url, error) =>
+                                Icon(Icons.error),
                           ),
                         ),
                       ),
@@ -102,13 +168,16 @@ class _MiniPlayerState extends State<MiniPlayer> with SingleTickerProviderStateM
                             children: [
                               Text(
                                 widget.title,
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               SizedBox(height: 2),
                               Text(
                                 widget.artist,
-                                style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                style: TextStyle(
+                                    color: Colors.grey[400], fontSize: 12),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
@@ -116,10 +185,17 @@ class _MiniPlayerState extends State<MiniPlayer> with SingleTickerProviderStateM
                         ),
                       ),
                       PlayPauseButton(
-                        isPlaying: widget.isPlaying,
+                        isPlaying: _isPlaying,
                         onPressed: () {
+                          if (_isPlaying) {
+                            _pauseAudio();
+                          } else {
+                            fetchAudioUrl(widget.slug, widget.chapterNo)
+                                .then((audioUrl) {
+                              _playAudio(audioUrl);
+                            });
+                          }
                           widget.onPlayPause();
-                          widget.isPlaying ? _controller.forward() : _controller.reverse();
                         },
                       ),
                       IconButton(
@@ -152,7 +228,8 @@ class PlayPauseButton extends StatefulWidget {
   _PlayPauseButtonState createState() => _PlayPauseButtonState();
 }
 
-class _PlayPauseButtonState extends State<PlayPauseButton> with SingleTickerProviderStateMixin {
+class _PlayPauseButtonState extends State<PlayPauseButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 

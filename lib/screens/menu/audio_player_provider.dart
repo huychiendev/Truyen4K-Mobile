@@ -11,7 +11,7 @@ class AudioPlayerProvider with ChangeNotifier {
   String _currentSlug = '';
   bool _isPlaying = false;
   String _audioUrl = '';
-  double _totalDuration = 0.0; // in seconds
+  double _totalDuration = 0.0;
 
   // Getters
   bool get showMiniPlayer => _showMiniPlayer;

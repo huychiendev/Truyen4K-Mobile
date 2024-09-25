@@ -42,40 +42,6 @@ class DataService {
   }
 }
 
-// Tạo một PlayerState để quản lý trạng thái của player
-class PlayerState with ChangeNotifier {
-  bool _showMiniPlayer = false;
-  String _currentTitle = '';
-  String _currentArtist = '';
-  String _currentImageUrl = '';
-  String _currentSlug = '';
-  bool _isPlaying = false;
-
-  bool get showMiniPlayer => _showMiniPlayer;
-  String get currentTitle => _currentTitle;
-  String get currentArtist => _currentArtist;
-  String get currentImageUrl => _currentImageUrl;
-  String get currentSlug => _currentSlug;
-  bool get isPlaying => _isPlaying;
-
-  void updatePlayerState({
-    bool? showMiniPlayer,
-    String? currentTitle,
-    String? currentArtist,
-    String? currentImageUrl,
-    String? currentSlug,
-    bool? isPlaying,
-  }) {
-    _showMiniPlayer = showMiniPlayer ?? _showMiniPlayer;
-    _currentTitle = currentTitle ?? _currentTitle;
-    _currentArtist = currentArtist ?? _currentArtist;
-    _currentImageUrl = currentImageUrl ?? _currentImageUrl;
-    _currentSlug = currentSlug ?? _currentSlug;
-    _isPlaying = isPlaying ?? _isPlaying;
-    notifyListeners();
-  }
-}
-
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -114,7 +80,9 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: AppBar(
-        title: Text('Audio Truyện 247'),
+        title: Center(
+          child: Text('Audio Truyện 247'),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         titleTextStyle: TextStyle(
@@ -149,18 +117,15 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     );
   }
 
-
-  Widget _buildBody(BuildContext context, Map<String, dynamic> data) {
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: _buildTopSection(context, data['newReleased']['content'] as List<dynamic>?),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
+Widget _buildBody(BuildContext context, Map<String, dynamic> data) {
+  return Center(
+    child: SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildTopSection(context, data['newReleased']['content'] as List<dynamic>?),
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CustomButtons(data: data),
                 SizedBox(height: 16),
@@ -177,35 +142,32 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                   },
                 ),
                 SizedBox(height: 16),
+                HorizontalListSection(
+                  title: 'Xu hướng',
+                  items: data['trending']['content'] as List<dynamic>,
+                  category: 'Xu hướng',
+                  onPlayTap: (novel) => _startPlayingNovel(context, novel),
+                ),
+                HorizontalListSection(
+                  title: 'Truyện Đọc Nhiều Nhất',
+                  items: data['topRead']['content'] as List<dynamic>,
+                  category: 'Truyện Đọc Nhiều Nhất',
+                  onPlayTap: (novel) => _startPlayingNovel(context, novel),
+                ),
+                HorizontalListSection(
+                  title: 'Truyện Mới Cập Nhật',
+                  items: data['newReleased']['content'] as List<dynamic>,
+                  category: 'Truyện Mới Cập Nhật',
+                  onPlayTap: (novel) => _startPlayingNovel(context, novel),
+                ),
               ],
             ),
           ),
-        ),
-        SliverList(
-          delegate: SliverChildListDelegate([
-            HorizontalListSection(
-              title: 'Xu hướng',
-              items: data['trending']['content'] as List<dynamic>,
-              category: 'Xu hướng',
-              onPlayTap: (novel) => _startPlayingNovel(context, novel),
-            ),
-            HorizontalListSection(
-              title: 'Truyện Đọc Nhiều Nhất',
-              items: data['topRead']['content'] as List<dynamic>,
-              category: 'Truyện Đọc Nhiều Nhất',
-              onPlayTap: (novel) => _startPlayingNovel(context, novel),
-            ),
-            HorizontalListSection(
-              title: 'Truyện Mới Cập Nhật',
-              items: data['newReleased']['content'] as List<dynamic>,
-              category: 'Truyện Mới Cập Nhật',
-              onPlayTap: (novel) => _startPlayingNovel(context, novel),
-            ),
-          ]),
-        ),
-      ],
-    );
-  }
+        ],
+      ),
+    ),
+  );
+}
 
   void _startPlayingNovel(BuildContext context, Map<String, dynamic> novel) {
     context.read<AudioPlayerProvider>().updatePlayerState(
@@ -251,6 +213,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
       ),
     );
   }
+
   void _onMiniPlayerTap(BuildContext context, AudioPlayerProvider audioPlayerProvider) {
     Navigator.push(
       context,
@@ -308,9 +271,6 @@ Widget _buildTopSection(BuildContext context, List<dynamic>? titles) {
 }
 
 
-// Các class khác như CircularIcon, CustomButtons, và HorizontalListSection
-// giữ nguyên như trong code ban đầu
-// CircularIcon
 class CircularIcon extends StatelessWidget {
   final String label;
   final String imageUrl;
@@ -320,38 +280,35 @@ class CircularIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey[800],
-                image: DecorationImage(
-                  image: NetworkImage(imageUrl),
-                  fit: BoxFit.cover,
-                ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[800],
+              image: DecorationImage(
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
               ),
             ),
-            SizedBox(height: 4),
-            Container(
-              width: 60,
-              child: Text(
-                label,
-                style: TextStyle(fontSize: 12, color: Colors.white),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+          ),
+          SizedBox(height: 4),
+          Container(
+            width: 60,
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 12, color: Colors.white),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -371,28 +328,31 @@ class _CustomButtonsState extends State<CustomButtons> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildButton(
-            index: 0,
-            icon: Icons.local_fire_department,
-            label: 'Xu hướng',
-          ),
-          SizedBox(width: 10),
-          _buildButton(
-            index: 1,
-            icon: Icons.book,
-            label: 'Truyện đọc nhiều nhất',
-          ),
-          SizedBox(width: 10),
-          _buildButton(
-            index: 2,
-            icon: Icons.person,
-            label: 'Truyện mới cập nhật',
-          ),
-        ],
+    return Center(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildButton(
+              index: 0,
+              icon: Icons.local_fire_department,
+              label: 'Xu hướng',
+            ),
+            SizedBox(width: 10),
+            _buildButton(
+              index: 1,
+              icon: Icons.book,
+              label: 'Truyện đọc nhiều nhất',
+            ),
+            SizedBox(width: 10),
+            _buildButton(
+              index: 2,
+              icon: Icons.person,
+              label: 'Truyện mới cập nhật',
+            ),
+          ],
+        ),
       ),
     );
   }

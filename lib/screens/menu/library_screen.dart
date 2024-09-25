@@ -60,7 +60,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ),
         body: TabBarView(
           children: [
-            _buildReadingList(),
+            _buildSaveList(),
             _buildDownloadedList(),
             _buildHistoryList(),
           ],
@@ -69,7 +69,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  Widget _buildReadingList() {
+  Widget _buildSaveList() {
     return FutureBuilder<List<dynamic>>(
       future: fetchNovels(),
       builder: (context, snapshot) {

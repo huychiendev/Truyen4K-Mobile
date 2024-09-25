@@ -1,16 +1,44 @@
 import 'package:flutter/material.dart';
 
-class BannerSection extends StatelessWidget {
+class BannerSection extends StatefulWidget {
   final Map<String, dynamic>? bannerData;
 
   const BannerSection({Key? key, this.bannerData}) : super(key: key);
 
   @override
+  _BannerSectionState createState() => _BannerSectionState();
+}
+class _BannerSectionState extends State<BannerSection> {
+  void _showTermsAndConditions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Điều khoản và Điều kiện"),
+          content: SingleChildScrollView(
+            child: Text(
+              "Đây là nội dung chi tiết của điều khoản và điều kiện áp dụng...",
+              style: TextStyle(fontSize: 14),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Đóng"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  @override
   Widget build(BuildContext context) {
-    if (bannerData == null || !bannerData!.containsKey('images')) return SizedBox.shrink();
+    if (widget.bannerData == null || !widget.bannerData!.containsKey('images')) return SizedBox.shrink();
 
     // Lấy tối đa 6 hình ảnh từ danh sách
-    final images = (bannerData!['images'] as List<dynamic>).take(6).toList();
+    final images = (widget.bannerData!['images'] as List<dynamic>).take(6).toList();
 
     // Danh sách kích thước tương ứng cho từng hình ảnh
     final List<Size> imageSizes = [
@@ -141,9 +169,12 @@ class BannerSection extends StatelessWidget {
               ],
             ),
             SizedBox(height: 12),
-            Text(
-              "Điều khoản và điều kiện áp dụng",
-              style: TextStyle(fontSize: 12, color: Colors.white70),
+            TextButton(
+              onPressed: () => _showTermsAndConditions(context),
+              child: Text(
+                "Điều khoản và điều kiện áp dụng",
+                style: TextStyle(fontSize: 12, color: Colors.white70),
+              ),
             ),
           ],
         ),

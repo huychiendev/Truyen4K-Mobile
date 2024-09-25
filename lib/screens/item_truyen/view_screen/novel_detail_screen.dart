@@ -92,32 +92,34 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                             style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white),
+                                color: Colors.white
+                            ),
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.bookmark_border,
-                              color: Colors.white),
+                          icon: Icon(Icons.bookmark_border, color: Colors.white),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    'Truyện chưa được note lại đâu nhá !'),
-                              ),
+                              SnackBar(content: Text('Truyện chưa được note lại đâu nhá !')),
                             );
                           },
                         ),
                       ],
                     ),
-                    Text('Tác giả: ' + (novelData!['authorName'] ?? 'Unknown Author'),
-                        style: TextStyle(fontSize: 16, color: Colors.white70)),
-                    Text('${novelData!['totalChapters'] ?? 'Unknown'} Chương',
-                        style: TextStyle(color: Colors.grey)),
+                    Text(
+                        'Tác giả: ' + (novelData!['authorName'] ?? 'Unknown Author'),
+                        style: TextStyle(fontSize: 16, color: Colors.white70)
+                    ),
+                    Text(
+                        '${novelData!['totalChapters'] ?? 'Unknown'} Chương',
+                        style: TextStyle(color: Colors.grey)
+                    ),
                     SizedBox(height: 8),
                     _buildStatsRow(
                         novelData!['readCounts']?.toString() ?? 'Unknown',
                         (novelData!['averageRatings'] as num?)?.toDouble() ?? 0.0,
-                        (novelData!['likeCounts'] as num?)?.toInt() ?? 0),
+                        (novelData!['likeCounts'] as num?)?.toInt() ?? 0
+                    ),
                     SizedBox(height: 16),
                     Text(
                       'Về cuốn truyện này',
@@ -133,6 +135,22 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                   ],
                 ),
               ),
+
+              // Thêm danh sách chương ở đây nếu cần
+              // ListView.builder(
+              //   shrinkWrap: true,
+              //   physics: NeverScrollableScrollPhysics(),
+              //   itemCount: novelData!['totalChapters'] ?? 0,
+              //   itemBuilder: (context, index) {
+              //     return ListTile(
+              //       title: Text('Chapter ${index + 1}', style: TextStyle(color: Colors.white)),
+              //       trailing: Icon(Icons.play_arrow, color: Colors.white),
+              //       onTap: () {
+              //         // Xử lý khi nhấn vào chương
+              //       },
+              //     );
+              //   },
+              // ),
             ],
           ),
         ),

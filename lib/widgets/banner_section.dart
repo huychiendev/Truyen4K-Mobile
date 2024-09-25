@@ -52,7 +52,7 @@ class _BannerSectionState extends State<BannerSection> {
             ),
             padding: EdgeInsets.all(16),
             child: Text(
-              "Điều khoản và Điều kiện",
+              "Điều khoản và Điều kiện      ",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
             ),
           ),

@@ -5,14 +5,14 @@ class HorizontalListSection extends StatelessWidget {
   final String title;
   final List<dynamic> items;
   final String category;
-  final Function(Map<String, dynamic>) onPlayTap;  // Thêm tham số onPlayTap
+  final Function(Map<String, dynamic>) onPlayTap;
 
   const HorizontalListSection({
     Key? key,
     required this.title,
     required this.items,
     required this.category,
-    required this.onPlayTap,  // Đảm bảo onPlayTap được yêu cầu
+    required this.onPlayTap,
   }) : super(key: key);
 
   @override
@@ -20,14 +20,17 @@ class HorizontalListSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 title,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               TextButton(
                 onPressed: () {
@@ -53,13 +56,16 @@ class HorizontalListSection extends StatelessWidget {
             height: 200,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              children: items.map((item) => _buildHorizontalListItem(context, item)).toList(),
+              children: items
+                  .map((item) => _buildHorizontalListItem(context, item))
+                  .toList(),
             ),
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildHorizontalListItem(BuildContext context, Map<String, dynamic> item) {
     return GestureDetector(

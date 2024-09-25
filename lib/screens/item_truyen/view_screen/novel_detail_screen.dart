@@ -1,10 +1,12 @@
 import 'package:apptruyenonline/screens/item_truyen/view_screen/mobile_audio_player.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../chapter_detail_screen.dart';
-import 'miniplayer.dart'; // Import MiniPlayer
+import 'package:apptruyenonline/screens/item_truyen/all_items_screen.dart';
+import 'package:apptruyenonline/widgets/novel_service.dart';
 
 class NovelDetailScreen extends StatefulWidget {
   final String slug;
@@ -20,6 +22,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   String? currentChapter;
   String? currentNovelName;
   bool _isPlaying = false;
+  bool _showAllChapters = false;
   double _progress = 0.0;
   Map<String, dynamic>? novelData;
 
@@ -28,6 +31,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     super.initState();
     _fetchNovelDetails();
   }
+
 
   Future<void> _fetchNovelDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -48,6 +52,12 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       throw Exception('Failed to load novel details');
     }
   }
+
+  // Future<List<Novel>> fetchTopReadNovels() async {
+  //   // Implement this method to fetch top read novels
+  //   // For now, I'll return an empty list
+  //   return [];
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -97,17 +107,20 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.bookmark_border, color: Colors.white),
+                          icon: Icon(Icons.bookmark_border, color: Colors
+                              .white),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Truyện chưa được note lại đâu nhá !')),
+                              SnackBar(content: Text(
+                                  'Truyện chưa được note lại đâu nhá !')),
                             );
                           },
                         ),
                       ],
                     ),
                     Text(
-                        'Tác giả: ' + (novelData!['authorName'] ?? 'Unknown Author'),
+                        'Tác giả: ' +
+                            (novelData!['authorName'] ?? 'Unknown Author'),
                         style: TextStyle(fontSize: 16, color: Colors.white70)
                     ),
                     Text(
@@ -117,13 +130,16 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                     SizedBox(height: 8),
                     _buildStatsRow(
                         novelData!['readCounts']?.toString() ?? 'Unknown',
-                        (novelData!['averageRatings'] as num?)?.toDouble() ?? 0.0,
+                        (novelData!['averageRatings'] as num?)?.toDouble() ??
+                            0.0,
                         (novelData!['likeCounts'] as num?)?.toInt() ?? 0
                     ),
                     SizedBox(height: 16),
                     Text(
                       'Về cuốn truyện này',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -131,31 +147,71 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                       style: TextStyle(fontSize: 16, color: Colors.white70),
                     ),
                     SizedBox(height: 16),
+                    Text(
+                      'Danh sách chương',
+                      style: TextStyle(fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+                    SizedBox(height: 8),
+                    _buildChapterList(),
+                    SizedBox(height: 16),
                     _buildTags(novelData!['genreNames'].toSet().toList()),
+                    SizedBox(height: 16),
+                    _buildRecommendations(),
                   ],
                 ),
               ),
-
-              // Thêm danh sách chương ở đây nếu cần
-              // ListView.builder(
-              //   shrinkWrap: true,
-              //   physics: NeverScrollableScrollPhysics(),
-              //   itemCount: novelData!['totalChapters'] ?? 0,
-              //   itemBuilder: (context, index) {
-              //     return ListTile(
-              //       title: Text('Chapter ${index + 1}', style: TextStyle(color: Colors.white)),
-              //       trailing: Icon(Icons.play_arrow, color: Colors.white),
-              //       onTap: () {
-              //         // Xử lý khi nhấn vào chương
-              //       },
-              //     );
-              //   },
-              // ),
             ],
           ),
         ),
-        bottomNavigationBar: _showMiniPlayer ? _buildMiniPlayer() : null,
+        //bottomNavigationBar: _showMiniPlayer ? _buildMiniPlayer() : null,
       ),
+    );
+  }
+
+  Widget _buildChapterList() {
+    int totalChapters = novelData!['totalChapters'] ?? 0;
+    int chaptersToShow = _showAllChapters ? totalChapters : min(
+        5, totalChapters);
+
+    return Column(
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: chaptersToShow,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(
+                  'Chương ${index + 1}', style: TextStyle(color: Colors.white)),
+              trailing: Icon(Icons.play_arrow, color: Colors.white),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ChapterDetailScreen(
+                          slug: widget.slug,
+                          chapterNo: index + 1,
+                          novelName: novelData!['title'] ?? 'Unknown Title',
+                        ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+        if (totalChapters > 5 && !_showAllChapters)
+          ElevatedButton(
+            child: Text('Xem thêm'),
+            onPressed: () {
+              setState(() {
+                _showAllChapters = true;
+              });
+            },
+          ),
+      ],
     );
   }
 
@@ -189,16 +245,19 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: Icon(Icons.book, color: Colors.white),
-                    label: Text('Đọc tiếp', style: TextStyle(color: Colors.white)),
+                    label: Text(
+                        'Đọc tiếp', style: TextStyle(color: Colors.white)),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ChapterDetailScreen(
-                            slug: widget.slug,
-                            chapterNo: 1, // Start with the first chapter
-                            novelName: novelData!['title'] ?? 'Unknown Title',
-                          ),
+                          builder: (context) =>
+                              ChapterDetailScreen(
+                                slug: widget.slug,
+                                chapterNo: 1, // Start with the first chapter
+                                novelName: novelData!['title'] ??
+                                    'Unknown Title',
+                              ),
                         ),
                       );
                     },
@@ -211,17 +270,22 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: Icon(Icons.headphones, color: Colors.white),
-                    label: Text('Nghe tiếp', style: TextStyle(color: Colors.white)),
+                    label: Text(
+                        'Nghe tiếp', style: TextStyle(color: Colors.white)),
                     onPressed: () async {
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => MobileAudioPlayer(
-                            slug: widget.slug,
-                            chapterNo: currentChapter != null ? int.parse(currentChapter!) : 1,
-                            novelName: novelData!['title'] ?? 'Tiêu đề không xác định',
-                            thumbnailImageUrl: novelData!['thumbnailImageUrl'] ?? '',
-                          ),
+                          builder: (context) =>
+                              MobileAudioPlayer(
+                                slug: widget.slug,
+                                chapterNo: currentChapter != null ? int.parse(
+                                    currentChapter!) : 1,
+                                novelName: novelData!['title'] ??
+                                    'Tiêu đề không xác định',
+                                thumbnailImageUrl: novelData!['thumbnailImageUrl'] ??
+                                    '',
+                              ),
                         ),
                       );
                       if (result != null && result is Map<String, dynamic>) {
@@ -247,51 +311,182 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     );
   }
 
-  Widget _buildMiniPlayer() {
-    return MiniPlayer(
-      title: currentNovelName ?? '',
-      artist: 'Chương ${currentChapter ?? ''}',
-      imageUrl: novelData?['thumbnailImageUrl'] ?? 'https://example.com/novel_thumbnail.jpg',
-      isPlaying: _isPlaying,
-      onTap: () {
-        // Xử lý khi nhấn vào MiniPlayer
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MobileAudioPlayer(
-              slug: widget.slug,
-              chapterNo: currentChapter != null ? int.parse(currentChapter!) : 1,
-              novelName: currentNovelName ?? '',
-              thumbnailImageUrl: novelData?['thumbnailImageUrl'] ?? '',
-            ),
-          ),
-        ).then((result) {
-          if (result != null && result is Map<String, dynamic>) {
-            setState(() {
-              _showMiniPlayer = result['showMiniPlayer'] ?? false;
-              currentChapter = result['currentChapter'];
-              currentNovelName = result['currentNovelName'];
-              _isPlaying = result['isPlaying'] ?? false;
-              _progress = result['progress'] ?? 0.0;
-            });
-          }
-        });
-      },
-      onPlayPause: () {
-        setState(() {
-          _isPlaying = !_isPlaying; // Chuyển đổi trạng thái play/pause
-        });
-      },
-      onNext: () {
-        // Xử lý chức năng chuyển sang chương tiếp theo
-      },
-      onDismiss: () {
-        setState(() {
-          _showMiniPlayer = false;
-        });
+  Widget _buildRecommendations() {
+    return FutureBuilder<List<dynamic>>(
+      future: NovelService.fetchTopReadNovels(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.hasData) {
+          List<dynamic> novels = snapshot.data!;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Đề xuất cho bạn',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AllItemsScreen(
+                                items: novels,
+                                category: 'Đề xuất',
+                              ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Xem Tất Cả',
+                      style: TextStyle(color: Colors.green),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              _buildHorizontalList(context, novels),
+            ],
+          );
+        } else {
+          return Text('No novels found.');
+        }
       },
     );
   }
+
+  Widget _buildHorizontalList(BuildContext context, List<dynamic> novels) {
+    return Container(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: novels.length,
+        itemBuilder: (context, index) {
+          final novel = novels[index];
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NovelDetailScreen(slug: novel['slug']),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: NetworkImage(novel['thumbnailImageUrl']),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    width: 120,
+                    child: Text(
+                      novel['title'] ?? 'Title',
+                      style: TextStyle(fontSize: 14, color: Colors.white),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+//
+// class Novel {
+//   final String slug;
+//   final String title;
+//   final String description;
+//   final String thumbnailImageUrl;
+//   final double averageRatings;
+//
+//   Novel({
+//     required this.slug,
+//     required this.title,
+//     required this.description,
+//     required this.thumbnailImageUrl,
+//     required this.averageRatings,
+//   });
+// }
+
+
+// Widget _buildMiniPlayer() {
+//   return MiniPlayer(
+//     title: novelData!['title'] ?? 'Unknown Novel',
+//     artist: 'Chương ${currentChapter ?? '1'}',
+//     imageUrl: novelData!['thumbnailImageUrl'] ?? 'https://example.com/novel_thumbnail.jpg',
+//     isPlaying: _isPlaying,
+//     onTap: () {
+//       Navigator.push(
+//         context,
+//         MaterialPageRoute(
+//           builder: (context) => MobileAudioPlayer(
+//             slug: widget.slug,
+//             chapterNo: currentChapter != null ? int.parse(currentChapter!) : 1,
+//             novelName: novelData!['title'] ?? 'Unknown Novel',
+//             thumbnailImageUrl: novelData!['thumbnailImageUrl'] ?? '',
+//           ),
+//         ),
+//       ).then((result) {
+//         if (result != null && result is Map<String, dynamic>) {
+//           setState(() {
+//             _showMiniPlayer = result['showMiniPlayer'] ?? false;
+//             currentChapter = result['currentChapter']?.toString();
+//             _isPlaying = result['isPlaying'] ?? false;
+//             _progress = result['progress'] ?? 0.0;
+//           });
+//         }
+//       });
+//     },
+//     onPlayPause: () {
+//       setState(() {
+//         _isPlaying = !_isPlaying;
+//       });
+//     },
+//     onNext: () {
+//       // Xử lý chức năng chuyển sang chương tiếp theo
+//       if (currentChapter != null) {
+//         int nextChapter = int.parse(currentChapter!) + 1;
+//         if (nextChapter <= (novelData!['totalChapters'] ?? 1)) {
+//           setState(() {
+//             currentChapter = nextChapter.toString();
+//           });
+//           // Có thể thêm logic để bắt đầu phát chương mới ở đây
+//         }
+//       }
+//     },
+//     onDismiss: () {
+//       setState(() {
+//         _showMiniPlayer = false;
+//       });
+//     },
+//   );
+// }
 
   Widget _buildStatsRow(String readCounts, double rating, int likes) {
     return Row(

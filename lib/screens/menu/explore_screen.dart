@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:apptruyenonline/screens/menu/audio_player_provider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../item_truyen/all_items_screen.dart';
 import '../item_truyen/view_screen/novel_detail_screen.dart';
+import '../item_truyen/view_screen/mobile_audio_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:apptruyenonline/screens/item_truyen/view_screen/miniplayer.dart'; // Import MiniPlayer
+import 'package:apptruyenonline/screens/item_truyen/view_screen/miniplayer.dart';
 
 class ExploreScreen extends StatefulWidget {
   @override
@@ -23,12 +26,6 @@ const Map<int, String> genreMap = {
 };
 
 class _ExploreScreenState extends State<ExploreScreen> {
-  bool _showMiniPlayer = false;
-  String _currentTitle = '';
-  String _currentArtist = '';
-  String _currentImageUrl = '';
-  bool _isPlaying = false;
-
   Future<List<Novel>> fetchTopReadNovels() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
@@ -41,8 +38,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data =
-      jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes))['content'];
       return data.map((json) => Novel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load novels');
@@ -54,31 +50,27 @@ class _ExploreScreenState extends State<ExploreScreen> {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse(
-          'http://14.225.207.58:9898/api/novels/filter-by-genre?genreIds=${genreIds.join(",")}'),
+      Uri.parse('http://14.225.207.58:9898/api/novels/filter-by-genre?genreIds=${genreIds.join(",")}'),
       headers: {
         'Authorization': 'Bearer $token',
       },
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data =
-      jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes))['content'];
       return data.map((json) => Novel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load novels');
     }
   }
 
-  @override
   Widget _buildCategories() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Thể loại',
-          style: TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         SizedBox(height: 10),
         Wrap(
@@ -122,61 +114,88 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
             ),
           ),
-          if (_showMiniPlayer)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Dismissible(
-                key: Key('mini-player'),
-                direction: DismissDirection.endToStart,
-                onDismissed: (_) {
-                  setState(() {
-                    _showMiniPlayer = false;
-                  });
-                },
-                background: Container(
-                  color: Colors.red,
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.only(right: 16.0),
-                  child: Icon(Icons.close, color: Colors.white),
-                ),
-                child: MiniPlayer(
-                  title: _currentTitle,
-                  artist: _currentArtist,
-                  imageUrl: _currentImageUrl,
-                  isPlaying: _isPlaying,
-                  onTap: () {
-                    print('MiniPlayer tapped');
-                  },
-                  onPlayPause: () {
-                    setState(() {
-                      _isPlaying = !_isPlaying;
-                    });
-                  },
-                  onNext: () {
-                    print('Next button pressed');
-                  },
-                  onDismiss: () {
-                    setState(() {
-                      _showMiniPlayer = false;
-                    });
-                  },
-                ),
-              ),
-            ),
+          Consumer<AudioPlayerProvider>(
+            builder: (context, audioPlayerProvider, child) {
+              return audioPlayerProvider.showMiniPlayer
+                  ? Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildMiniPlayer(context, audioPlayerProvider),
+              )
+                  : SizedBox.shrink();
+            },
+          ),
         ],
       ),
     );
   }
 
+  Widget _buildMiniPlayer(BuildContext context, AudioPlayerProvider audioPlayerProvider) {
+    return Dismissible(
+      key: Key('mini-player'),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) {
+        audioPlayerProvider.updatePlayerState(showMiniPlayer: false);
+      },
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.only(right: 16.0),
+        child: Icon(Icons.close, color: Colors.white),
+      ),
+      child: MiniPlayer(
+        title: audioPlayerProvider.currentTitle,
+        artist: audioPlayerProvider.currentArtist,
+        imageUrl: audioPlayerProvider.currentImageUrl,
+        isPlaying: audioPlayerProvider.isPlaying,
+        onTap: () => _onMiniPlayerTap(context, audioPlayerProvider),
+        onPlayPause: () {
+          audioPlayerProvider.updatePlayerState(
+            isPlaying: !audioPlayerProvider.isPlaying,
+          );
+        },
+        onNext: () {
+          // Handle next track
+        },
+        onDismiss: () {
+          audioPlayerProvider.updatePlayerState(showMiniPlayer: false);
+        },
+      ),
+    );
+  }
+
   void _startPlayingNovel(Novel novel) {
-    setState(() {
-      _showMiniPlayer = true;
-      _currentTitle = novel.title;
-      _currentArtist = 'Chương 1'; // Hoặc bất kỳ thông tin chương nào phù hợp
-      _currentImageUrl = novel.thumbnailImageUrl;
-      _isPlaying = true;
+    context.read<AudioPlayerProvider>().updatePlayerState(
+      showMiniPlayer: true,
+      currentTitle: novel.title,
+      currentArtist: 'Chương 1',
+      currentImageUrl: novel.thumbnailImageUrl,
+      currentSlug: novel.slug,
+      isPlaying: true,
+    );
+  }
+
+  void _onMiniPlayerTap(BuildContext context, AudioPlayerProvider audioPlayerProvider) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MobileAudioPlayer(
+          slug: audioPlayerProvider.currentSlug,
+          chapterNo: 1,
+          novelName: audioPlayerProvider.currentTitle,
+          thumbnailImageUrl: audioPlayerProvider.currentImageUrl,
+        ),
+      ),
+    ).then((result) {
+      if (result != null && result is Map<String, dynamic>) {
+        audioPlayerProvider.updatePlayerState(
+          showMiniPlayer: result['showMiniPlayer'] ?? false,
+          currentTitle: result['currentNovelName'] ?? audioPlayerProvider.currentTitle,
+          currentArtist: 'Chương ${result['currentChapter'] ?? '1'}',
+          isPlaying: result['isPlaying'] ?? audioPlayerProvider.isPlaying,
+        );
+      }
     });
   }
 
@@ -197,13 +216,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return TextField(
       decoration: InputDecoration(
         hintText: 'Tìm kiếm truyện, tác giả...',
-        hintStyle: TextStyle(color: Colors.grey), // Đổi màu chữ gợi ý thành màu trắng
-        prefixIcon: Icon(Icons.search, color: Colors.white), // Đổi màu icon thành màu trắng
+        hintStyle: TextStyle(color: Colors.grey),
+        prefixIcon: Icon(Icons.search, color: Colors.white),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
       ),
-      style: TextStyle(color: Colors.white), // Đổi màu chữ nhập vào thành màu trắng
+      style: TextStyle(color: Colors.white),
     );
   }
 
@@ -225,10 +244,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 children: [
                   Text(
                     'Đề xuất cho bạn',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   TextButton(
                     onPressed: () {
@@ -250,10 +266,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         ),
                       );
                     },
-                    child: Text(
-                      'Xem Tất Cả',
-                      style: TextStyle(color: Colors.green),
-                    ),
+                    child: Text('Xem Tất Cả', style: TextStyle(color: Colors.green)),
                   ),
                 ],
               ),
@@ -270,7 +283,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildSwordplay() {
     return FutureBuilder<List<Novel>>(
-      future: fetchNovelsByGenre([13]), // ID của thể loại Kiếm Hiệp
+      future: fetchNovelsByGenre([13]),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
@@ -286,10 +299,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 children: [
                   Text(
                     'Truyện Kiếm Hiệp',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   TextButton(
                     onPressed: () {
@@ -311,10 +321,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         ),
                       );
                     },
-                    child: Text(
-                      'Xem Tất Cả',
-                      style: TextStyle(color: Colors.green),
-                    ),
+                    child: Text('Xem Tất Cả', style: TextStyle(color: Colors.green)),
                   ),
                 ],
               ),
@@ -347,10 +354,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 children: [
                   Text(
                     'Truyện Tu Tiên',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   TextButton(
                     onPressed: () {
@@ -364,7 +368,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               'title': novel.title,
                               'authorName': novel.description,
                               'thumbnailImageUrl': novel.thumbnailImageUrl,
-                              'averageRatings':novel.averageRatings,
+                              'averageRatings': novel.averageRatings,
                             })
                                 .toList(),
                             category: 'Truyện Tu Tiên',
@@ -372,10 +376,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         ),
                       );
                     },
-                    child: Text(
-                      'Xem Tất Cả',
-                      style: TextStyle(color: Colors.green),
-                    ),
+                    child: Text('Xem Tất Cả', style: TextStyle(color: Colors.green)),
                   ),
                 ],
               ),

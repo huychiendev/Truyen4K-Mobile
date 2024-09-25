@@ -273,39 +273,40 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
       }
     });
   }
-
-  Widget _buildTopSection(BuildContext context, List<dynamic>? titles) {
-    if (titles == null || titles.isEmpty) return SizedBox.shrink();
-    return Container(
-      height: 100,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: titles.length,
-        itemBuilder: (context, index) {
-          final title = titles[index];
-          final label = title['title'] as String? ?? 'No Title';
-          final imageUrl = title['thumbnailImageUrl'] as String? ?? 'https://via.placeholder.com/60';
-          final slug = title['slug'] as String? ?? '';
-
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NovelDetailScreen(slug: slug),
-                ),
-              );
-            },
-            child: CircularIcon(
-              label: label,
-              imageUrl: imageUrl,
-            ),
-          );
-        },
-      ),
-    );
-  }
 }
+
+Widget _buildTopSection(BuildContext context, List<dynamic>? titles) {
+  if (titles == null || titles.isEmpty) return SizedBox.shrink();
+  return Container(
+    height: 100,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: titles.length,
+      itemBuilder: (context, index) {
+        final title = titles[index];
+        final label = title['title'] as String? ?? 'No Title';
+        final imageUrl = title['thumbnailImageUrl'] as String? ?? 'https://via.placeholder.com/60';
+        final slug = title['slug'] as String? ?? '';
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NovelDetailScreen(slug: slug),
+              ),
+            );
+          },
+          child: CircularIcon(
+            label: label,
+            imageUrl: imageUrl,
+          ),
+        );
+      },
+    ),
+  );
+}
+
 
 // Các class khác như CircularIcon, CustomButtons, và HorizontalListSection
 // giữ nguyên như trong code ban đầu
@@ -486,7 +487,6 @@ class HorizontalListSection extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: Colors.white),
               ),
-
               TextButton(
                 onPressed: () {
                   Navigator.push(

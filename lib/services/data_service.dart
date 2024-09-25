@@ -27,4 +27,27 @@ class DataService {
       throw Exception('Failed to load trending novels');
     }
   }
+
+
+
+  Future<Map<String, dynamic>> fetchChapterDetails(String slug, String chapterNo) async {
+    final response = await http.get(Uri.parse('http://14.225.207.58:9898/api/chapters/$slug/$chapterNo'));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load chapter details');
+    }
+  }
+
+
+  Future<Map<String, dynamic>> fetchAudioFileDetails(int chapterId) async {
+    final response = await http.get(Uri.parse('http://14.225.207.58:9898/api/audio-files/$chapterId'));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load audio file details');
+    }
+  }
 }

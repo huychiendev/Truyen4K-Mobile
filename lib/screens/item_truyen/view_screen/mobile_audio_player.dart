@@ -1,6 +1,18 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../widgets/widget_Audio/album_art.dart';
+import '../../../widgets/widget_Audio/controls.dart';
+import '../../../widgets/widget_Audio/footer.dart';
+import '../../../widgets/widget_Audio/progress_bar.dart';
+import '../../../widgets/widget_Audio/top_bar.dart';
+import '../../../widgets/widget_Audio/track_info.dart';
 
 class MobileAudioPlayer extends StatefulWidget {
   final String slug;
@@ -20,30 +32,145 @@ class MobileAudioPlayer extends StatefulWidget {
   _MobileAudioPlayerState createState() => _MobileAudioPlayerState();
 }
 
-class _MobileAudioPlayerState extends State<MobileAudioPlayer> with SingleTickerProviderStateMixin {
+class _MobileAudioPlayerState extends State<MobileAudioPlayer>
+    with SingleTickerProviderStateMixin {
   bool isPlaying = false;
   double progress = 0.0;
   late AnimationController _animationController;
   Timer? _timer;
   double playbackSpeed = 1.0;
-  final double totalDuration = 128.0; // Total duration in seconds
+  double totalDuration = 0.0; // Total duration in seconds
   bool isLiked = false;
   bool isSaved = false;
+  String? audioUrl;
+  int chapterId = 0;
+  late AudioPlayer _audioPlayer; // Khai báo AudioPlayer
+  bool isLoading = true;
+  Timer? _progressUpdateTimer;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
+
+    _audioPlayer = AudioPlayer();
+    _audioPlayer.setReleaseMode(ReleaseMode.stop);
+
+    _audioPlayer.onDurationChanged.listen((Duration d) {
+      setState(() {
+        totalDuration = d.inSeconds.toDouble();
+      });
+    });
+
+    _audioPlayer.onPositionChanged.listen((Duration p) {
+      setState(() {
+        progress = p.inSeconds.toDouble() / totalDuration;
+      });
+    });
+
+    _fetchAudioDetails();
   }
+
+
 
   @override
   void dispose() {
     _animationController.dispose();
     _timer?.cancel();
+    _audioPlayer.dispose(); // Giải phóng AudioPlayer
     super.dispose();
+  }
+
+  Future<void> _fetchAudioDetails() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+
+      final chapterDetails = await fetchChapterDetails(
+          widget.slug, 'chap-${widget.chapterNo}', token);
+      final audioDetails =
+      await fetchAudioFileDetails(chapterDetails['id'], token);
+
+      if (audioDetails['duration'] == 0) {
+        _showNoAudioDialog();
+      } else {
+        setState(() {
+          audioUrl = audioDetails['audioUrl'];
+          totalDuration = audioDetails['duration'].toDouble();
+          chapterId = audioDetails['chapterId'].toInt();
+        });
+
+        await _audioPlayer.setSourceUrl(audioUrl!);
+        // Note: We don't auto-play here
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchChapterDetails(
+      String slug, String chapterNo, String? token) async {
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/chapters/$slug/$chapterNo'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print(response.body);
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load chapter details');
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchAudioFileDetails(
+      int chapterId, String? token) async {
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/audio-files/$chapterId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load audio file details');
+    }
+  }
+
+  void _showNoAudioDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Chưa có âm thanh !'),
+          content: Text('Thử chuương hoac truyện khác nheng !'),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close the player screen
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _togglePlayPause() {
@@ -51,20 +178,21 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer> with SingleTicker
       isPlaying = !isPlaying;
       if (isPlaying) {
         _animationController.forward();
-        _startTimer();
+        _audioPlayer.resume();
       } else {
         _animationController.reverse();
-        _timer?.cancel();
+        _audioPlayer.pause();
       }
     });
   }
 
   void _startTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(Duration(milliseconds: (50 ~/ playbackSpeed)), (timer) {
+    _timer =
+        Timer.periodic(Duration(milliseconds: (50 ~/ playbackSpeed)), (timer) {
       setState(() {
         if (progress < 1.0) {
-          progress += 0.001 * playbackSpeed;
+          progress += 0.0001 * playbackSpeed;
         } else {
           progress = 0.0;
           _togglePlayPause();
@@ -82,6 +210,7 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer> with SingleTicker
       } else {
         playbackSpeed = 1.0;
       }
+      _audioPlayer.setPlaybackRate(playbackSpeed); // Change playback speed
       if (isPlaying) {
         _startTimer();
       }
@@ -115,7 +244,18 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer> with SingleTicker
           tag: 'player-hero',
           child: Material(
             color: Colors.black,
-            child: _buildFullPlayer(),
+            child: Stack(
+              children: [
+                _buildFullPlayer(),
+                if (isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -143,207 +283,43 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer> with SingleTicker
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildTopBar(),
-            const SizedBox(height: 24),
-            Flexible(child: _buildAlbumArt()),
-            const SizedBox(height: 24),
-            _buildTrackInfo(),
-            const SizedBox(height: 24),
-            _buildProgressBar(),
-            const SizedBox(height: 24),
-            _buildControls(),
-            const SizedBox(height: 24),
-            _buildFooter(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        IconButton(
-          icon: Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 24),
-          onPressed: _minimizePlayer,
-        ),
-        PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert, color: Colors.white, size: 24),
-          onSelected: (String result) {
-            if (result == 'like') {
-              _toggleLike();
-            } else if (result == 'save') {
-              _toggleSave();
-            }
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-            PopupMenuItem<String>(
-              value: 'like',
-              child: Row(
-                children: [
-                  Icon(isLiked ? Icons.favorite : Icons.favorite_border, color: isLiked ? Colors.red : null),
-                  const SizedBox(width: 8),
-                  Text(isLiked ? 'Unlike' : 'Like'),
-                ],
-              ),
+            TopBar(
+              onMinimizePlayer: _minimizePlayer,
+              isLiked: isLiked,
+              isSaved: isSaved,
+              onToggleLike: _toggleLike,
+              onToggleSave: _toggleSave,
             ),
-            PopupMenuItem<String>(
-              value: 'save',
-              child: Row(
-                children: [
-                  Icon(isSaved ? Icons.bookmark : Icons.bookmark_border),
-                  const SizedBox(width: 8),
-                  Text(isSaved ? 'Unsave' : 'Save'),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAlbumArt() {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[700],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: CachedNetworkImage(
-          imageUrl: widget.thumbnailImageUrl,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => CircularProgressIndicator(),
-          errorWidget: (context, url, error) => Icon(Icons.image_not_supported, size: 64, color: Colors.white),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTrackInfo() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.novelName,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Chương ${widget.chapterNo}',
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        children: [
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: Colors.white,
-              inactiveTrackColor: Colors.grey[700],
-              thumbColor: Colors.white,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
-            ),
-            child: Slider(
-              value: progress,
+            const SizedBox(height: 24),
+            Flexible(
+                child: AlbumArt(thumbnailImageUrl: widget.thumbnailImageUrl)),
+            const SizedBox(height: 24),
+            TrackInfo(novelName: widget.novelName, chapterNo: widget.chapterNo),
+            const SizedBox(height: 24),
+            ProgressBar(
+              progress: progress,
+              totalDuration: totalDuration,
               onChanged: (value) {
                 setState(() {
                   progress = value;
+                  _audioPlayer.seek(Duration(
+                      seconds: (totalDuration * progress)
+                          .toInt())); // Thay đổi vị trí phát nhạc
                 });
               },
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(_formatDuration(progress * totalDuration), style: TextStyle(color: Colors.white, fontSize: 12)),
-              Text('-${_formatDuration((1 - progress) * totalDuration)}', style: TextStyle(color: Colors.white, fontSize: 12)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildControls() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36),
-            onPressed: () {
-              // Handle previous chapter
-            },
-          ),
-          GestureDetector(
-            onTap: _togglePlayPause,
-            child: Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: Colors.green,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isPlaying ? Icons.pause : Icons.play_arrow,
-                color: Colors.white,
-                size: 32,
-              ),
+            const SizedBox(height: 24),
+            Controls(
+              isPlaying: isPlaying,
+              onTogglePlayPause: _togglePlayPause,
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.skip_next, color: Colors.white, size: 36),
-            onPressed: () {
-              // Handle next chapter
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFooter() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(Icons.nightlight_round, color: Colors.white, size: 24),
-          GestureDetector(
-            onTap: _changePlaybackSpeed,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${playbackSpeed.toStringAsFixed(1)}x',
-                style: TextStyle(color: Colors.white),
-              ),
+            const SizedBox(height: 24),
+            Footer(
+              playbackSpeed: playbackSpeed,
+              onChangePlaybackSpeed: _changePlaybackSpeed,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

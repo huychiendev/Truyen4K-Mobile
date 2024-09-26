@@ -6,6 +6,8 @@ import 'package:apptruyenonline/models/ProfileModel.dart';
 class ProfileService {
   static const String baseUrl = 'http://14.225.207.58:9898/api/v1';
 
+
+
   static Future<UserProfile> fetchProfileData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
@@ -26,13 +28,14 @@ class ProfileService {
 
       // Fetch user image
       final imageResponse = await http.get(
-        Uri.parse('http://14.225.207.58:9898/api/images/?userId=${userProfile.id}'),
+        Uri.parse(
+            'http://14.225.207.58:9898/api/images/?userId=${userProfile.id}'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
       if (imageResponse.statusCode == 200) {
         final List<dynamic> imageData =
-        json.decode(utf8.decode(imageResponse.bodyBytes));
+            json.decode(utf8.decode(imageResponse.bodyBytes));
         if (imageData.isNotEmpty) {
           userProfile = UserProfile(
             id: userProfile.id,

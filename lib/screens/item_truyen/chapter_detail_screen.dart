@@ -66,6 +66,10 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

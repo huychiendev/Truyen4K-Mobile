@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // import 'model_login/login.dart';
 import 'screens/menu/home_screen.dart';
@@ -15,8 +16,24 @@ class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
+}
+
+Future<void> printAllSharedPreferencesData() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  final keys = prefs.getKeys();
+  final Map<String, dynamic> allData = {};
+
+  for (String key in keys) {
+    allData[key] = prefs.get(key);
+  }
+
+  // Print all data
+  allData.forEach((key, value) {
+    print('Check SharedPreferences:  $key: $value');
+  });
 }
 
 void main() {
@@ -27,6 +44,10 @@ void main() {
       child: MyApp(),
     ),
   );
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    printAllSharedPreferencesData();
+  });
 }
 
 // ... rest of your code ...

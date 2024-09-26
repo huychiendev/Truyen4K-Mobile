@@ -60,15 +60,15 @@ flutter:
     - assets/bn4.jpg
     - assets/bn5.jpg
     - assets/bn6.jpg
-    - assets/ambient_c_motion.mp3    - assets/level/Hóa Thần.webp
-    - assets/level/Đấu Khí.webp
-    - assets/level/Đấu Giả.webp
-    - assets/level/Đấu Sư.webp
-    - assets/level/Đại Đấu Sư.webp
-    - assets/level/Đấu Linh.webp
-    - assets/level/Đấu Vương.webp
-    - assets/level/Đấu Hoàng.webp
-    - assets/level/Đấu Tông.webp
-    - assets/level/Đấu Tôn.webp
-    - assets/level/Đấu Thánh.webp
-    - assets/level/Đấu Đế.webp
+    - assets/ambient_c_motion.mp3
+#    - assets/level/Đấu Khí.webp
+#    - assets/level/Đấu Giả.webp
+#    - assets/level/Đấu Sư.webp
+#    - assets/level/Đại Đấu Sư.webp
+#    - assets/level/Đấu Linh.webp
+#    - assets/level/Đấu Vương.webp
+#    - assets/level/Đấu Hoàng.webp
+#    - assets/level/Đấu Tông.webp
+#    - assets/level/Đấu Tôn.webp
+#    - assets/level/Đấu Thánh.webp
+#    - assets/level/Đấu Đế.webp

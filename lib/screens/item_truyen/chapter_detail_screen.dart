@@ -113,7 +113,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                         ),
                       );
                     },
-                    child: Text('Previous Chapter'),
+                    child: Text('Chương trước'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white, // Set text color to white
@@ -132,7 +132,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
                       ),
                     );
                   },
-                  child: Text('Next Chapter'),
+                  child: Text('Chương sau'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white, // Set text color to white

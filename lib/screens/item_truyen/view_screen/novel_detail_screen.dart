@@ -220,12 +220,12 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       children: [
         Image.network(
           imageUrl,
-          height: 250,
+          height: 500,
           width: double.infinity,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Container(
-              height: 250,
+              height: 500,
               color: Colors.grey,
               child: Center(
                   child: Text('Hình ảnh không khả dụng',

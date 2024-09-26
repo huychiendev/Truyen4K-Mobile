@@ -86,9 +86,16 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     String content = _commentController.text;
     if (content.isNotEmpty) {
       try {
-        await NovelService.submitComment(widget.slug, content);
-        _commentController.clear();
-        _fetchComments();
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        int? userId = prefs.getInt('user_id'); // Assuming user_id is stored in SharedPreferences
+
+        if (userId != null) {
+          await NovelService.submitComment(widget.slug, content, userId);
+          _commentController.clear();
+          _fetchComments();
+        } else {
+          throw Exception('User ID not found');
+        }
       } catch (e) {
         print('Error submitting comment: $e');
         ScaffoldMessenger.of(context).showSnackBar(

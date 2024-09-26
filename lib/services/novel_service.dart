@@ -111,10 +111,10 @@ class NovelService {
           if (userJson != null && userJson['user'] != null && userJson['user']['tier'] != null) {
             commentJson['tierName'] = userJson['user']['tier']['name'];
             commentJson['userImageData'] = userJson['data'];
-            print('Fetched user data for userId: $userId');
-            print('tierName: ${commentJson['tierName']}');
-            print('userImageData: ${commentJson['userImageData']}');
-            print('---------------------------------');
+            // print('Fetched user data for userId: $userId');
+            // print('tierName: ${commentJson['tierName']}');
+            // print('userImageData: ${commentJson['userImageData']}');
+            // print('---------------------------------');
           }
         }
       } else {
@@ -130,20 +130,27 @@ class NovelService {
   }
 }
 
-  static Future<void> submitComment(String slug, String content) async {
+
+  static Future<void> submitComment(String slug, String content, int userId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
     final response = await http.post(
-      Uri.parse('$baseUrl/comments/$slug'),
+      Uri.parse('$baseUrl/comments/post-comment'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'content': content}),
+      body: jsonEncode({
+        'content': content,
+        'slug': slug,
+        'userId': userId,
+      }),
     );
 
-    if (response.statusCode != 201) {
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      print('Failed to submit comment: ${response.statusCode}');
+      print('Response body: ${response.body}');
       throw Exception('Failed to submit comment');
     }
   }

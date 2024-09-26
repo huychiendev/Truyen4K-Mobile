@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/novel.dart';
+import '../screens/item_truyen/all_items_screen.dart';
+import '../screens/item_truyen/view_screen/novel_detail_screen.dart';
 import '../services/novel_service.dart';
 
 class Recommendations extends StatelessWidget {
@@ -16,6 +18,7 @@ class Recommendations extends StatelessWidget {
                   style: TextStyle(color: Colors.white)));
         } else if (snapshot.hasData) {
           List<Novel> novels = snapshot.data!;
+          List<Map<String, dynamic>> novelMaps = novels.map((novel) => novel.toMap()).toList();
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -33,7 +36,12 @@ class Recommendations extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        // Navigate to all items screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AllItemsScreen(items: novelMaps, category: 'Đề xuất'),
+                          ),
+                        );
                       },
                       child: Text(
                         'Xem Tất Cả',
@@ -53,7 +61,12 @@ class Recommendations extends StatelessWidget {
                     final novel = novels[index];
                     return GestureDetector(
                       onTap: () {
-                        // Navigate to novel detail screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NovelDetailScreen(slug: novel.slug),
+                          ),
+                        );
                       },
                       child: Padding(
                         padding: const EdgeInsets.only(left: 16.0),

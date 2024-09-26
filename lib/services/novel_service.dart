@@ -30,15 +30,16 @@ class NovelService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('$baseUrl/novels/top-read'),
+      Uri.parse('$baseUrl/novels/top-read?page=0&size=10'),
       headers: {
         'Authorization': 'Bearer $token',
       },
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> novelsData = jsonDecode(utf8.decode(response.bodyBytes));
-      return novelsData.map((data) => Novel.fromJson(data)).toList();
+      final Map<String, dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      final List<dynamic> novelsList = jsonResponse['content'];
+      return novelsList.map((data) => Novel.fromJson(data)).toList();
     } else {
       throw Exception('Failed to load top read novels');
     }

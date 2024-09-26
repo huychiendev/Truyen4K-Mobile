@@ -37,4 +37,19 @@ class Novel {
       genreNames: List<String>.from(json['genreNames'] ?? []),
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'slug': slug,
+      'title': title,
+      'authorName': authorName,
+      'thumbnailImageUrl': thumbnailImageUrl,
+      'description': description,
+      'totalChapters': totalChapters,
+      'readCounts': readCounts,
+      'averageRatings': averageRatings,
+      'likeCounts': likeCounts,
+      'genreNames': genreNames,
+    };
+  }
 }

@@ -115,8 +115,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   }
 
   void _navigateToChapter(int chapterNo) {
-    // Navigation logic for reading a chapter
-    // Example:
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -130,8 +128,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   }
 
   void _navigateToAudioPlayer(int chapterNo) {
-    // Navigation logic for audio player
-    // Example:
     Navigator.push(
       context,
       MaterialPageRoute(

@@ -111,10 +111,6 @@ class NovelService {
           if (userJson != null && userJson['user'] != null && userJson['user']['tier'] != null) {
             commentJson['tierName'] = userJson['user']['tier']['name'];
             commentJson['userImageData'] = userJson['data'];
-            // print('Fetched user data for userId: $userId');
-            // print('tierName: ${commentJson['tierName']}');
-            // print('userImageData: ${commentJson['userImageData']}');
-            // print('---------------------------------');
           }
         }
       } else {
@@ -149,8 +145,6 @@ class NovelService {
     );
 
     if (response.statusCode != 201 && response.statusCode != 200) {
-      print('Failed to submit comment: ${response.statusCode}');
-      print('Response body: ${response.body}');
       throw Exception('Failed to submit comment');
     }
   }

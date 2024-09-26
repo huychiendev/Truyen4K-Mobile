@@ -18,13 +18,17 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   File? _selectedImage;
 
   final Map<String, int> cultivationLevels = {
-    'Luyện Khí': 20,
-    'Trúc Cơ': 50,
-    'Kết Đan': 110,
-    'Nguyên Anh': 230,
-    'Hóa Thần': 470,
-    'Luyện Hư': 950,
-    'Đại Thừa': 1910,
+    'Đấu Khí': 0,
+    'Đấu Giả': 51,
+    'Đấu Sư': 151,
+    'Đại Đấu Sư': 301,
+    'Đấu Linh': 501,
+    'Đấu Vương': 801,
+    'Đấu Hoàng': 1201,
+    'Đấu Tông': 1801,
+    'Đấu Tôn': 2501,
+    'Đấu Thánh': 3501,
+    'Đấu Đế': 5001,
   };
 
   @override
@@ -93,7 +97,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   }
 
   String getCultivationLevel(int chaptersRead) {
-    String level = 'Luyện Khí';
+    String level = 'Đấu Khí';
     for (var entry in cultivationLevels.entries) {
       if (chaptersRead >= entry.value) {
         level = entry.key;

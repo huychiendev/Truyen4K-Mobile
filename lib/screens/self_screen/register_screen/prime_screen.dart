@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../menu/profile_screen.dart';
+import '../../menu/profile/screens/profile_screen.dart';
 
 class PremiumScreen1 extends StatefulWidget {
   @override

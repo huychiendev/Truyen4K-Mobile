@@ -117,57 +117,57 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     );
   }
 
-Widget _buildBody(BuildContext context, Map<String, dynamic> data) {
-  return Center(
-    child: SingleChildScrollView(
-      child: Column(
-        children: [
-          _buildTopSection(context, data['newReleased']['content'] as List<dynamic>?),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              children: [
-                CustomButtons(data: data),
-                SizedBox(height: 16),
-                BannerSection(
-                  bannerData: {
-                    'images': [
-                      'assets/bn1.jpg',
-                      'assets/bn2.jpg',
-                      'assets/bn3.jpg',
-                      'assets/bn4.jpg',
-                      'assets/bn5.jpg',
-                      'assets/bn6.jpg',
-                    ],
-                  },
-                ),
-                SizedBox(height: 16),
-                HorizontalListSection(
-                  title: 'Xu hướng',
-                  items: data['trending']['content'] as List<dynamic>,
-                  category: 'Xu hướng',
-                  onPlayTap: (novel) => _startPlayingNovel(context, novel),
-                ),
-                HorizontalListSection(
-                  title: 'Truyện Đọc Nhiều Nhất',
-                  items: data['topRead']['content'] as List<dynamic>,
-                  category: 'Truyện Đọc Nhiều Nhất',
-                  onPlayTap: (novel) => _startPlayingNovel(context, novel),
-                ),
-                HorizontalListSection(
-                  title: 'Truyện Mới Cập Nhật',
-                  items: data['newReleased']['content'] as List<dynamic>,
-                  category: 'Truyện Mới Cập Nhật',
-                  onPlayTap: (novel) => _startPlayingNovel(context, novel),
-                ),
-              ],
+  Widget _buildBody(BuildContext context, Map<String, dynamic> data) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildTopSection(context, data['newReleased']['content'] as List<dynamic>?),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                children: [
+                  CustomButtons(data: data),
+                  SizedBox(height: 16),
+                  BannerSection(
+                    bannerData: {
+                      'images': [
+                        'assets/bn1.jpg',
+                        'assets/bn2.jpg',
+                        'assets/bn3.jpg',
+                        'assets/bn4.jpg',
+                        'assets/bn5.jpg',
+                        'assets/bn6.jpg',
+                      ],
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  HorizontalListSection(
+                    title: 'Xu hướng',
+                    items: data['trending']['content'] as List<dynamic>,
+                    category: 'Xu hướng',
+                    onPlayTap: (novel) => _startPlayingNovel(context, novel),
+                  ),
+                  HorizontalListSection(
+                    title: 'Truyện Đọc Nhiều Nhất',
+                    items: data['topRead']['content'] as List<dynamic>,
+                    category: 'Truyện Đọc Nhiều Nhất',
+                    onPlayTap: (novel) => _startPlayingNovel(context, novel),
+                  ),
+                  HorizontalListSection(
+                    title: 'Truyện Mới Cập Nhật',
+                    items: data['newReleased']['content'] as List<dynamic>,
+                    category: 'Truyện Mới Cập Nhật',
+                    onPlayTap: (novel) => _startPlayingNovel(context, novel),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _startPlayingNovel(BuildContext context, Map<String, dynamic> novel) {
     context.read<AudioPlayerProvider>().updatePlayerState(

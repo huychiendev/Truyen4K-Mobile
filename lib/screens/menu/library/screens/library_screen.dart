@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../item_truyen/view_screen/novel_detail_screen.dart';
+import '../../../item_truyen/view_screen/novel_detail_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   @override

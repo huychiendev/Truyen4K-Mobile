@@ -150,7 +150,6 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
       throw Exception('Failed to load audio file details');
     }
   }
-
   void _showNoAudioDialog() {
     showDialog(
       context: context,

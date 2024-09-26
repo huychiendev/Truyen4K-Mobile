@@ -33,19 +33,7 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/7939054.png"
-#  Luyện Khí.webp
-#
-#  Trúc Cơ.webp
-#
-#  Kết Đan.webp
-#
-#  Nguyên Anh.webp
-#
-#  Hóa Thần.webp
-#
-#  Luyện Hư.webp
-#
-#  Đại Thừa.webp
+
 flutter:
   uses-material-design: true
   assets:
@@ -61,14 +49,14 @@ flutter:
     - assets/bn5.jpg
     - assets/bn6.jpg
     - assets/ambient_c_motion.mp3
-#    - assets/level/Đấu Khí.webp
-#    - assets/level/Đấu Giả.webp
-#    - assets/level/Đấu Sư.webp
-#    - assets/level/Đại Đấu Sư.webp
-#    - assets/level/Đấu Linh.webp
-#    - assets/level/Đấu Vương.webp
-#    - assets/level/Đấu Hoàng.webp
-#    - assets/level/Đấu Tông.webp
-#    - assets/level/Đấu Tôn.webp
-#    - assets/level/Đấu Thánh.webp
-#    - assets/level/Đấu Đế.webp
+    - assets/level/Đấu Khí.webp
+    - assets/level/Đấu Giả.png
+    - assets/level/Đấu Sư.webp
+    - assets/level/Đại Đấu Sư.webp
+    - assets/level/Đấu Linh.webp
+    - assets/level/Đấu Vương.webp
+    - assets/level/Đấu Hoàng.webp
+    - assets/level/Đấu Tông.webp
+    - assets/level/Đấu Tôn.webp
+    - assets/level/Đấu Thánh.webp
+    - assets/level/Đấu Đế.webp

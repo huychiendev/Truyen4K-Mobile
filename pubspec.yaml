@@ -14,11 +14,13 @@ dependencies:
   http: ^1.2.2
   google_fonts: ^6.2.1
   shared_preferences: ^2.0.15
-  flutter_launcher_icons: ^0.9.2
+  flutter_launcher_icons: ^0.14.1
   cached_network_image: ^3.2.0
-  image_picker: ^0.8.4+3
+  image_picker: ^1.1.2
   provider: ^6.0.0
   audioplayers: ^6.1.0
+  image: ^4.2.0
+  intl: ^0.19.0
 
 
 dev_dependencies:
@@ -31,7 +33,19 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/7939054.png"
-
+#  Luyện Khí.webp
+#
+#  Trúc Cơ.webp
+#
+#  Kết Đan.webp
+#
+#  Nguyên Anh.webp
+#
+#  Hóa Thần.webp
+#
+#  Luyện Hư.webp
+#
+#  Đại Thừa.webp
 flutter:
   uses-material-design: true
   assets:
@@ -47,3 +61,10 @@ flutter:
     - assets/bn5.jpg
     - assets/bn6.jpg
     - assets/ambient_c_motion.mp3
+    - assets/level/Luyện Khí.webp
+    - assets/level/Trúc Cơ.webp
+    - assets/level/Kết Đan.webp
+    - assets/level/Nguyên Anh.webp
+    - assets/level/Hóa Thần.webp
+    - assets/level/Luyện Hư.webp
+    - assets/level/Đại Thừa.webp

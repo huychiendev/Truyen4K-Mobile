@@ -8,6 +8,7 @@ class UserProfile {
   final String? createdAt;
   final String? updatedAt;
   final String tierName;
+  final String? data;
 
   UserProfile({
     required this.id,
@@ -19,6 +20,7 @@ class UserProfile {
     this.createdAt,
     this.updatedAt,
     required this.tierName,
+    this.data,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class UserProfile {
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
       tierName: json['tierName'],
+      data: json['data'],
     );
   }
 
@@ -46,6 +49,7 @@ class UserProfile {
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'tierName': tierName,
+      'data': data,
     };
   }
 }

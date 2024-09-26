@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/User.dart';
 import '../models/ProfileModel.dart';
 import '../screens/login/login_screen.dart';
+import 'package:image/image.dart' as img;
 
 class AuthService {
   static const String _baseUrl = 'http://14.225.207.58:9898/api/v1';
@@ -19,6 +20,9 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
+      // lưu lại username vào SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('username', username);
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to login');
@@ -26,8 +30,12 @@ class AuthService {
   }
 
   static Future<UserProfile?> checkToken(String token) async {
+    // lấy ra username từ SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? username = prefs.getString('username');
+
     final response = await http.get(
-      Uri.parse('$_baseUrl/profile/huychien'),
+      Uri.parse('$_baseUrl/profile/$username'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -49,7 +57,8 @@ class AuthService {
     );
   }
 
-  static Future<List<UserImage>> fetchUserImages(String token, int userId) async {
+  static Future<List<UserImage>> fetchUserImages(
+      String token, int userId) async {
     final response = await http.get(
       Uri.parse('$_baseUrl/images/?userId=$userId'),
       headers: {'Authorization': 'Bearer $token'},
@@ -65,18 +74,44 @@ class AuthService {
     }
   }
 
-  static Future<void> uploadUserImage(String token, int userId, File imageFile) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$_baseUrl/images/upload?userId=$userId'),
-    );
-    request.headers['Authorization'] = 'Bearer $token';
-    request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+  static Future<void> uploadUserImage(
+      String token, int userId, File imageFile) async {
+    try {
+      // Read the image from file
+      img.Image? image = img.decodeImage(imageFile.readAsBytesSync());
 
-    final response = await request.send();
+      if (image != null) {
+        // Resize the image to a smaller size (e.g., 800x800)
+        img.Image resizedImage = img.copyResize(image, width: 800);
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to upload image');
+        // Encode the resized image to a new file
+        File compressedImageFile = File('${imageFile.path}_compressed.jpg')
+          ..writeAsBytesSync(img.encodeJpg(resizedImage, quality: 85));
+
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse(
+              'http://14.225.207.58:9898/api/images/upload?userId=$userId'),
+        );
+        // request.headers['Authorization'] = 'Bearer $token';
+        request.files.add(await http.MultipartFile.fromPath(
+            'file', compressedImageFile.path));
+
+        final response = await request.send();
+        final responseBody = await response.stream.bytesToString();
+
+        if (response.statusCode != 200) {
+          print('Server response: $responseBody');
+          throw Exception('Failed to upload image');
+        } else {
+          print('Server response: $responseBody');
+        }
+      } else {
+        throw Exception('Failed to decode image');
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
+      throw e;
     }
   }
 
@@ -98,7 +133,6 @@ class AuthService {
     }
     return null;
   }
-
 
   // Hàm gửi OTP
   static Future<bool> sendOtp(String email) async {

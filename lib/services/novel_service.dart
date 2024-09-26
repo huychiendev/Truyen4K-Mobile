@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../models/comment.dart';
 import '../models/novel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -77,5 +78,73 @@ class NovelService {
       return savedItems.contains(item);
     }
     throw Exception('User not logged in');
+  }
+
+ static Future<List<Comment>> fetchComments(String slug) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('auth_token');
+
+  final response = await http.get(
+    Uri.parse('$baseUrl/comments/$slug'),
+    headers: {
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final List<dynamic> commentsJson = jsonDecode(utf8.decode(response.bodyBytes));
+    List<Comment> comments = [];
+
+    for (var commentJson in commentsJson) {
+      int userId = commentJson['userId'];
+      final userResponse = await http.get(
+        Uri.parse('$baseUrl/images/?userId=$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (userResponse.statusCode == 200) {
+        final List<dynamic> userJsonList = jsonDecode(utf8.decode(userResponse.bodyBytes));
+        if (userJsonList.isNotEmpty) {
+          final userJson = userJsonList[0];
+          if (userJson != null && userJson['user'] != null && userJson['user']['tier'] != null) {
+            commentJson['tierName'] = userJson['user']['tier']['name'];
+            commentJson['userImageData'] = userJson['data'];
+            print('Fetched user data for userId: $userId');
+            print('tierName: ${commentJson['tierName']}');
+            print('userImageData: ${commentJson['userImageData']}');
+            print('---------------------------------');
+          }
+        }
+      } else {
+        print('Failed to fetch user data for userId: $userId');
+      }
+
+      comments.add(Comment.fromJson(commentJson));
+    }
+
+    return comments;
+  } else {
+    throw Exception('Failed to load comments');
+  }
+}
+
+  static Future<void> submitComment(String slug, String content) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/comments/$slug'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'content': content}),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to submit comment');
+    }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/library_novel.dart';
-import '../services/library_service.dart';
+import '../../models/library_novel.dart';
+import '../../services/library_service.dart';
 
 class LibraryController {
   final LibraryService _service = LibraryService();

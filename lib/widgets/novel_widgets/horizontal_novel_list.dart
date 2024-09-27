@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/novel.dart';
+import '../../models/novel_model.dart';
 import 'novel_card.dart';
+
 
 class HorizontalNovelList extends StatelessWidget {
   final List<Novel> novels;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:apptruyenonline/screens/menu/audio_player_provider.dart';
 import 'package:apptruyenonline/screens/item_truyen/view_screen/mobile_audio_player.dart';
-import '../models/novel.dart';
+import '../../models/novel_model.dart';
 import 'package:apptruyenonline/screens/item_truyen/view_screen/miniplayer.dart';
 
 class ExploreController {

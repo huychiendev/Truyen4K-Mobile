@@ -6,12 +6,14 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../widgets/widget_Audio/album_art.dart';
-import '../../../widgets/widget_Audio/controls.dart';
-import '../../../widgets/widget_Audio/footer.dart';
-import '../../../widgets/widget_Audio/progress_bar.dart';
-import '../../../widgets/widget_Audio/top_bar.dart';
-import '../../../widgets/widget_Audio/track_info.dart';
+import '../../../widgets/Audio_widget/album_art.dart';
+import '../../../widgets/Audio_widget/controls.dart';
+import '../../../widgets/Audio_widget/footer.dart';
+import '../../../widgets/Audio_widget/progress_bar.dart';
+import '../../../widgets/Audio_widget/top_bar.dart';
+import '../../../widgets/Audio_widget/track_info.dart';
+
+
 
 class MobileAudioPlayer extends StatefulWidget {
   final String slug;

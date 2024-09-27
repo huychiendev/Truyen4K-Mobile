@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../widgets/banner_section.dart';
+import '../../widgets/general_widgets/banner_section.dart';
 import '../item_truyen/all_items_screen.dart';
 import '../item_truyen/view_screen/miniplayer.dart';
 import '../item_truyen/view_screen/novel_detail_screen.dart';

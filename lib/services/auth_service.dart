@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/User.dart';
 import '../models/ProfileModel.dart';
-import '../screens/login/login_screen.dart';
+import '../screens/authenticator/login_screen.dart';
 import 'package:image/image.dart' as img;
 
 class AuthService {

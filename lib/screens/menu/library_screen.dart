@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/library_tab.dart';
-import '../controllers/library_controller.dart';
-import '../models/library_novel.dart';
+import '../../widgets/library_widgets/library_tab.dart';
+import 'library_controller.dart';
+import '../../models/library_novel.dart';
 
 class LibraryScreen extends StatefulWidget {
   @override

@@ -1,15 +1,16 @@
 import 'dart:io';
 
+import 'package:apptruyenonline/screens/menu/explore_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // import 'model_login/login.dart';
 import 'screens/menu/home_screen.dart';
-import 'screens/menu/explore/screens/explore_screen.dart';
-import 'screens/menu/library/screens/library_screen.dart';
-import 'screens/menu/profile/screens/profile_screen.dart';
-import 'screens/login/login_screen.dart';
+
+import 'screens/menu/library_screen.dart';
+import 'screens/menu/profile_screen.dart';
+import 'screens/authenticator/login_screen.dart';
 import 'screens/menu/audio_player_provider.dart';
 
 class MyHttpOverrides extends HttpOverrides {

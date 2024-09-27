@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/library_novel.dart';
-import 'novel_list_item.dart';
+import '../../models/library_novel.dart';
+
+import '../novel_widgets/novel_list_item.dart';
+
 
 class LibraryTab extends StatelessWidget {
   final Future<List<LibraryNovel>> future;

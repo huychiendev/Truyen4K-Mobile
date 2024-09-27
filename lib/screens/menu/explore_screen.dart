@@ -3,13 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:apptruyenonline/screens/menu/audio_player_provider.dart';
 import 'package:apptruyenonline/screens/item_truyen/all_items_screen.dart';
 import 'package:apptruyenonline/screens/item_truyen/view_screen/novel_detail_screen.dart';
-import 'package:apptruyenonline/screens/item_truyen/view_screen/mobile_audio_player.dart';
-import '../widgets/search_bar.dart';
-import '../widgets/category_chip.dart';
-import '../widgets/horizontal_novel_list.dart';
-import '../models/novel.dart';
-import '../services/explore_service.dart';
-import '../controllers/explore_controller.dart';
+import '../../../../widgets/search_bar.dart' as custom;
+import '../../widgets/general_widgets/category_chip.dart';
+
+import '../../../../services/explore_service.dart';
+import '../../widgets/novel_widgets/horizontal_novel_list.dart';
+import 'explore_controller.dart';
+import '../../models/novel_model.dart';
 
 class ExploreScreen extends StatefulWidget {
   @override
@@ -33,7 +33,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  //SearchBar(),
+                  custom.SearchBar(),
                   SizedBox(height: 20),
                   _buildCategories(),
                   SizedBox(height: 20),

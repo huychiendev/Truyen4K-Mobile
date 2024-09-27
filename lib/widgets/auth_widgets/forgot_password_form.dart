@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../model_login/reset_password.dart';
-import '../services/auth_service.dart';
-import '../widgets/custom_text_field_forgot_password.dart';
-import '../constants/forgot_password_constants.dart';
+import '../../screens/authenticator/reset_password.dart';
+import '../../services/auth_service.dart';
+import 'custom_text_field_forgot_password.dart';
+import '../../constants/forgot_password_constants.dart';
 // import 'reset_password.dart'; // Import trang đặt lại mật khẩu
 
 class ForgotPasswordForm extends StatefulWidget {

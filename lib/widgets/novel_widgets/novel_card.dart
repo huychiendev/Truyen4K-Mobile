@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/novel.dart';
+import '../../models/novel_model.dart';
 
 class NovelCard extends StatelessWidget {
   final Novel novel;

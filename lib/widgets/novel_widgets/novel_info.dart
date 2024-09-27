@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/novel.dart';
+import '../../models/novel.dart';
 
 class NovelInfo extends StatelessWidget {
   final Novel novel;

@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../../constants/forgot_password_constants.dart';
-import '../../widgets/forgot_password_form.dart';
+import '../../widgets/auth_widgets/forgot_password_form.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   @override

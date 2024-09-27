@@ -187,8 +187,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
       children: [
         Image.asset(
           'assets/level/$level.webp',
-          width: 60,
-          height: 60,
+          width: 90,
+          height: 90,
         ),
         SizedBox(height: 8),
         Text(
@@ -247,4 +247,5 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
       ),
     );
   }
+  
 }

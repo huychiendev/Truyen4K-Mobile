@@ -3,8 +3,8 @@ import 'dart:ui'; // Để sử dụng ImageFilter
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../../widgets/custom_text_field_sign_up.dart';
-import '../../widgets/dialogs.dart';
+import '../../widgets/auth_widgets/custom_text_field_sign_up.dart';
+import '../../widgets/general_widgets/dialogs.dart';
 import 'login_screen.dart';
 
 class SignUpScreen extends StatelessWidget {

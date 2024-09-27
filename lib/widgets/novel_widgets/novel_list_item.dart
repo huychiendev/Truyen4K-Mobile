@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../item_truyen/view_screen/novel_detail_screen.dart';
-import '../models/library_novel.dart';
+
+import '../../screens/item_truyen/view_screen/novel_detail_screen.dart';
+import '../../models/library_novel.dart';
+
 
 class NovelListItem extends StatelessWidget {
   final LibraryNovel novel;

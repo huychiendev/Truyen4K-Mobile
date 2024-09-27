@@ -5,7 +5,7 @@ import '../../constants/login_constants.dart';
 import '../../main.dart';
 import '../../models/ProfileModel.dart';
 import '../../services/auth_service.dart';
-import '../../widgets/login_form.dart';
+import '../../widgets/auth_widgets/login_form.dart';
 
 class LoginScreen extends StatefulWidget {
   @override

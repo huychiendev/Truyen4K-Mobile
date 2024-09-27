@@ -3,13 +3,18 @@ import 'package:flutter/material.dart';
 class Controls extends StatelessWidget {
   final bool isPlaying;
   final VoidCallback onTogglePlayPause;
+  final VoidCallback onNextChapter;
+  final VoidCallback onPreviousChapter;
 
   const Controls({
     Key? key,
     required this.isPlaying,
     required this.onTogglePlayPause,
+    required this.onNextChapter,
+    required this.onPreviousChapter,
   }) : super(key: key);
 
+  @override
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -19,9 +24,7 @@ class Controls extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36),
-            onPressed: () {
-              // Handle previous chapter
-            },
+            onPressed: onPreviousChapter,
           ),
           GestureDetector(
             onTap: onTogglePlayPause,
@@ -41,12 +44,11 @@ class Controls extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.skip_next, color: Colors.white, size: 36),
-            onPressed: () {
-              // Handle next chapter
-            },
+            onPressed: onNextChapter,
           ),
         ],
       ),
     );
   }
+
 }

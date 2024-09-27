@@ -13,8 +13,6 @@ import '../../../widgets/Audio_widget/progress_bar.dart';
 import '../../../widgets/Audio_widget/top_bar.dart';
 import '../../../widgets/Audio_widget/track_info.dart';
 
-
-
 class MobileAudioPlayer extends StatefulWidget {
   final String slug;
   final int chapterNo;
@@ -48,10 +46,12 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
   late AudioPlayer _audioPlayer; // Khai báo AudioPlayer
   bool isLoading = true;
   Timer? _progressUpdateTimer;
+  late int _currentChapterNo;
 
   @override
   void initState() {
     super.initState();
+    _currentChapterNo = widget.chapterNo;
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -75,8 +75,6 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
     _fetchAudioDetails();
   }
 
-
-
   @override
   void dispose() {
     _animationController.dispose();
@@ -95,7 +93,7 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
       String? token = prefs.getString('auth_token');
 
       final chapterDetails = await fetchChapterDetails(
-          widget.slug, 'chap-${widget.chapterNo}', token);
+          widget.slug, 'chap-$_currentChapterNo', token);
       final audioDetails =
       await fetchAudioFileDetails(chapterDetails['id'], token);
 
@@ -117,6 +115,26 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  void _handleNextChapter() {
+    setState(() {
+      _currentChapterNo += 1;
+    });
+    _fetchAudioDetails();
+  }
+
+  void _handlePreviousChapter() {
+    if (_currentChapterNo > 1) {
+      setState(() {
+        _currentChapterNo -= 1;
+      });
+      _fetchAudioDetails();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đây là chương đầu tiên!')),
+      );
     }
   }
 
@@ -152,6 +170,7 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
       throw Exception('Failed to load audio file details');
     }
   }
+
   void _showNoAudioDialog() {
     showDialog(
       context: context,
@@ -190,15 +209,15 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
     _timer?.cancel();
     _timer =
         Timer.periodic(Duration(milliseconds: (50 ~/ playbackSpeed)), (timer) {
-      setState(() {
-        if (progress < 1.0) {
-          progress += 0.0001 * playbackSpeed;
-        } else {
-          progress = 0.0;
-          _togglePlayPause();
-        }
-      });
-    });
+          setState(() {
+            if (progress < 1.0) {
+              progress += 0.0001 * playbackSpeed;
+            } else {
+              progress = 0.0;
+              _togglePlayPause();
+            }
+          });
+        });
   }
 
   void _changePlaybackSpeed() {
@@ -270,7 +289,7 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
   void _minimizePlayer() {
     Navigator.pop(context, {
       'showMiniPlayer': true,
-      'currentChapter': widget.chapterNo.toString(),
+      'currentChapter': _currentChapterNo.toString(),
       'currentNovelName': widget.novelName,
       'isPlaying': isPlaying,
       'progress': progress,
@@ -294,7 +313,7 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
             Flexible(
                 child: AlbumArt(thumbnailImageUrl: widget.thumbnailImageUrl)),
             const SizedBox(height: 24),
-            TrackInfo(novelName: widget.novelName, chapterNo: widget.chapterNo),
+            TrackInfo(novelName: widget.novelName, chapterNo: _currentChapterNo),
             const SizedBox(height: 24),
             ProgressBar(
               progress: progress,
@@ -312,6 +331,8 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
             Controls(
               isPlaying: isPlaying,
               onTogglePlayPause: _togglePlayPause,
+              onNextChapter: _handleNextChapter,
+              onPreviousChapter: _handlePreviousChapter,
             ),
             const SizedBox(height: 24),
             Footer(

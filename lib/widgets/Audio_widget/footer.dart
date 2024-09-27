@@ -17,7 +17,7 @@ class Footer extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(Icons.nightlight_round, color: Colors.white, size: 24),
+          //Icon(Icons.nightlight_round, color: Colors.white, size: 24),
           GestureDetector(
             onTap: onChangePlaybackSpeed,
             child: Container(

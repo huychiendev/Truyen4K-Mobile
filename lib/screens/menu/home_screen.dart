@@ -80,8 +80,13 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: AppBar(
-        title: Center(
-          child: Text('Audio Truyện 247'),
+        title: Text(
+          'Audio Truyện 247',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -116,6 +121,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
       ),
     );
   }
+
 
   Widget _buildBody(BuildContext context, Map<String, dynamic> data) {
     return Center(

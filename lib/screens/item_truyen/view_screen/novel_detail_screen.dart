@@ -1,13 +1,9 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../../models/comment.dart';
 import '../../../models/novel.dart';
 import '../../../services/novel_service.dart';
-
-
 import '../../../widgets/general_widgets/cover_image.dart';
 import '../../../widgets/novel_widgets/chapter_list.dart';
 import '../../../widgets/novel_widgets/novel_info.dart';

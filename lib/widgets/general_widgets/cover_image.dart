@@ -41,7 +41,7 @@ class CoverImage extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: Icon(Icons.book, color: Colors.white),
-                    label: Text('Đọc tiếp', style: TextStyle(color: Colors.white)),
+                    label: Text('Đọc Truyện', style: TextStyle(color: Colors.white)),
                     onPressed: onReadPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF232538),
@@ -52,7 +52,7 @@ class CoverImage extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: Icon(Icons.headphones, color: Colors.white),
-                    label: Text('Nghe tiếp', style: TextStyle(color: Colors.white)),
+                    label: Text('Nghe Truyện', style: TextStyle(color: Colors.white)),
                     onPressed: onListenPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF232538),

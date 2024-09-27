@@ -1,29 +1,39 @@
-import 'package:flutter/material.dart';
+import 'package:apptruyenonline/services/novel_service.dart';
+
 import '../../models/library_novel.dart';
-import '../../services/library_service.dart';
 
 class LibraryController {
-  final LibraryService _service = LibraryService();
-
   Future<List<LibraryNovel>>? savedNovelsFuture;
   Future<List<LibraryNovel>>? downloadedNovelsFuture;
   Future<List<LibraryNovel>>? historyNovelsFuture;
+  Future<List<LibraryNovel>>? readingProgressNovelsFuture;
+  Future<List<LibraryNovel>>? completedNovelsFuture; // Add this line
 
   void initializeData() {
-    savedNovelsFuture = _service.fetchSavedNovels();
-    downloadedNovelsFuture = _service.fetchNovels();
-    historyNovelsFuture = _service.fetchNovels();
+    refreshSavedNovels();
+    refreshDownloadedNovels();
+    refreshHistoryNovels();
+    refreshReadingProgressNovels();
+    refreshCompletedNovels(); // Add this line
   }
 
-  Future<void> refreshSavedNovels() async {
-    savedNovelsFuture = _service.fetchSavedNovels();
+  void refreshSavedNovels() {
+    savedNovelsFuture = LibraryNovel.fetchSavedNovels();
   }
 
-  Future<void> refreshDownloadedNovels() async {
-    downloadedNovelsFuture = _service.fetchNovels();
+  void refreshDownloadedNovels() {
+    downloadedNovelsFuture = Future.value([]);
   }
 
-  Future<void> refreshHistoryNovels() async {
-    historyNovelsFuture = _service.fetchNovels();
+  void refreshHistoryNovels() {
+    historyNovelsFuture = Future.value([]);
+  }
+
+  void refreshReadingProgressNovels() {
+    readingProgressNovelsFuture = NovelService.fetchReadingProgress();
+  }
+
+  void refreshCompletedNovels() {
+    completedNovelsFuture = NovelService.fetchCompletedNovels();
   }
 }

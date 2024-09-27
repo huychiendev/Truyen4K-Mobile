@@ -19,6 +19,138 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen> {
   final ExploreController _controller = ExploreController();
   final ExploreService _service = ExploreService();
+  List<String> genres = [];
+  bool isLoading = true;
+  String? error;
+  TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchGenres();
+  }
+
+  Future<void> _fetchGenres() async {
+    try {
+      List<String> fetchedGenres = await _service.fetchGenres();
+      setState(() {
+        genres = fetchedGenres;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi tải thể loại: $e')),
+      );
+    }
+  }
+
+  void _performSearch(String query) async {
+    if (query.isEmpty) return;
+
+    try {
+      List<Novel> authorResults = await _service.searchNovelsByAuthor(query);
+      List<Novel> titleResults = await _service.searchNovelsByTitle(query);
+
+      if (authorResults.isEmpty && titleResults.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không tìm thấy kết quả')),
+        );
+      } else {
+        _showSearchResults(authorResults, titleResults);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không tìm thấy kết quả')),
+      );
+    }
+  }
+
+  void _showSearchResults(List<Novel> authorResults, List<Novel> titleResults) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Theme(
+          data: Theme.of(context).copyWith(dialogBackgroundColor: Colors.black),
+          child: AlertDialog(
+            title:
+                Text('Kết quả tìm kiếm', style: TextStyle(color: Colors.green)),
+            content: Container(
+              width: double.maxFinite,
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  _buildResultSection('Theo tác giả', authorResults),
+                  SizedBox(height: 16),
+                  _buildResultSection('Theo tiêu đề', titleResults),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: Text('Đóng', style: TextStyle(color: Colors.green)),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildResultSection(String title, List<Novel> novels) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white)),
+        SizedBox(height: 8),
+        novels.isEmpty
+            ? Text('Không tìm thấy kết quả',
+                style: TextStyle(color: Colors.white))
+            : Column(
+                children: novels
+                    .take(3)
+                    .map((novel) => _buildNovelItem(novel))
+                    .toList(),
+              ),
+        if (novels.length > 3)
+          TextButton(
+            child: Text('Xem thêm', style: TextStyle(color: Colors.blueAccent)),
+            onPressed: () {
+              _navigateToAllItems(novels, title);
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildNovelItem(Novel novel) {
+    return ListTile(
+      leading: Image.network(novel.thumbnailImageUrl,
+          width: 50, height: 75, fit: BoxFit.cover),
+      title: Text(novel.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: Colors.white)),
+      subtitle: Text(novel.authorName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: Colors.white)),
+      onTap: () {
+        Navigator.of(context).pop();
+        _navigateToNovelDetail(novel);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +165,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  custom.SearchBar(),
+                  _buildSearchBar(),
                   SizedBox(height: 20),
                   _buildCategories(),
                   SizedBox(height: 20),
@@ -51,11 +183,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
             builder: (context, audioPlayerProvider, child) {
               return audioPlayerProvider.showMiniPlayer
                   ? Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: _buildMiniPlayer(context, audioPlayerProvider),
-              )
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: _buildMiniPlayer(context, audioPlayerProvider),
+                    )
                   : SizedBox.shrink();
             },
           ),
@@ -77,19 +209,49 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
+  Widget _buildSearchBar() {
+    return TextField(
+      controller: _searchController,
+      style: TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: 'Tìm kiếm truyện...',
+        hintStyle: TextStyle(color: Colors.grey),
+        prefixIcon: Icon(Icons.search, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.grey[800],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      onSubmitted: (value) {
+        _performSearch(value);
+      },
+    );
+  }
+
   Widget _buildCategories() {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (error != null) {
+      return Text('Error: $error', style: TextStyle(color: Colors.red));
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Thể loại',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         SizedBox(height: 10),
         Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: ['Tiên Hiệp', 'Khoa Huyễn', 'Võng Du'].map((category) {
+          children: genres.map((category) {
             return CategoryChip(label: category);
           }).toList(),
         ),
@@ -130,7 +292,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
           return _buildNovelSection(
             title: 'Truyện Kiếm Hiệp',
             novels: snapshot.data!,
-            onViewAll: () => _navigateToAllItems(snapshot.data!, 'Truyện Kiếm Hiệp'),
+            onViewAll: () =>
+                _navigateToAllItems(snapshot.data!, 'Truyện Kiếm Hiệp'),
           );
         } else {
           return Text('No novels found.');
@@ -151,7 +314,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
           return _buildNovelSection(
             title: 'Truyện Tu Tiên',
             novels: snapshot.data!,
-            onViewAll: () => _navigateToAllItems(snapshot.data!, 'Truyện Tu Tiên'),
+            onViewAll: () =>
+                _navigateToAllItems(snapshot.data!, 'Truyện Tu Tiên'),
           );
         } else {
           return Text('No novels found.');
@@ -160,7 +324,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  Widget _buildNovelSection({required String title, required List<Novel> novels, required VoidCallback onViewAll}) {
+  Widget _buildNovelSection(
+      {required String title,
+      required List<Novel> novels,
+      required VoidCallback onViewAll}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -169,7 +336,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Text(
               title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             TextButton(
               onPressed: onViewAll,
@@ -194,12 +364,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
         builder: (context) => AllItemsScreen(
           items: novels
               .map((novel) => {
-            'slug': novel.slug,
-            'title': novel.title,
-            'authorName': novel.description,
-            'thumbnailImageUrl': novel.thumbnailImageUrl,
-            'averageRatings': novel.averageRatings,
-          })
+                    'slug': novel.slug,
+                    'title': novel.title,
+                    'authorName': novel.description,
+                    'thumbnailImageUrl': novel.thumbnailImageUrl,
+                    'averageRatings': novel.averageRatings,
+                  })
               .toList(),
           category: category,
         ),
@@ -220,7 +390,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _controller.startPlayingNovel(novel, context);
   }
 
-  Widget _buildMiniPlayer(BuildContext context, AudioPlayerProvider audioPlayerProvider) {
+  Widget _buildMiniPlayer(
+      BuildContext context, AudioPlayerProvider audioPlayerProvider) {
     return _controller.buildMiniPlayer(context, audioPlayerProvider);
   }
 }

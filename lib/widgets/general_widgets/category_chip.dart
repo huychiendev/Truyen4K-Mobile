@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../screens/menu/genre_novels_screen.dart';
+
 class CategoryChip extends StatelessWidget {
   final String label;
 
@@ -7,9 +9,22 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      label: Text(label),
-      backgroundColor: Colors.grey[200],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GenreNovelsScreen(genre: label),
+          ),
+        );
+      },
+      child: Chip(
+        label: Text(
+          label,
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.grey[900],
+      ),
     );
   }
 }

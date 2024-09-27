@@ -8,17 +8,47 @@ class LibraryScreen extends StatefulWidget {
   _LibraryScreenState createState() => _LibraryScreenState();
 }
 
-class _LibraryScreenState extends State<LibraryScreen> {
+class _LibraryScreenState extends State<LibraryScreen>
+    with SingleTickerProviderStateMixin {
   final LibraryController _controller = LibraryController();
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _controller.initializeData();
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_handleTabChange);
   }
 
-  Future<List<LibraryNovel>> _handleNullableFuture(Future<List<LibraryNovel>>? future) {
+  void _handleTabChange() {
+    if (_tabController.indexIsChanging) {
+      setState(() {
+        switch (_tabController.index) {
+          case 0:
+            _controller.refreshSavedNovels();
+            break;
+          case 1:
+            _controller.refreshReadingProgressNovels(); // New method
+            break;
+          case 2:
+            _controller.refreshHistoryNovels();
+            break;
+        }
+      });
+    }
+  }
+
+
+  Future<List<LibraryNovel>> _handleNullableFuture(
+      Future<List<LibraryNovel>>? future) {
     return future ?? Future.value([]);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -37,16 +67,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
             fontWeight: FontWeight.bold,
           ),
           bottom: TabBar(
+            controller: _tabController,
             labelColor: Colors.green,
             unselectedLabelColor: Colors.grey,
             tabs: [
               Tab(text: 'Truyện đã lưu'),
-              Tab(text: 'Đang nghe'),
+              Tab(text: 'Đang đọc'),
               Tab(text: 'Đã Đọc Xong'),
             ],
           ),
         ),
         body: TabBarView(
+          controller: _tabController,
           children: [
             LibraryTab(
               future: _handleNullableFuture(_controller.savedNovelsFuture),
@@ -54,14 +86,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
               emptyMessage: 'Không tìm thấy truyện đã lưu.',
             ),
             LibraryTab(
-              future: _handleNullableFuture(_controller.downloadedNovelsFuture),
-              refreshCallback: _controller.refreshDownloadedNovels,
-              emptyMessage: 'Không tìm thấy truyện.',
+              future: _handleNullableFuture(_controller.readingProgressNovelsFuture),
+              refreshCallback: _controller.refreshReadingProgressNovels,
+              emptyMessage: 'Không tìm thấy truyện đang đọc.',
             ),
             LibraryTab(
-              future: _handleNullableFuture(_controller.historyNovelsFuture),
-              refreshCallback: _controller.refreshHistoryNovels,
-              emptyMessage: 'Không tìm thấy truyện.',
+              future: _handleNullableFuture(_controller.completedNovelsFuture), // New future
+              refreshCallback: _controller.refreshCompletedNovels, // New callback
+              emptyMessage: 'Không tìm thấy truyện đã đọc xong.',
             ),
           ],
         ),

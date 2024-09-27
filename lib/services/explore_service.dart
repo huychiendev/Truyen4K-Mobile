@@ -16,7 +16,8 @@ class ExploreService {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      List<dynamic> data =
+          jsonDecode(utf8.decode(response.bodyBytes))['content'];
       return data.map((json) => Novel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load novels');
@@ -28,7 +29,53 @@ class ExploreService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/filter-by-genre?genreIds=${genreIds.join(",")}'),
+      Uri.parse(
+          'http://14.225.207.58:9898/api/novels/filter-by-genre?genreIds=${genreIds.join(",")}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> data =
+          jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      return data.map((json) => Novel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load novels');
+    }
+  }
+
+  Future<List<String>> fetchGenres() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    if (token == null) {
+      throw Exception('Token not found');
+    }
+
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/genres/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> genresJson = jsonDecode(utf8.decode(response.bodyBytes));
+      return genresJson.map((genre) => genre['name'] as String).toList();
+    } else {
+      throw Exception(
+          'Failed to load genres: ${response.statusCode} ${response.body}');
+    }
+  }
+
+  Future<List<Novel>> searchNovelsByAuthor(String authorName) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/novels/search/by-author?authorName=$authorName'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -38,7 +85,27 @@ class ExploreService {
       List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes))['content'];
       return data.map((json) => Novel.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load novels');
+      throw Exception('Failed to search novels by author');
     }
   }
+
+  Future<List<Novel>> searchNovelsByTitle(String title) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse('http://14.225.207.58:9898/api/novels/search/by-title?title=$title'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      return data.map((json) => Novel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to search novels by title');
+    }
+  }
+
 }

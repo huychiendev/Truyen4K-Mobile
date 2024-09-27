@@ -39,6 +39,8 @@ Future<void> printAllSharedPreferencesData() async {
 
 void main() {
   HttpOverrides.global = MyHttpOverrides();
+
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => AudioPlayerProvider(),

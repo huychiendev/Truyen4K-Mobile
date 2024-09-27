@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../models/ReadingProgress.dart';
 import '../models/comment.dart';
+import '../models/library_novel.dart';
 import '../models/novel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -166,5 +169,116 @@ class NovelService {
     } else {
       throw Exception('Failed to load top read novels');
     }
+  }
+
+
+  Future<void> saveReadingProgress(ReadingProgress progress) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String key = 'reading_progress';
+    List<String> progressItems = prefs.getStringList(key) ?? [];
+
+    // Remove old progress for this novel if exists
+    progressItems.removeWhere((item) => item.startsWith('${progress.username},${progress.slug},'));
+
+    // Add new progress
+    String item = '${progress.username},${progress.slug},${progress.chapterNo},${progress.timestamp}';
+    progressItems.add(item);
+
+    await prefs.setStringList(key, progressItems);
+    print('Saved progress items: $progressItems'); // Debug print
+  }
+
+  static Future<List<LibraryNovel>> fetchReadingProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+    String? username = prefs.getString('username');
+    String key = 'reading_progress';
+
+    if (username == null) {
+      throw Exception('Username not found');
+    }
+
+    List<String> progressItems = prefs.getStringList(key) ?? [];
+    List<LibraryNovel> novels = [];
+
+    for (String item in progressItems) {
+      List<String> parts = item.split(',');
+      if (parts[0] == username) {
+        String slug = parts[1];
+        int chapterNo = int.parse(parts[2]);
+        int timestamp = int.parse(parts[3]);
+
+        final response = await http.get(
+          Uri.parse('http://14.225.207.58:9898/api/novels/$slug'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          var novelJson = jsonDecode(utf8.decode(response.bodyBytes));
+          int totalChapters = novelJson['totalChapters'];
+          if (chapterNo < totalChapters) {
+            novels.add(LibraryNovel.fromJson(
+              novelJson,
+              icon: Icons.book,
+              subtitle: 'Đang đọc: Chương $chapterNo',
+            ));
+          }
+        } else {
+          throw Exception('Failed to load novel details');
+        }
+      }
+    }
+
+    print('Reading progress novels: $novels'); // Debug print
+    return novels;
+  }
+
+  static Future<List<LibraryNovel>> fetchCompletedNovels() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+    String? username = prefs.getString('username');
+    String key = 'reading_progress';
+
+    if (username == null) {
+      throw Exception('Username not found');
+    }
+
+    List<String> progressItems = prefs.getStringList(key) ?? [];
+    List<LibraryNovel> novels = [];
+
+    for (String item in progressItems) {
+      List<String> parts = item.split(',');
+      if (parts[0] == username) {
+        String slug = parts[1];
+        int chapterNo = int.parse(parts[2]);
+        int timestamp = int.parse(parts[3]);
+
+        final response = await http.get(
+          Uri.parse('http://14.225.207.58:9898/api/novels/$slug'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          var novelJson = jsonDecode(utf8.decode(response.bodyBytes));
+          int totalChapters = novelJson['totalChapters'];
+          if (chapterNo >= totalChapters) {
+            novels.add(LibraryNovel.fromJson(
+              novelJson,
+              icon: Icons.check,
+              subtitle: 'Đã đọc xong',
+            ));
+          }
+        } else {
+          throw Exception('Failed to load novel details');
+        }
+      }
+    }
+
+    print('Completed novels: $novels'); // Debug print
+    return novels;
   }
 }

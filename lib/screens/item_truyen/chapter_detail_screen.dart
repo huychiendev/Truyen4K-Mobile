@@ -1,7 +1,10 @@
+import 'package:apptruyenonline/models/ReadingProgress.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:apptruyenonline/screens/item_truyen/chapter_detail_screen.dart';
+
 
 class ChapterDetailScreen extends StatefulWidget {
   final String slug;
@@ -31,6 +34,11 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
   Future<void> _fetchChapterDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
+    String? username = prefs.getString('username');
+
+    if (username == null) {
+      throw Exception('Username not found');
+    }
 
     final response = await http.get(
       Uri.parse('http://14.225.207.58:9898/api/chapters/${widget.slug}/chap-${widget.chapterNo}'),
@@ -43,6 +51,21 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
       setState(() {
         chapterData = jsonDecode(utf8.decode(response.bodyBytes));
       });
+
+      // Save reading progress
+      ReadingProgress progress = ReadingProgress(
+        username: username,
+        slug: widget.slug,
+        chapterNo: widget.chapterNo,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      );
+      await saveReadingProgress(progress);
+
+      // Print all keys and their values stored in SharedPreferences
+      prefs.getKeys().forEach((key) {
+        print('$key: ${prefs.get(key)}');
+      });
+
     } else {
       throw Exception('Failed to load chapter details');
     }

@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:apptruyenonline/screens/authenticator/Category_Selection_Screen.dart';
 import 'package:apptruyenonline/screens/menu/explore_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -54,21 +54,35 @@ void main() {
 }
 
 // ... rest of your code ...
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'App Truyện 247',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Inter',
-      ),
-      // home: NovelDetailScreen(),
-      home: LoginScreen(),
-    );
+// class MyApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'App Truyện 247',
+//       debugShowCheckedModeBanner: false,
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//         fontFamily: 'Inter',
+//       ),
+//       // home: NovelDetailScreen(),
+//       home: LoginScreen(),
+//     );
+//   }
+// }
+
+  class MyApp extends StatelessWidget {
+    @override
+    Widget build(BuildContext context) {
+      return MaterialApp(
+        title: 'Category Selection Demo',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: CategorySelectionScreen(userId: "1"), // Truyền một userId mẫu
+      );
+    }
   }
-}
 
 class MainScreen extends StatefulWidget {
   @override

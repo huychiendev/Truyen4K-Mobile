@@ -1,3 +1,4 @@
+import 'package:apptruyenonline/screens/authenticator/Category_Selection_Screen.dart';
 import 'package:apptruyenonline/screens/authenticator/sign_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -75,23 +76,50 @@ class _LoginFormState extends State<LoginForm> {
         _passwordController.text,
       );
 
-      // Lấy token từ kết quả đăng nhập
       final String accessToken = result['accessToken'];
+      final String userId = result['userId'].toString(); // Make sure your API returns userId
 
-      // Lưu token vào SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', accessToken);
 
-      // _showSnackBar(context, 'Login successful: ${result['accessToken']}');
+//đoan đựoc sửa
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MainScreen()),
       );
+
     } catch (e) {
       _showErrorDialog(
-          context, 'Vui lòng kiểm tra lại tên đăng nhập và mật khẩu');
+          context,
+          'Vui lòng kiểm tra lại tên đăng nhập và mật khẩu'
+      );
     }
   }
+
+      // bool categoriesSelected = prefs.getBool('categories_selected') ?? false;
+      //
+      // if (categoriesSelected) {
+      //   // If categories were already selected, go directly to main screen
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => MainScreen()),
+      //   );
+      // } else {
+        // If categories haven't been selected, go to category selection screen
+  //       Navigator.pushReplacement(
+  //         context,
+  //         MaterialPageRoute(
+  //           builder: (context) => CategorySelectionScreen(userId: userId),
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     _showErrorDialog(
+  //       context,
+  //       'Vui lòng kiểm tra lại tên đăng nhập và mật khẩu',
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {

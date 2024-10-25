@@ -4,23 +4,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/novel_model.dart';
 
 class ExploreService {
-  Future<List<Novel>> fetchTopReadNovels() async {
+  static const String baseUrl = 'http://14.225.207.58:9898/api/novels/recommend?userId=1&page=0&size=10';
+
+  // Thêm method mới cho recommendations
+  Future<List<Novel>> fetchRecommendations() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/top-read?page=0&size=10'),
+      Uri.parse('$baseUrl/novels/recommend?page=0&size=10'),
       headers: {
         'Authorization': 'Bearer $token',
       },
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data =
-          jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes))['content'];
       return data.map((json) => Novel.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load novels');
+      throw Exception('Failed to load recommendations');
     }
   }
 
@@ -38,7 +40,7 @@ class ExploreService {
 
     if (response.statusCode == 200) {
       List<dynamic> data =
-          jsonDecode(utf8.decode(response.bodyBytes))['content'];
+      jsonDecode(utf8.decode(response.bodyBytes))['content'];
       return data.map((json) => Novel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load novels');

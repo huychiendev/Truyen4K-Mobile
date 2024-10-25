@@ -54,7 +54,7 @@ class LibraryService {
         if (response.statusCode == 200) {
           novels.add(LibraryNovel.fromJson(
               jsonDecode(utf8.decode(response.bodyBytes)),
-              icon: Icons.bookmark));
+              icon: Icons.more_vert));
         } else {
           throw Exception('Failed to load novel details');
         }

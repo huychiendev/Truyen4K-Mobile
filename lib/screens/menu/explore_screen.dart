@@ -77,7 +77,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           data: Theme.of(context).copyWith(dialogBackgroundColor: Colors.black),
           child: AlertDialog(
             title:
-                Text('Kết quả tìm kiếm', style: TextStyle(color: Colors.green)),
+            Text('Kết quả tìm kiếm', style: TextStyle(color: Colors.green)),
             content: Container(
               width: double.maxFinite,
               child: ListView(
@@ -115,13 +115,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
         SizedBox(height: 8),
         novels.isEmpty
             ? Text('Không tìm thấy kết quả',
-                style: TextStyle(color: Colors.white))
+            style: TextStyle(color: Colors.white))
             : Column(
-                children: novels
-                    .take(3)
-                    .map((novel) => _buildNovelItem(novel))
-                    .toList(),
-              ),
+          children: novels
+              .take(3)
+              .map((novel) => _buildNovelItem(novel))
+              .toList(),
+        ),
         if (novels.length > 3)
           TextButton(
             child: Text('Xem thêm', style: TextStyle(color: Colors.blueAccent)),
@@ -183,11 +183,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
             builder: (context, audioPlayerProvider, child) {
               return audioPlayerProvider.showMiniPlayer
                   ? Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: _buildMiniPlayer(context, audioPlayerProvider),
-                    )
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildMiniPlayer(context, audioPlayerProvider),
+              )
                   : SizedBox.shrink();
             },
           ),
@@ -261,12 +261,43 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildRecommendations() {
     return FutureBuilder<List<Novel>>(
-      future: _service.fetchTopReadNovels(),
+      future: _service.fetchRecommendations(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return Container(
+            height: 200,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+              ),
+            ),
+          );
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          return Container(
+            height: 200,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Không thể tải đề xuất',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {});
+                    },
+                    icon: Icon(Icons.refresh, color: Colors.green),
+                    label: Text(
+                      'Thử lại',
+                      style: TextStyle(color: Colors.green),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         } else if (snapshot.hasData) {
           return _buildNovelSection(
             title: 'Đề xuất cho bạn',
@@ -274,7 +305,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
             onViewAll: () => _navigateToAllItems(snapshot.data!, 'Đề xuất'),
           );
         } else {
-          return Text('No novels found.');
+          return Container(
+            height: 200,
+            child: Center(
+              child: Text(
+                'Chưa có truyện đề xuất',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+          );
         }
       },
     );
@@ -326,8 +365,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildNovelSection(
       {required String title,
-      required List<Novel> novels,
-      required VoidCallback onViewAll}) {
+        required List<Novel> novels,
+        required VoidCallback onViewAll}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -364,12 +403,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
         builder: (context) => AllItemsScreen(
           items: novels
               .map((novel) => {
-                    'slug': novel.slug,
-                    'title': novel.title,
-                    'authorName': novel.description,
-                    'thumbnailImageUrl': novel.thumbnailImageUrl,
-                    'averageRatings': novel.averageRatings,
-                  })
+            'slug': novel.slug,
+            'title': novel.title,
+            'authorName': novel.description,
+            'thumbnailImageUrl': novel.thumbnailImageUrl,
+            'averageRatings': novel.averageRatings,
+          })
               .toList(),
           category: category,
         ),

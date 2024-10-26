@@ -170,7 +170,21 @@ class NovelService {
       throw Exception('Failed to load top read novels');
     }
   }
+  static Future<void> deleteComment(int commentId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
 
+    final response = await http.delete(
+      Uri.parse('http://14.225.207.58:9898/api/comments/$commentId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete comment');
+    }
+  }
 
   Future<void> saveReadingProgress(ReadingProgress progress) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

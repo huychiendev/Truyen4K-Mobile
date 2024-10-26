@@ -3,6 +3,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../models/comment.dart';
+import '../../services/novel_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Button Bình luận hiển thị ở màn hình chính
 class CommentButton extends StatelessWidget {
@@ -73,6 +75,7 @@ class CommentBottomSheet extends StatelessWidget {
   final Map<int, bool> showFullComment;
   final VoidCallback onSubmitComment;
   final String Function(String) shortenComment;
+  final VoidCallback? onRefreshComments;
 
   const CommentBottomSheet({
     Key? key,
@@ -83,6 +86,7 @@ class CommentBottomSheet extends StatelessWidget {
     required this.showFullComment,
     required this.onSubmitComment,
     required this.shortenComment,
+    this.onRefreshComments,
   }) : super(key: key);
 
   @override
@@ -123,7 +127,7 @@ class CommentBottomSheet extends StatelessWidget {
                 ? Center(child: CircularProgressIndicator())
                 : ListView.builder(
               itemCount: comments.length,
-              itemBuilder: (context, index) => _buildCommentItem(index),
+              itemBuilder: (context, index) => _buildCommentItem(context, index),
             ),
           ),
 
@@ -134,7 +138,7 @@ class CommentBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildCommentItem(int index) {
+  Widget _buildCommentItem(BuildContext context, int index) {
     final comment = comments[index];
     final showFull = showFullComment[index] ?? false;
 
@@ -143,9 +147,10 @@ class CommentBottomSheet extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User Info
+          // User Info Row
           Row(
             children: [
+              // Avatar
               CircleAvatar(
                 backgroundImage: comment.userImageData != null
                     ? MemoryImage(base64Decode(comment.userImageData!))
@@ -156,6 +161,8 @@ class CommentBottomSheet extends StatelessWidget {
                 backgroundColor: Colors.grey[800],
               ),
               SizedBox(width: 12),
+
+              // User Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,8 +198,21 @@ class CommentBottomSheet extends StatelessWidget {
                         ],
                       ],
                     ),
+                    Text(
+                      comment.createdAt,
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
+              ),
+
+              // Menu Button (3 chấm)
+              IconButton(
+                icon: Icon(Icons.more_vert, color: Colors.white70),
+                onPressed: () => _showCommentOptions(context, comment),
               ),
             ],
           ),
@@ -206,8 +226,74 @@ class CommentBottomSheet extends StatelessWidget {
               style: TextStyle(color: Colors.white70),
             ),
           ),
-          Divider(color: Colors.grey[800], height: 32),
+
+          // Bottom Border
+          SizedBox(height: 16),
+          Divider(color: Colors.grey[800], height: 1),
         ],
+      ),
+    );
+  }
+
+  Future<void> _showCommentOptions(BuildContext context, Comment comment) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? currentUserId = prefs.getInt('user_id');
+    final isCommentAuthor = currentUserId != null && comment.userId == currentUserId;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext ctx) => Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.thumb_up_outlined, color: Colors.white),
+                title: Text('Thích', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                },
+              ),
+              if (isCommentAuthor)
+                ListTile(
+                  leading: Icon(Icons.delete_outline, color: Colors.red),
+                  title: Text('Xóa', style: TextStyle(color: Colors.red)),
+                  onTap: () async {
+                    try {
+                      await NovelService.deleteComment(comment.id);
+                      Navigator.pop(ctx);
+                      if (onRefreshComments != null) {
+                        onRefreshComments!();
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Đã xóa bình luận')),
+                      );
+                    } catch (e) {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Không thể xóa bình luận. Vui lòng thử lại.')),
+                      );
+                    }
+                  },
+                ),
+              SizedBox(height: 8),
+            ],
+          ),
+        ),
       ),
     );
   }

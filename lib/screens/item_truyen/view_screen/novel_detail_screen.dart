@@ -129,6 +129,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
           showFullComment: _showFullComment,
           onSubmitComment: _submitComment,
           shortenComment: _shortenComment,
+          onRefreshComments: _fetchComments, // Thêm callback này
         ),
       ),
     );

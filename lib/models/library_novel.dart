@@ -1,8 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+
 class LibraryNovel {
   final String title;
   final String authorName;
@@ -10,6 +10,7 @@ class LibraryNovel {
   final String slug;
   final String subtitle;
   final IconData trailingIcon;
+  final String primaryGenre;
 
   LibraryNovel({
     required this.title,
@@ -18,6 +19,7 @@ class LibraryNovel {
     required this.slug,
     required this.subtitle,
     required this.trailingIcon,
+    required this.primaryGenre,
   });
 
   factory LibraryNovel.fromJson(Map<String, dynamic> json, {IconData? icon, String? subtitle}) {
@@ -28,44 +30,52 @@ class LibraryNovel {
       slug: json['slug'],
       subtitle: subtitle ?? json['authorName'],
       trailingIcon: icon ?? Icons.more_vert,
+      primaryGenre: (json['genreNames'] as List<dynamic>).isNotEmpty
+          ? json['genreNames'][0]
+          : 'Unknown',
     );
   }
 
   static Future<List<LibraryNovel>> fetchSavedNovels() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
-    String? username = prefs.getString('username');
-    String key = 'saved_items';
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+      String? username = prefs.getString('username');
+      String key = 'saved_items';
 
-    if (username == null) {
-      throw Exception('Username not found');
-    }
+      if (username == null) {
+        throw Exception('Username not found');
+      }
 
-    List<String> savedItems = prefs.getStringList(key) ?? [];
-    List<LibraryNovel> novels = [];
+      List<String> savedItems = prefs.getStringList(key) ?? [];
+      List<LibraryNovel> novels = [];
 
-    for (String item in savedItems) {
-      if (item.startsWith('$username,')) {
-        String slug = item.split(',')[1];
-        final response = await http.get(
-          Uri.parse('http://14.225.207.58:9898/api/novels/$slug'),
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        );
+      for (String item in savedItems) {
+        if (item.startsWith('$username,')) {
+          String slug = item.split(',')[1];
+          final response = await http.get(
+            Uri.parse('http://14.225.207.58:9898/api/novels/$slug'),
+            headers: {
+              'Authorization': 'Bearer $token',
+            },
+          ).timeout(Duration(seconds: 10));
 
-        if (response.statusCode == 200) {
-          novels.add(LibraryNovel.fromJson(
-            jsonDecode(utf8.decode(response.bodyBytes)),
-            icon: Icons.more_vert,
-            subtitle: 'Đã lưu',
-          ));
-        } else {
-          throw Exception('Failed to load novel details');
+          if (response.statusCode == 200) {
+            novels.add(LibraryNovel.fromJson(
+              jsonDecode(utf8.decode(response.bodyBytes)),
+              icon: Icons.more_vert,
+              subtitle: 'Đã lưu',
+            ));
+          } else if (response.statusCode == 401) {
+            throw Exception('Unauthorized access');
+          } else {
+            throw Exception('Failed to load novel details');
+          }
         }
       }
+      return novels;
+    } catch (e) {
+      throw Exception('Error fetching saved novels: $e');
     }
-
-    return novels;
   }
 }

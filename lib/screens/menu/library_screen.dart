@@ -1,9 +1,10 @@
-// library_screen.dart
-import 'package:apptruyenonline/screens/self_screen/register_screen/prime_screen.dart';
 import 'package:flutter/material.dart';
-import '../../widgets/library_widgets/library_tab.dart';
-import 'library_controller.dart';
 import '../../models/library_novel.dart';
+import '../../services/novel_service.dart';
+import '../menu/genre_novels_screen.dart';
+import '../self_screen/register_screen/prime_screen.dart';
+import 'library_controller.dart';
+import '../item_truyen/view_screen/novel_detail_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   @override
@@ -50,7 +51,21 @@ class _LibraryScreenState extends State<LibraryScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => LibraryMoreOptionsMenu(novel: novel),
+      builder: (context) => LibraryMoreOptionsMenu(
+        novel: novel,
+        onLibraryUpdated: () {
+          _controller.refreshSavedNovels();
+        },
+      ),
+    );
+  }
+
+  void _navigateToNovelDetail(LibraryNovel novel) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NovelDetailScreen(slug: novel.slug),
+      ),
     );
   }
 
@@ -94,18 +109,21 @@ class _LibraryScreenState extends State<LibraryScreen>
               refreshCallback: _controller.refreshSavedNovels,
               emptyMessage: 'Không tìm thấy truyện đã lưu.',
               onMoreTap: _showMoreOptions,
+              onNovelTap: _navigateToNovelDetail,
             ),
             LibraryTabContent(
               future: _handleNullableFuture(_controller.readingProgressNovelsFuture),
               refreshCallback: _controller.refreshReadingProgressNovels,
               emptyMessage: 'Không tìm thấy truyện đang đọc.',
               onMoreTap: _showMoreOptions,
+              onNovelTap: _navigateToNovelDetail,
             ),
             LibraryTabContent(
               future: _handleNullableFuture(_controller.completedNovelsFuture),
               refreshCallback: _controller.refreshCompletedNovels,
               emptyMessage: 'Không tìm thấy truyện đã đọc xong.',
               onMoreTap: _showMoreOptions,
+              onNovelTap: _navigateToNovelDetail,
             ),
           ],
         ),
@@ -114,11 +132,13 @@ class _LibraryScreenState extends State<LibraryScreen>
   }
 }
 
+// Library Tab Content Widget
 class LibraryTabContent extends StatelessWidget {
   final Future<List<LibraryNovel>> future;
   final VoidCallback refreshCallback;
   final String emptyMessage;
   final Function(BuildContext, LibraryNovel) onMoreTap;
+  final Function(LibraryNovel) onNovelTap;
 
   const LibraryTabContent({
     Key? key,
@@ -126,6 +146,7 @@ class LibraryTabContent extends StatelessWidget {
     required this.refreshCallback,
     required this.emptyMessage,
     required this.onMoreTap,
+    required this.onNovelTap,
   }) : super(key: key);
 
   @override
@@ -150,6 +171,7 @@ class LibraryTabContent extends StatelessWidget {
               return NovelListItem(
                 novel: novel,
                 onMoreTap: () => onMoreTap(context, novel),
+                onNovelTap: () => onNovelTap(novel),
               );
             },
           );
@@ -159,53 +181,91 @@ class LibraryTabContent extends StatelessWidget {
   }
 }
 
+// Novel List Item Widget
 class NovelListItem extends StatelessWidget {
   final LibraryNovel novel;
   final VoidCallback onMoreTap;
+  final VoidCallback onNovelTap;
 
   const NovelListItem({
     Key? key,
     required this.novel,
     required this.onMoreTap,
+    required this.onNovelTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Container(
-        width: 50,
-        height: 70,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          image: DecorationImage(
-            image: NetworkImage(novel.thumbnailImageUrl),
-            fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: onNovelTap,
+      child: ListTile(
+        leading: Container(
+          width: 50,
+          height: 70,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            image: DecorationImage(
+              image: NetworkImage(novel.thumbnailImageUrl),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
-      ),
-      title: Text(
-        novel.title,
-        style: TextStyle(color: Colors.white),
-      ),
-      subtitle: Text(
-        novel.subtitle,
-        style: TextStyle(color: Colors.grey),
-      ),
-      trailing: IconButton(
-        icon: Icon(Icons.more_vert, color: Colors.white),
-        onPressed: onMoreTap,
+        title: Text(
+          novel.title,
+          style: TextStyle(color: Colors.white),
+        ),
+        subtitle: Text(
+          novel.subtitle,
+          style: TextStyle(color: Colors.grey),
+        ),
+        trailing: IconButton(
+          icon: Icon(Icons.more_vert, color: Colors.white),
+          onPressed: onMoreTap,
+        ),
       ),
     );
   }
 }
 
+// Library More Options Menu Widget
 class LibraryMoreOptionsMenu extends StatelessWidget {
   final LibraryNovel novel;
+  final VoidCallback? onLibraryUpdated;
 
   const LibraryMoreOptionsMenu({
     Key? key,
     required this.novel,
+    this.onLibraryUpdated,
   }) : super(key: key);
+
+  Future<void> _handleRemoveFromLibrary(BuildContext context) async {
+    try {
+      bool removed = await NovelService.toggleSave(novel.slug);
+      if (removed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã bỏ lưu truyện khỏi thư viện')),
+        );
+        Navigator.pop(context);
+        if (onLibraryUpdated != null) {
+          onLibraryUpdated!();
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Có lỗi xảy ra khi bỏ lưu truyện')),
+      );
+    }
+  }
+
+  void _navigateToGenre(BuildContext context) {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GenreNovelsScreen(genre: novel.primaryGenre),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,7 +280,6 @@ class LibraryMoreOptionsMenu extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header handle bar
           Container(
             width: 40,
             height: 4,
@@ -230,7 +289,6 @@ class LibraryMoreOptionsMenu extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // Novel Info Header
           Container(
             padding: EdgeInsets.all(16),
             child: Row(
@@ -275,28 +333,21 @@ class LibraryMoreOptionsMenu extends StatelessWidget {
             ),
           ),
           Divider(color: Colors.grey[800], height: 1),
-
           _buildMenuItem(
             icon: Icons.remove_circle_outline,
-            text: 'Ẩn truyện này đi',
-            onTap: () {
-              // TODO: Implement hide functionality
-              Navigator.pop(context);
-            },
+            text: 'Hủy lưu truyện',
+            onTap: () => _handleRemoveFromLibrary(context),
           ),
           _buildMenuItem(
             icon: Icons.category_outlined,
             text: 'Xem thể loại truyện',
-            onTap: () {
-              // TODO: Implement view categories
-              Navigator.pop(context);
-            },
+            onTap: () => _navigateToGenre(context),
           ),
           _buildMenuItem(
             icon: Icons.workspace_premium,
             text: 'Nạp vip để nghe không quảng cáo',
             onTap: () {
-              Navigator.pop(context); // Đóng bottom sheet
+              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -305,7 +356,7 @@ class LibraryMoreOptionsMenu extends StatelessWidget {
               );
             },
           ),
-          SizedBox(height: 8), // Bottom padding
+          SizedBox(height: 8),
         ],
       ),
     );

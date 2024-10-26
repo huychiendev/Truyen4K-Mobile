@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../models/library_novel.dart';
-
 import '../novel_widgets/novel_list_item.dart';
-
 
 class LibraryTab extends StatelessWidget {
   final Future<List<LibraryNovel>> future;
   final Function refreshCallback;
   final String emptyMessage;
+  final Function(BuildContext, LibraryNovel) onMoreTap;
 
   const LibraryTab({
     Key? key,
     required this.future,
     required this.refreshCallback,
     required this.emptyMessage,
+    required this.onMoreTap,
   }) : super(key: key);
 
   @override
@@ -33,7 +33,11 @@ class LibraryTab extends StatelessWidget {
             return ListView.builder(
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
-                return NovelListItem(novel: snapshot.data![index]);
+                final novel = snapshot.data![index];
+                return NovelListItem(
+                  novel: novel,
+                  onMoreTap: () => onMoreTap(context, novel),
+                );
               },
             );
           }

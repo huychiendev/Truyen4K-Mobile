@@ -6,8 +6,13 @@ import '../../models/library_novel.dart';
 
 class NovelListItem extends StatelessWidget {
   final LibraryNovel novel;
+  final VoidCallback onMoreTap;
 
-  const NovelListItem({Key? key, required this.novel}) : super(key: key);
+  const NovelListItem({
+    Key? key,
+    required this.novel,
+    required this.onMoreTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +20,13 @@ class NovelListItem extends StatelessWidget {
       leading: Container(
         width: 50,
         height: 70,
-        color: Colors.grey[300],
-        child: Image.network(novel.thumbnailImageUrl, fit: BoxFit.cover),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          image: DecorationImage(
+            image: NetworkImage(novel.thumbnailImageUrl),
+            fit: BoxFit.cover,
+          ),
+        ),
       ),
       title: Text(
         novel.title,
@@ -24,9 +34,13 @@ class NovelListItem extends StatelessWidget {
       ),
       subtitle: Text(
         novel.subtitle,
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(color: Colors.grey),
       ),
-      trailing: Icon(novel.trailingIcon),
+      trailing: IconButton(
+        icon: Icon(Icons.more_vert, color: Colors.white),
+        onPressed: onMoreTap,
+      ),
+      // Add onTap handler to navigate to NovelDetailScreen
       onTap: () {
         Navigator.push(
           context,

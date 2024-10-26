@@ -8,6 +8,7 @@ import '../../../widgets/general_widgets/cover_image.dart';
 import '../../../widgets/novel_widgets/chapter_list.dart';
 import '../../../widgets/novel_widgets/novel_info.dart';
 import '../../../widgets/recommendations.dart';
+import '../../../widgets/novel_widgets/comment_widgets.dart';
 import '../chapter_detail_screen.dart';
 import 'mobile_audio_player.dart';
 
@@ -36,7 +37,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     _fetchComments();
   }
 
-
   Future<void> _fetchComments() async {
     setState(() {
       _isLoadingComments = true;
@@ -49,7 +49,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       });
     } catch (e) {
       print('Error fetching comments: $e');
-      // Handle error (e.g., show error message to user)
     } finally {
       setState(() {
         _isLoadingComments = false;
@@ -65,7 +64,9 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       });
     } catch (e) {
       print('Error fetching novel details: $e');
-      // Handle error (e.g., show error message to user)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không thể tải thông tin truyện. Vui lòng thử lại sau.')),
+      );
     }
   }
 
@@ -85,12 +86,16 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     if (content.isNotEmpty) {
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        int? userId = prefs.getInt('user_id'); // Assuming user_id is stored in SharedPreferences
+        int? userId = prefs.getInt('user_id');
 
         if (userId != null) {
           await NovelService.submitComment(widget.slug, content, userId);
           _commentController.clear();
           _fetchComments();
+          Navigator.of(context).pop(); // Close bottom sheet after successful comment
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Bình luận đã được đăng')),
+          );
         } else {
           throw Exception('User ID not found');
         }
@@ -103,154 +108,36 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black87,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+  void _showCommentBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => CommentBottomSheet(
+          comments: comments,
+          isLoading: _isLoadingComments,
+          commentController: _commentController,
+          onToggleShowFull: (index) {
+            setState(() {
+              _showFullComment[index] = !(_showFullComment[index] ?? false);
+            });
+          },
+          showFullComment: _showFullComment,
+          onSubmitComment: _submitComment,
+          shortenComment: _shortenComment,
         ),
-        title: Text(novel?.title ?? 'Novel Details',
-            style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isSaved ? Icons.bookmark : Icons.bookmark_border,
-              color: _isSaved ? Colors.green : Colors.white,
-            ),
-            onPressed: _toggleSave,
-          ),
-        ],
       ),
-      body: novel == null
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  CoverImage(
-                    imageUrl: novel!.thumbnailImageUrl,
-                    onReadPressed: () => _navigateToChapter(1),
-                    onListenPressed: () => _navigateToAudioPlayer(1),
-                  ),
-                  NovelInfo(novel: novel!),
-                  _buildCommentsSection(),
-                  ChapterList(
-                    totalChapters: novel!.totalChapters,
-                    onChapterTap: _navigateToChapter,
-                  ),
-                  Recommendations(),
-                ],
-              ),
-            ),
-    );
-  }
-
-  Widget _buildCommentsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-          child: Text(
-            'Comments',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        if (_isLoadingComments)
-          Center(child: CircularProgressIndicator())
-        else
-          ...comments.asMap().entries.map((entry) {
-            int index = entry.key;
-            Comment comment = entry.value;
-            bool showFull = _showFullComment[index] ?? false;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: comment.userImageData != null
-                      ? MemoryImage(base64Decode(comment.userImageData!))
-                      : null,
-                  child: comment.userImageData == null
-                      ? Icon(Icons.person, color: Colors.white)
-                      : null,
-                  backgroundColor: Colors.grey[800],
-                ),
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      comment.username,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (comment.tierName != null)
-                      Text(
-                        '${comment.tierName}',
-                        style: TextStyle(color: Colors.orange),
-                      ),
-                  ],
-                ),
-                subtitle: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _showFullComment[index] = !showFull;
-                    });
-                  },
-                  child: Text(
-                    showFull ? comment.content : _shortenComment(comment.content),
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _commentController,
-                  decoration: InputDecoration(
-                    hintText: 'Để lại bình luận...',
-                    hintStyle: TextStyle(color: Colors.white70),
-                    filled: true,
-                    fillColor: Colors.grey[850],
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              SizedBox(width: 8.0),
-              IconButton(
-                icon: Icon(Icons.send, color: Colors.blueAccent),
-                onPressed: _submitComment,
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
   String _shortenComment(String content) {
     const int maxLength = 100;
     if (content.length > maxLength) {
-      return content.substring(0, maxLength) + '... Read more';
+      return content.substring(0, maxLength) + '... Xem thêm';
     }
     return content;
   }
@@ -263,8 +150,8 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                _isSaved ? 'Đã lưu truyện!' : 'Đã xóa khỏi danh sách lưu!')),
+          content: Text(_isSaved ? 'Đã lưu truyện!' : 'Đã xóa khỏi danh sách lưu!'),
+        ),
       );
     } catch (e) {
       print('Error toggling save state: $e');
@@ -299,5 +186,72 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black87,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          novel?.title ?? 'Chi tiết truyện',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isSaved ? Icons.bookmark : Icons.bookmark_border,
+              color: _isSaved ? Colors.green : Colors.white,
+            ),
+            onPressed: _toggleSave,
+          ),
+        ],
+      ),
+      body: novel == null
+          ? Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+        onRefresh: () async {
+          await Future.wait([
+            _fetchNovelDetails(),
+            _fetchComments(),
+          ]);
+        },
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              CoverImage(
+                imageUrl: novel!.thumbnailImageUrl,
+                onReadPressed: () => _navigateToChapter(1),
+                onListenPressed: () => _navigateToAudioPlayer(1),
+              ),
+              NovelInfo(novel: novel!),
+              CommentButton(
+                commentCount: comments.length,
+                rating: novel?.averageRatings ?? 0.0,
+                onPressed: _showCommentBottomSheet,
+              ),
+              ChapterList(
+                totalChapters: novel!.totalChapters,
+                onChapterTap: _navigateToChapter,
+              ),
+              Recommendations(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 }

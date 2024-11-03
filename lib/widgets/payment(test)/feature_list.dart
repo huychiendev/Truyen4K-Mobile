@@ -1,5 +1,4 @@
 // widgets/feature_list.dart
-
 import 'package:flutter/material.dart';
 
 class PremiumFeatureList extends StatelessWidget {

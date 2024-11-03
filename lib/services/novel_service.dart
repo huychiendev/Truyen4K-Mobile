@@ -11,21 +11,29 @@ class NovelService {
   static const String baseUrl = 'http://14.225.207.58:9898/api';
 
   static Future<Novel> fetchNovelDetails(String slug) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+      int? userId = prefs.getInt('user_id');
 
-    final response = await http.get(
-      Uri.parse('$baseUrl/novels/$slug'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
+      final response = await http.get(
+        Uri.parse('http://14.225.207.58:9898/api/novels/$slug?userId=$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final novelData = jsonDecode(utf8.decode(response.bodyBytes));
-      return Novel.fromJson(novelData);
-    } else {
-      throw Exception('Failed to load novel details');
+      if (response.statusCode == 200) {
+        final novelData = jsonDecode(utf8.decode(response.bodyBytes));
+        return Novel.fromJson(novelData);
+      } else {
+        print('Error status code: ${response.statusCode}');
+        print('Error response: ${response.body}');
+        throw Exception('Failed to load novel details');
+      }
+    } catch (e) {
+      print('Error fetching novel details: $e');
+      throw e;
     }
   }
 

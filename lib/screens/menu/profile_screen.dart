@@ -9,6 +9,7 @@ import 'package:apptruyenonline/screens/authenticator/login_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/profile_view_screen/personal_profile_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/payment_screen/account_payment_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/register_screen/prime_screen.dart';
+import 'package:apptruyenonline/screens/menu/daily_missions_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -60,6 +61,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         );
       },
+    );
+  }
+
+  int _getUserLevel() {
+    // Implement logic to calculate user level based on _userProfile
+    return 1;
+  }
+
+  double _getProgressValue() {
+    // Implement logic to calculate progress value based on _userProfile
+    return 0.5;
+  }
+
+  List<bool> _getDailyCheckins() {
+    // Implement logic to get daily checkins data based on _userProfile
+    return [true, true, false, false, false, false];
+  }
+  void _navigateToDailyMissions() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DailyMissionsScreen(
+          username: _userProfile!.username,
+          avatarUrl: _userProfile?.data ?? 'assets/avt.png',
+          level: _getUserLevel(),
+          progressValue: _getProgressValue(),
+          dailyCheckins: _getDailyCheckins(),
+        ),
+      ),
     );
   }
 
@@ -283,9 +313,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildDailyActivities() {
     return InkWell(
-      onTap: () {
-        // Add daily tasks functionality
-      },
+      onTap: _navigateToDailyMissions,
       child: Container(
         padding: EdgeInsets.all(16),
         margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),

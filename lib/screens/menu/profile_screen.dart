@@ -1,4 +1,6 @@
+import 'package:apptruyenonline/screens/menu/coin_wallet_screen.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:apptruyenonline/services/profile_service.dart';
 import 'package:apptruyenonline/widgets/profile_widgets.dart';
@@ -7,8 +9,6 @@ import 'package:apptruyenonline/screens/authenticator/login_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/profile_view_screen/personal_profile_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/payment_screen/account_payment_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/register_screen/prime_screen.dart';
-import 'dart:convert';
-
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -124,50 +124,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+
   Widget _buildUserHeader() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundImage: _userProfile?.data != null
-                ? MemoryImage(base64Decode(_userProfile!.data!))
-                : AssetImage('assets/avt.png') as ImageProvider,
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _userProfile!.username,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  _userProfile!.email,
-                  style: TextStyle(color: Colors.grey),
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 4),
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    _userProfile!.tierName,
-                    style: TextStyle(color: Colors.green, fontSize: 12),
-                  ),
-                ),
-              ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PersonalProfileScreen()),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.all(16),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundImage: _userProfile?.data != null
+                  ? MemoryImage(base64Decode(_userProfile!.data!))
+                  : AssetImage('assets/avt.png') as ImageProvider,
             ),
-          ),
-        ],
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _userProfile!.username,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    _userProfile!.email,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      _userProfile!.tierName,
+                      style: TextStyle(color: Colors.green, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -215,7 +224,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   label: 'Ví',
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AccountScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => CoinWalletScreen(
+                        username: _userProfile?.username ?? '',
+                        email: _userProfile?.email ?? '',
+                        avatarUrl: _userProfile?.data != null
+                            ? 'data:image/jpeg;base64,${_userProfile!.data}'
+                            : 'assets/avt.png',
+                        coinBalance: 1000, // Sample value
+                        diamondBalance: 500, // Sample value
+                      ),
+                    ),
                   ),
                 ),
               ),

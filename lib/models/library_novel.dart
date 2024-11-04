@@ -1,7 +1,6 @@
-import 'dart:convert';
+// lib/models/library_novel.dart
+
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 class LibraryNovel {
   final String title;
@@ -24,58 +23,15 @@ class LibraryNovel {
 
   factory LibraryNovel.fromJson(Map<String, dynamic> json, {IconData? icon, String? subtitle}) {
     return LibraryNovel(
-      title: json['title'],
-      authorName: json['authorName'],
-      thumbnailImageUrl: json['thumbnailImageUrl'],
-      slug: json['slug'],
-      subtitle: subtitle ?? json['authorName'],
+      title: json['title'] ?? '',
+      authorName: json['authorName'] ?? '',
+      thumbnailImageUrl: json['thumbnailImageUrl'] ?? '',
+      slug: json['slug'] ?? '',
+      subtitle: subtitle ?? json['authorName'] ?? '',
       trailingIcon: icon ?? Icons.more_vert,
-      primaryGenre: (json['genreNames'] as List<dynamic>).isNotEmpty
+      primaryGenre: (json['genreNames'] as List<dynamic>?)?.isNotEmpty == true
           ? json['genreNames'][0]
           : 'Unknown',
     );
-  }
-
-  static Future<List<LibraryNovel>> fetchSavedNovels() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('auth_token');
-      String? username = prefs.getString('username');
-      String key = 'saved_items';
-
-      if (username == null) {
-        throw Exception('Username not found');
-      }
-
-      List<String> savedItems = prefs.getStringList(key) ?? [];
-      List<LibraryNovel> novels = [];
-
-      for (String item in savedItems) {
-        if (item.startsWith('$username,')) {
-          String slug = item.split(',')[1];
-          final response = await http.get(
-            Uri.parse('http://14.225.207.58:9898/api/novels/$slug'),
-            headers: {
-              'Authorization': 'Bearer $token',
-            },
-          ).timeout(Duration(seconds: 10));
-
-          if (response.statusCode == 200) {
-            novels.add(LibraryNovel.fromJson(
-              jsonDecode(utf8.decode(response.bodyBytes)),
-              icon: Icons.more_vert,
-              subtitle: 'Đã lưu',
-            ));
-          } else if (response.statusCode == 401) {
-            throw Exception('Unauthorized access');
-          } else {
-            throw Exception('Failed to load novel details');
-          }
-        }
-      }
-      return novels;
-    } catch (e) {
-      throw Exception('Error fetching saved novels: $e');
-    }
   }
 }

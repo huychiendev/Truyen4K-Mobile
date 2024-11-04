@@ -9,6 +9,8 @@ class UserProfile {
   final String? updatedAt;
   final String tierName;
   final String? data;
+  final int coinBalance; // Add this
+  final int diamondBalance; // Add this
 
   UserProfile({
     required this.id,
@@ -21,8 +23,11 @@ class UserProfile {
     this.updatedAt,
     required this.tierName,
     this.data,
+    this.coinBalance = 0, // Default value
+    this.diamondBalance = 0, // Default value
   });
 
+  // Update fromJson method
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       id: json['id'],
@@ -35,21 +40,8 @@ class UserProfile {
       updatedAt: json['updatedAt'],
       tierName: json['tierName'],
       data: json['data'],
+      coinBalance: json['coinBalance'] ?? 0,
+      diamondBalance: json['diamondBalance'] ?? 0,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'username': username,
-      'email': email,
-      'accountStatus': accountStatus,
-      'chapterReadCount': chapterReadCount,
-      'imagePath': imagePath,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
-      'tierName': tierName,
-      'data': data,
-    };
   }
 }

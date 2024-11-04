@@ -1,13 +1,10 @@
-// services/novel_service.dart
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../models/library_novel.dart';
-import '../models/ReadingProgress.dart';
 
-class NovelService {
+class LibraryManagerService {
   static const String baseUrl = 'http://14.225.207.58:9898/api';
 
   // Fetch saved novels
@@ -81,7 +78,7 @@ class NovelService {
 
           if (response.statusCode == 200) {
             var novelJson = jsonDecode(utf8.decode(response.bodyBytes));
-            int totalChapters = novelJson['totalChapters'] ?? 0;
+            int totalChapters = novelJson['totalChapters'];
 
             if (chapterNo < totalChapters) {
               novels.add(LibraryNovel.fromJson(
@@ -130,7 +127,7 @@ class NovelService {
 
           if (response.statusCode == 200) {
             var novelJson = jsonDecode(utf8.decode(response.bodyBytes));
-            int totalChapters = novelJson['totalChapters'] ?? 0;
+            int totalChapters = novelJson['totalChapters'];
 
             if (chapterNo >= totalChapters) {
               novels.add(LibraryNovel.fromJson(
@@ -149,48 +146,21 @@ class NovelService {
     return novels;
   }
 
-  // Delete novel
-  static Future<void> deleteNovel(String slug) async {
+  // Update reading progress
+  static Future<void> updateReadingProgress(String slug, int chapterNo) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? username = prefs.getString('username');
-    String key = 'saved_items';
-
-    if (username == null) {
-      throw Exception('Username not found');
-    }
-
-    List<String> savedItems = prefs.getStringList(key) ?? [];
-    savedItems.removeWhere((item) => item.startsWith('$username,$slug'));
-    await prefs.setStringList(key, savedItems);
-  }
-
-  // Save progress
-  static Future<void> saveProgress(String slug, int chapterNo) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? username = prefs.getString('username');
-
-    if (username == null) {
-      throw Exception('Username not found');
-    }
-
-    ReadingProgress progress = ReadingProgress(
-      username: username,
-      slug: slug,
-      chapterNo: chapterNo,
-      timestamp: DateTime.now().millisecondsSinceEpoch,
-    );
-    await _saveReadingProgress(progress);
-  }
-
-  static Future<void> _saveReadingProgress(ReadingProgress progress) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     String key = 'reading_progress';
+
+    if (username == null) {
+      throw Exception('Username not found');
+    }
+
     List<String> progressItems = prefs.getStringList(key) ?? [];
-
-    progressItems.removeWhere((item) => item.startsWith('${progress.username},${progress.slug},'));
-
-    String newItem = '${progress.username},${progress.slug},${progress.chapterNo},${progress.timestamp}';
-    progressItems.add(newItem);
+    // Remove old progress if exists
+    progressItems.removeWhere((item) => item.startsWith('$username,$slug,'));
+    // Add new progress
+    progressItems.add('$username,$slug,$chapterNo,${DateTime.now().millisecondsSinceEpoch}');
     await prefs.setStringList(key, progressItems);
   }
 }

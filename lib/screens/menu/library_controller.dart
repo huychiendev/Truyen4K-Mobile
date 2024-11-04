@@ -1,18 +1,13 @@
+// screens/menu/library_controller.dart
+
 import 'package:flutter/foundation.dart';
-import '../../models/library_novel.dart';
-import '../../services/novel_service.dart';
+import '../../../models/library_novel.dart';
+import '../../../services/library_service.dart';
 
 class LibraryController with ChangeNotifier {
   Future<List<LibraryNovel>>? savedNovelsFuture;
-  Future<List<LibraryNovel>>? downloadedNovelsFuture;
-  Future<List<LibraryNovel>>? historyNovelsFuture;
-  Future<List<LibraryNovel>>? readingProgressNovelsFuture;
+  Future<List<LibraryNovel>>? readingProgressFuture;
   Future<List<LibraryNovel>>? completedNovelsFuture;
-
-  // Cache data
-  List<LibraryNovel>? _cachedSavedNovels;
-  List<LibraryNovel>? _cachedReadingNovels;
-  List<LibraryNovel>? _cachedCompletedNovels;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -22,9 +17,7 @@ class LibraryController with ChangeNotifier {
 
   void initializeData() {
     refreshSavedNovels();
-    refreshDownloadedNovels();
-    refreshHistoryNovels();
-    refreshReadingProgressNovels();
+    refreshReadingProgress();
     refreshCompletedNovels();
   }
 
@@ -34,60 +27,27 @@ class LibraryController with ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      savedNovelsFuture = LibraryNovel.fetchSavedNovels();
-      _cachedSavedNovels = await savedNovelsFuture;
+      savedNovelsFuture = NovelService.fetchSavedNovels();
+      await savedNovelsFuture;
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       _isLoading = false;
       _error = 'Error refreshing saved novels: $e';
-      print(_error);
       notifyListeners();
       throw e;
     }
   }
 
-  void refreshDownloadedNovels() {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
-      downloadedNovelsFuture = Future.value([]);
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = 'Error refreshing downloaded novels: $e';
-      notifyListeners();
-    }
-  }
-
-  void refreshHistoryNovels() {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
-      historyNovelsFuture = Future.value([]);
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = 'Error refreshing history: $e';
-      notifyListeners();
-    }
-  }
-
-  Future<void> refreshReadingProgressNovels() async {
+  Future<void> refreshReadingProgress() async {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      readingProgressNovelsFuture = NovelService.fetchReadingProgress();
-      _cachedReadingNovels = await readingProgressNovelsFuture;
+      readingProgressFuture = NovelService.fetchReadingProgress();
+      await readingProgressFuture;
 
       _isLoading = false;
       notifyListeners();
@@ -106,7 +66,7 @@ class LibraryController with ChangeNotifier {
       notifyListeners();
 
       completedNovelsFuture = NovelService.fetchCompletedNovels();
-      _cachedCompletedNovels = await completedNovelsFuture;
+      await completedNovelsFuture;
 
       _isLoading = false;
       notifyListeners();
@@ -118,43 +78,38 @@ class LibraryController with ChangeNotifier {
     }
   }
 
-  // Get cached data methods
-  List<LibraryNovel> getSavedNovels() {
-    return _cachedSavedNovels ?? [];
+  // Delete novel from library
+  Future<void> deleteNovel(String slug) async {
+    try {
+      await NovelService.deleteNovel(slug);
+      refreshSavedNovels();
+    } catch (e) {
+      _error = 'Error deleting novel: $e';
+      notifyListeners();
+      throw e;
+    }
   }
 
-  List<LibraryNovel> getReadingNovels() {
-    return _cachedReadingNovels ?? [];
+  // Save reading progress
+  Future<void> saveProgress(String slug, int chapterNo) async {
+    try {
+      await NovelService.saveProgress(slug, chapterNo);
+      refreshReadingProgress();
+    } catch (e) {
+      _error = 'Error saving progress: $e';
+      notifyListeners();
+      throw e;
+    }
   }
 
-  List<LibraryNovel> getCompletedNovels() {
-    return _cachedCompletedNovels ?? [];
-  }
-
-  // Clear cache method
-  void clearCache() {
-    _cachedSavedNovels = null;
-    _cachedReadingNovels = null;
-    _cachedCompletedNovels = null;
-    notifyListeners();
-  }
-
-  // Error handling method
   void handleError(String message) {
     _error = message;
     _isLoading = false;
     notifyListeners();
   }
 
-  // Loading state methods
   void setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
-  }
-
-  // Cleanup method
-  void dispose() {
-    clearCache();
-    super.dispose();
   }
 }

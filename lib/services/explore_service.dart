@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/novel_model.dart';
 
 class ExploreService {
-  static const String baseUrl = 'http://14.225.207.58:9898/api/novels/recommend?userId=1&page=0&size=10';
+  static const String baseUrl = 'http://14.225.207.58:9898/api/v1/novels/recommend?userId=1&page=0&size=10';
 
   // Thêm method mới cho recommendations
   Future<List<Novel>> fetchRecommendations() async {
@@ -32,7 +32,7 @@ class ExploreService {
 
     final response = await http.get(
       Uri.parse(
-          'http://14.225.207.58:9898/api/novels/filter-by-genre?genreIds=${genreIds.join(",")}'),
+          'http://14.225.207.58:9898/api/v1/novels/filter-by-genre?genreIds=${genreIds.join(",")}'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -56,7 +56,7 @@ class ExploreService {
     }
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/genres/'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/genres/'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ class ExploreService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/search/by-author?authorName=$authorName'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/novels/search/by-author?authorName=$authorName'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -96,7 +96,7 @@ class ExploreService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/search/by-title?title=$title'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/novels/search/by-title?title=$title'),
       headers: {
         'Authorization': 'Bearer $token',
       },

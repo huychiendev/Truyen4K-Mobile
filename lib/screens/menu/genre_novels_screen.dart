@@ -28,7 +28,7 @@ class _GenreNovelsScreenState extends State<GenreNovelsScreen> {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/genre/$genre'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/novels/genre/$genre'),
       headers: {
         'Authorization': 'Bearer $token',
       },

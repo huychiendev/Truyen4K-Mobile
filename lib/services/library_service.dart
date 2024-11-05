@@ -8,7 +8,7 @@ import '../models/library_novel.dart';
 import '../models/ReadingProgress.dart';
 
 class NovelService {
-  static const String baseUrl = 'http://14.225.207.58:9898/api';
+  static const String baseUrl = 'http://14.225.207.58:9898/api/v1';
 
   // Fetch saved novels
   static Future<List<LibraryNovel>> fetchSavedNovels() async {

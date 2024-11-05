@@ -14,7 +14,7 @@ class DataService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/trending?page=0&size=10'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/novels/trending?page=0&size=10'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -31,7 +31,7 @@ class DataService {
 
 
   Future<Map<String, dynamic>> fetchChapterDetails(String slug, String chapterNo) async {
-    final response = await http.get(Uri.parse('http://14.225.207.58:9898/api/chapters/$slug/$chapterNo'));
+    final response = await http.get(Uri.parse('http://14.225.207.58:9898/api/v1/chapters/$slug/$chapterNo'));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);

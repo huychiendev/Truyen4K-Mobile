@@ -17,7 +17,7 @@ class NovelService {
       int? userId = prefs.getInt('user_id');
 
       final response = await http.get(
-        Uri.parse('http://14.225.207.58:9898/api/novels/$slug?userId=$userId'),
+        Uri.parse('http://14.225.207.58:9898/api/v1/novels/$slug?userId=$userId'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -165,7 +165,7 @@ class NovelService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/novels/top-read?page=0&size=10'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/novels/top-read?page=0&size=10'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -183,7 +183,7 @@ class NovelService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.delete(
-      Uri.parse('http://14.225.207.58:9898/api/comments/$commentId'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/comments/$commentId'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -231,7 +231,7 @@ class NovelService {
         int timestamp = int.parse(parts[3]);
 
         final response = await http.get(
-          Uri.parse('http://14.225.207.58:9898/api/novels/$slug'),
+          Uri.parse('http://14.225.207.58:9898/api/v1/novels/$slug'),
           headers: {
             'Authorization': 'Bearer $token',
           },
@@ -278,7 +278,7 @@ class NovelService {
         int timestamp = int.parse(parts[3]);
 
         final response = await http.get(
-          Uri.parse('http://14.225.207.58:9898/api/novels/$slug'),
+          Uri.parse('http://14.225.207.58:9898/api/v1/novels/$slug'),
           headers: {
             'Authorization': 'Bearer $token',
           },

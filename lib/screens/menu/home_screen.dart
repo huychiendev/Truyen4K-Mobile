@@ -16,7 +16,7 @@ class DataService {
     String? token = prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/$endpoint'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/$endpoint'),
       headers: {
         'Authorization': 'Bearer $token',
       },

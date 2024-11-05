@@ -41,7 +41,7 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
     }
 
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/chapters/${widget.slug}/chap-${widget.chapterNo}'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/chapters/${widget.slug}/chap-${widget.chapterNo}'),
       headers: {
         'Authorization': 'Bearer $token',
       },

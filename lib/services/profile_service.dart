@@ -27,7 +27,7 @@ class ProfileService {
 
       // Fetch user image
       final imageResponse = await http.get(
-        Uri.parse('http://14.225.207.58:9898/api/images/?userId=${userProfile.id}'),
+        Uri.parse('http://14.225.207.58:9898/api/v1/images/?userId=${userProfile.id}'),
         headers: {'Authorization': 'Bearer $token'},
       );
 

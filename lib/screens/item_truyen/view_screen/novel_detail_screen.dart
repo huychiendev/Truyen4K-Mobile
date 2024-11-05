@@ -96,7 +96,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       int? userId = prefs.getInt('user_id');
       if (userId != null) {
         final response = await http.get(
-          Uri.parse('http://14.225.207.58:9898/api/novels/${widget.slug}/is-liked?userId=$userId'),
+          Uri.parse('http://14.225.207.58:9898/api/v1/novels/${widget.slug}/is-liked?userId=$userId'),
           headers: await NovelServiceExtension.getAuthHeader(),
         );
         if (mounted) {
@@ -123,7 +123,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       int? userId = prefs.getInt('user_id');
       if (userId != null) {
         await http.post(
-          Uri.parse('http://14.225.207.58:9898/api/novels/${widget.slug}/like?userId=$userId'),
+          Uri.parse('http://14.225.207.58:9898/api/v1/novels/${widget.slug}/like?userId=$userId'),
           headers: await NovelServiceExtension.getAuthHeader(),
         );
         if (mounted) {
@@ -157,7 +157,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     try {
       final novelId = novel!.slug; // Sử dụng slug thay vì id
       final response = await http.put(
-        Uri.parse('http://14.225.207.58:9898/api/rates/set-rate/$novelId'),
+        Uri.parse('http://14.225.207.58:9898/api/v1/rates/set-rate/$novelId'),
         headers: await NovelServiceExtension.getAuthHeader(),
         body: jsonEncode({
           'rate': rating,

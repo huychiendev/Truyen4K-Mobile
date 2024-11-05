@@ -91,7 +91,7 @@ class AuthService {
         final request = http.MultipartRequest(
           'POST',
           Uri.parse(
-              'http://14.225.207.58:9898/api/images/upload?userId=$userId'),
+              'http://14.225.207.58:9898/api/v1/images/upload?userId=$userId'),
         );
         // request.headers['Authorization'] = 'Bearer $token';
         request.files.add(await http.MultipartFile.fromPath(

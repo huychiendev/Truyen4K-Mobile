@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import '../models/library_novel.dart';
 
 class LibraryManagerService {
-  static const String baseUrl = 'http://14.225.207.58:9898/api';
+  static const String baseUrl = 'http://14.225.207.58:9898/api/v1';
 
   // Fetch saved novels
   static Future<List<LibraryNovel>> fetchSavedNovels() async {

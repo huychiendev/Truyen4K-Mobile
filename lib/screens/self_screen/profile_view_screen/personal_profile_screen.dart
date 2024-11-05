@@ -45,7 +45,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     if (token != null && userId != null) {
       try {
         final response = await http.get(
-          Uri.parse('http://14.225.207.58:9898/api/images/?userId=$userId'),
+          Uri.parse('http://14.225.207.58:9898/api/v1/images/?userId=$userId'),
           headers: {
             'Authorization': 'Bearer $token',
           },

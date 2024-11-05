@@ -8,28 +8,35 @@ import '../models/novel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NovelService {
-  static const String baseUrl = 'http://14.225.207.58:9898/api';
+  static const String baseUrl = 'http://14.225.207.58:9898/api/';
 
+  // novel_service.dart
+  // services/novel_service.dart
   static Future<Novel> fetchNovelDetails(String slug) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('auth_token');
-      int? userId = prefs.getInt('user_id');
+
+      if (token == null) {
+        throw Exception('Token not found');
+      }
 
       final response = await http.get(
-        Uri.parse('http://14.225.207.58:9898/api/v1/novels/$slug?userId=$userId'),
+        Uri.parse('http://14.225.207.58:9898/api/v1/novels/$slug?userId=1'),
         headers: {
           'Authorization': 'Bearer $token',
         },
       );
 
+      print('Request URL: ${response.request?.url}');
+      print('Response status code: ${response.statusCode}');
+      print('Response body: ${utf8.decode(response.bodyBytes)}');
+
       if (response.statusCode == 200) {
         final novelData = jsonDecode(utf8.decode(response.bodyBytes));
         return Novel.fromJson(novelData);
       } else {
-        print('Error status code: ${response.statusCode}');
-        print('Error response: ${response.body}');
-        throw Exception('Failed to load novel details');
+        throw Exception('Failed to load novel details: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching novel details: $e');

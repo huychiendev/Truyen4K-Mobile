@@ -10,6 +10,8 @@ import 'package:apptruyenonline/screens/self_screen/profile_view_screen/personal
 import 'package:apptruyenonline/screens/self_screen/payment_screen/account_payment_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/register_screen/prime_screen.dart';
 import 'package:apptruyenonline/screens/menu/daily_missions_screen.dart';
+import 'package:apptruyenonline/screens/self_screen/wallet_screen.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -273,9 +275,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: _buildFeatureButton(
                   icon: Icons.shopping_bag,
                   label: 'Túi',
-                  onTap: () {},
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WalletScreen(
+                        username: _userProfile?.username ?? '',
+                        email: _userProfile?.email ?? '',
+                        avatarUrl: _userProfile?.data != null
+                            ? 'data:image/jpeg;base64,${_userProfile!.data}'
+                            : 'assets/avt.png',
+                        balance: _userProfile?.coinBalance ?? 0,
+                        diamondBalance: _userProfile?.diamondBalance ?? 0,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              )
             ],
           ),
         ],

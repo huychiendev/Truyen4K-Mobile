@@ -49,16 +49,20 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   }
 
   Future<void> _fetchUserDetails() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
-    int? userId = prefs.getInt('user_id');
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
 
-    if (token != null && userId != null) {
-      try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+      int? userId = prefs.getInt('user_id');
+
+      print('Token: $token');
+      print('UserId: $userId');
+
+      if (token != null && userId != null) {
         final response = await http.get(
           Uri.parse('http://14.225.207.58:9898/api/v1/images/?userId=$userId'),
           headers: {
@@ -67,25 +71,32 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
           },
         );
 
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
         if (response.statusCode == 200) {
           final List<dynamic> imageData = json.decode(utf8.decode(response.bodyBytes));
           if (imageData.isNotEmpty) {
             setState(() {
               _userImage = UserImage.fromJson(imageData[0]);
             });
+          } else {
+            print('No image data found');
           }
         } else {
-          throw Exception('Failed to load user image');
+          throw Exception('Failed to load user image: ${response.statusCode}');
         }
-      } catch (e) {
-        setState(() {
-          _error = e.toString();
-        });
       }
+    } catch (e) {
+      print('Error fetching user details: $e');
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   Future<void> _pickAndUploadImage() async {
@@ -107,24 +118,33 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
           Uri.parse('http://14.225.207.58:9898/api/v1/images/upload?userId=$userId'),
         );
 
-        request.files.add(await http.MultipartFile.fromPath('file', image.path));
+        // Thêm headers
         request.headers['Authorization'] = 'Bearer $token';
+        request.headers['Content-Type'] = 'multipart/form-data';
 
-        final response = await request.send();
+        request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+        // Đợi response
+        final streamedResponse = await request.send();
+        final response = await http.Response.fromStream(streamedResponse);
 
         if (response.statusCode == 200) {
           setState(() {
             _selectedImage = File(image.path);
           });
-          _fetchUserDetails(); // Refresh profile
+
+          // Đợi fetch xong mới update UI
+          await _fetchUserDetails();
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Ảnh đã được tải lên thành công')),
           );
         } else {
-          throw Exception('Upload failed');
+          throw Exception('Upload failed: ${response.statusCode}');
         }
       }
     } catch (e) {
+      print('Error uploading image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi: ${e.toString()}')),
       );
@@ -204,6 +224,20 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   }
 
   Widget _buildProfileImage() {
+    ImageProvider getImageProvider() {
+      if (_selectedImage != null) {
+        return FileImage(_selectedImage!);
+      } else if (_userImage?.data != null) {
+        try {
+          return MemoryImage(base64Decode(_userImage!.data));
+        } catch (e) {
+          print('Error decoding image data: $e');
+          return AssetImage('assets/avt.png');
+        }
+      }
+      return AssetImage('assets/avt.png');
+    }
+
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
@@ -215,11 +249,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
             border: Border.all(color: Colors.greenAccent, width: 2),
             image: DecorationImage(
               fit: BoxFit.cover,
-              image: _selectedImage != null
-                  ? FileImage(_selectedImage!)
-                  : (_userImage?.data != null
-                  ? MemoryImage(base64Decode(_userImage!.data))
-                  : AssetImage('assets/avt.png')) as ImageProvider,
+              image: getImageProvider(),
             ),
           ),
         ),

@@ -16,6 +16,8 @@ class PersonalProfileScreen extends StatefulWidget {
 class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   UserImage? _userImage;
   File? _selectedImage;
+  bool _isLoading = true;
+  String? _error;
 
   final Map<String, int> cultivationLevels = {
     'Đấu Khí': 0,
@@ -34,10 +36,23 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _checkToken();
     _fetchUserDetails();
   }
 
+  Future<void> _checkToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+    if (token == null) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
   Future<void> _fetchUserDetails() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
     int? userId = prefs.getInt('user_id');
@@ -48,51 +63,71 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
           Uri.parse('http://14.225.207.58:9898/api/v1/images/?userId=$userId'),
           headers: {
             'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
           },
         );
 
         if (response.statusCode == 200) {
           final List<dynamic> imageData = json.decode(utf8.decode(response.bodyBytes));
           if (imageData.isNotEmpty) {
-            UserImage userImage = UserImage.fromJson(imageData[0]);
             setState(() {
-              _userImage = userImage;
+              _userImage = UserImage.fromJson(imageData[0]);
             });
           }
         } else {
-          print('Failed to load image data');
+          throw Exception('Failed to load user image');
         }
       } catch (e) {
-        print('Error: $e');
+        setState(() {
+          _error = e.toString();
+        });
       }
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _pickAndUploadImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
+    try {
+      final ImagePicker _picker = ImagePicker();
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('auth_token');
-      int? userId = prefs.getInt('user_id');
+      if (image != null) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? token = prefs.getString('auth_token');
+        int? userId = prefs.getInt('user_id');
 
-      if (token != null && userId != null) {
-        try {
-          await AuthService.uploadUserImage(token, userId, _selectedImage!);
-          _fetchUserDetails();
+        if (token == null || userId == null) {
+          throw Exception('Token or userId not found');
+        }
+
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse('http://14.225.207.58:9898/api/v1/images/upload?userId=$userId'),
+        );
+
+        request.files.add(await http.MultipartFile.fromPath('file', image.path));
+        request.headers['Authorization'] = 'Bearer $token';
+
+        final response = await request.send();
+
+        if (response.statusCode == 200) {
+          setState(() {
+            _selectedImage = File(image.path);
+          });
+          _fetchUserDetails(); // Refresh profile
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Ảnh đã được tải lên thành công')),
           );
-        } catch (e) {
-          print('Error: $e');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Không thể tải ảnh lên')),
-          );
+        } else {
+          throw Exception('Upload failed');
         }
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: ${e.toString()}')),
+      );
     }
   }
 
@@ -126,21 +161,43 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
         backgroundColor: Color(0xFF1D1E33),
         elevation: 0,
       ),
-      body: _userImage == null
-          ? Center(child: CircularProgressIndicator(color: Colors.greenAccent))
-          : SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _buildProfileImage(),
-              SizedBox(height: 24),
-              _buildCultivationIcon(),
-              SizedBox(height: 16),
-              _buildInfoCard(),
-            ],
-          ),
+      body: Stack(
+        children: [
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator(color: Colors.greenAccent)),
+          if (_error != null)
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(_error!, style: TextStyle(color: Colors.red)),
+                  ElevatedButton(
+                    onPressed: _fetchUserDetails,
+                    child: Text('Thử lại'),
+                  ),
+                ],
+              ),
+            ),
+          if (!_isLoading && _error == null)
+            _buildMainContent(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildProfileImage(),
+            SizedBox(height: 24),
+            _buildCultivationIcon(),
+            SizedBox(height: 16),
+            _buildInfoCard(),
+          ],
         ),
       ),
     );
@@ -159,10 +216,10 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
             image: DecorationImage(
               fit: BoxFit.cover,
               image: _selectedImage != null
-                  ? FileImage(_selectedImage!) as ImageProvider
-                  : _userImage!.data != null
+                  ? FileImage(_selectedImage!)
+                  : (_userImage?.data != null
                   ? MemoryImage(base64Decode(_userImage!.data))
-                  : AssetImage('assets/avt.png') as ImageProvider,
+                  : AssetImage('assets/avt.png')) as ImageProvider,
             ),
           ),
         ),
@@ -182,7 +239,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   }
 
   Widget _buildCultivationIcon() {
-    String level = getCultivationLevel(_userImage!.user.chapterReadCount);
+    String level = getCultivationLevel(_userImage?.user.chapterReadCount ?? 0);
     return Column(
       children: [
         Image.asset(
@@ -209,43 +266,30 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildInfoItem('Email', _userImage!.user.email),
-            _buildInfoItem('Cấp độ', getCultivationLevel(_userImage!.user.chapterReadCount)),
-            _buildInfoItem('Vai trò', _userImage!.user.roles.map((role) => role.name).join(', ')),
-            _buildInfoItem('Trạng thái', _userImage!.user.status),
-            _buildInfoItem('Số chương đã đọc', _userImage!.user.chapterReadCount.toString()),
-            _buildInfoItem('Lần cuối sửa ảnh', formatDate(_userImage!.createdAt)),
-            _buildInfoItem('Số chương yêu cầu', cultivationLevels[getCultivationLevel(_userImage!.user.chapterReadCount)]?.toString() ?? ''),
+            _buildInfoItem('Email', _userImage?.user.email ?? 'N/A'),
+            _buildInfoItem('Cấp độ', getCultivationLevel(_userImage?.user.chapterReadCount ?? 0)),
+            _buildInfoItem('Vai trò', _userImage?.user.roles.map((role) => role.name).join(', ') ?? 'N/A'),
+            _buildInfoItem('Trạng thái', _userImage?.user.status ?? 'N/A'),
+            _buildInfoItem('Số chương đã đọc', _userImage?.user.chapterReadCount.toString() ?? '0'),
+            _buildInfoItem('Lần cuối sửa ảnh', _userImage != null ? formatDate(_userImage!.createdAt) : 'N/A'),
+            _buildInfoItem('Số chương yêu cầu', cultivationLevels[getCultivationLevel(_userImage?.user.chapterReadCount ?? 0)]?.toString() ?? '0'),
           ],
         ),
       ),
     );
   }
 
+
   Widget _buildInfoItem(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: TextStyle(color: Colors.greenAccent, fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.white, fontSize: 14),
-            ),
-          ),
+          Text('$label:', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+          SizedBox(width: 8),
+          Expanded(child: Text(value, style: TextStyle(color: Colors.white))),
         ],
       ),
     );
   }
-  
 }

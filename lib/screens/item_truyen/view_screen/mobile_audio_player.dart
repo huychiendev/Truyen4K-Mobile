@@ -141,7 +141,7 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
   Future<Map<String, dynamic>> fetchChapterDetails(
       String slug, String chapterNo, String? token) async {
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/chapters/$slug/$chapterNo'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/chapters/$slug/$chapterNo'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -158,7 +158,7 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
   Future<Map<String, dynamic>> fetchAudioFileDetails(
       int chapterId, String? token) async {
     final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/audio-files/$chapterId'),
+      Uri.parse('http://14.225.207.58:9898/api/v1/audio-files/$chapterId'),
       headers: {
         'Authorization': 'Bearer $token',
       },

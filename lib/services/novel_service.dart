@@ -8,7 +8,7 @@ import '../models/novel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NovelService {
-  static const String baseUrl = 'http://14.225.207.58:9898/api/';
+  static const String baseUrl = 'http://14.225.207.58:9898/api/v1';
 
   // novel_service.dart
   // services/novel_service.dart

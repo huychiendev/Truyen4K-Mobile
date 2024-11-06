@@ -42,7 +42,7 @@ class DataService {
 
 
   Future<Map<String, dynamic>> fetchAudioFileDetails(int chapterId) async {
-    final response = await http.get(Uri.parse('http://14.225.207.58:9898/api/audio-files/$chapterId'));
+    final response = await http.get(Uri.parse('http://14.225.207.58:9898/api/v1/audio-files/$chapterId'));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../models/ProfileModel.dart';
 import '../../../models/User.dart';
 import '../../../services/auth_service.dart';
 import 'package:http/http.dart' as http;
@@ -14,6 +15,7 @@ class PersonalProfileScreen extends StatefulWidget {
 }
 
 class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
+  UserProfile? _userProfile; // Thêm dòng này
   UserImage? _userImage;
   File? _selectedImage;
   bool _isLoading = true;
@@ -57,35 +59,46 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('auth_token');
-      int? userId = prefs.getInt('user_id');
+      String? username = prefs.getString('username');
 
-      print('Token: $token');
-      print('UserId: $userId');
+      if (token == null || username == null) {
+        throw Exception('Token or username not found');
+      }
 
-      if (token != null && userId != null) {
-        final response = await http.get(
-          Uri.parse('http://14.225.207.58:9898/api/v1/images/?userId=$userId'),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        );
+      // Fetch profile data
+      final profileResponse = await http.get(
+        Uri.parse('http://14.225.207.58:9898/api/v1/profile/$username'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
 
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
+      if (profileResponse.statusCode == 200) {
+        final profileData = json.decode(utf8.decode(profileResponse.bodyBytes));
+        final userProfile = UserProfile.fromJson(profileData);
 
-        if (response.statusCode == 200) {
-          final List<dynamic> imageData = json.decode(utf8.decode(response.bodyBytes));
-          if (imageData.isNotEmpty) {
+        setState(() {
+          _userProfile = userProfile;
+        });
+
+        // Fetch user image if needed
+        if (userProfile.imagePath != null) {
+          final imageResponse = await http.get(Uri.parse(userProfile.imagePath!));
+          if (imageResponse.statusCode == 200) {
             setState(() {
-              _userImage = UserImage.fromJson(imageData[0]);
+              _userImage = UserImage(
+                id: 0, // hoặc một id phù hợp
+                type: 'image/jpeg', // hoặc type phù hợp
+                data: base64Encode(imageResponse.bodyBytes),
+                createdAt: DateTime.now().toIso8601String(),
+                user: userProfile,
+              );
             });
-          } else {
-            print('No image data found');
           }
-        } else {
-          throw Exception('Failed to load user image: ${response.statusCode}');
         }
+      } else {
+        throw Exception('Failed to load profile: ${profileResponse.statusCode}');
       }
     } catch (e) {
       print('Error fetching user details: $e');
@@ -152,6 +165,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   }
 
   String getCultivationLevel(int chaptersRead) {
+    return _userProfile?.tierName ?? 'Đấu Khí';
     String level = 'Đấu Khí';
     for (var entry in cultivationLevels.entries) {
       if (chaptersRead >= entry.value) {
@@ -296,19 +310,22 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildInfoItem('Email', _userImage?.user.email ?? 'N/A'),
-            _buildInfoItem('Cấp độ', getCultivationLevel(_userImage?.user.chapterReadCount ?? 0)),
-            _buildInfoItem('Vai trò', _userImage?.user.roles.map((role) => role.name).join(', ') ?? 'N/A'),
-            _buildInfoItem('Trạng thái', _userImage?.user.status ?? 'N/A'),
-            _buildInfoItem('Số chương đã đọc', _userImage?.user.chapterReadCount.toString() ?? '0'),
-            _buildInfoItem('Lần cuối sửa ảnh', _userImage != null ? formatDate(_userImage!.createdAt) : 'N/A'),
-            _buildInfoItem('Số chương yêu cầu', cultivationLevels[getCultivationLevel(_userImage?.user.chapterReadCount ?? 0)]?.toString() ?? '0'),
+            _buildInfoItem('Email', _userProfile?.email ?? 'N/A'),
+            _buildInfoItem('Cấp độ', _userProfile?.tierName ?? 'N/A'),
+            _buildInfoItem('Trạng thái', _userProfile?.accountStatus ?? 'N/A'),
+            _buildInfoItem('Số chương đã đọc', _userProfile?.chapterReadCount.toString() ?? '0'),
+            _buildInfoItem('Điểm', _userProfile?.point.toString() ?? '0'),
+            if (_userProfile?.selectedGenreIds?.isNotEmpty ?? false)
+              _buildInfoItem('Thể loại đã chọn', _userProfile!.selectedGenreIds!.join(', ')),
+            if (_userImage != null)
+              _buildInfoItem('Lần cuối sửa ảnh', formatDate(_userImage!.createdAt)),
+            _buildInfoItem('Số chương yêu cầu',
+                cultivationLevels[getCultivationLevel(_userProfile?.chapterReadCount ?? 0)]?.toString() ?? '0'),
           ],
         ),
       ),
     );
   }
-
 
   Widget _buildInfoItem(String label, String value) {
     return Padding(

@@ -7,6 +7,8 @@ import 'package:apptruyenonline/models/ProfileModel.dart';
 class ProfileService {
   static const String baseUrl = 'http://14.225.207.58:9898/api/v1';
 
+  // profile_service.dart
+
   static Future<UserProfile> fetchProfileData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
@@ -26,28 +28,23 @@ class ProfileService {
       UserProfile userProfile = UserProfile.fromJson(profileData);
 
       // Fetch user image
-      final imageResponse = await http.get(
-        Uri.parse('http://14.225.207.58:9898/api/v1/images/?userId=${userProfile.id}'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
+      if (userProfile.id != null) {
+        final imageResponse = await http.get(
+          Uri.parse('$baseUrl/images/?userId=${userProfile.id}'),
+          headers: {'Authorization': 'Bearer $token'},
+        );
 
-      if (imageResponse.statusCode == 200) {
-        final List<dynamic> imageData = json.decode(utf8.decode(imageResponse.bodyBytes));
-        if (imageData.isNotEmpty) {
-          userProfile = UserProfile(
-            id: userProfile.id,
-            username: userProfile.username,
-            email: userProfile.email,
-            accountStatus: userProfile.accountStatus,
-            chapterReadCount: userProfile.chapterReadCount,
-            imagePath: userProfile.imagePath,
-            createdAt: userProfile.createdAt,
-            updatedAt: userProfile.updatedAt,
-            tierName: userProfile.tierName,
-            data: imageData[0]['data'],
-          );
+        if (imageResponse.statusCode == 200) {
+          final List<dynamic> imageData = json.decode(utf8.decode(imageResponse.bodyBytes));
+          if (imageData.isNotEmpty) {
+            return userProfile.copyWith(
+              data: imageData[0]['data'],
+              // Có thể thêm các trường khác nếu cần
+            );
+          }
         }
       }
+
       return userProfile;
     } else {
       throw Exception('Failed to load profile data');

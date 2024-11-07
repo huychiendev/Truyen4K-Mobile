@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
 
 class CoinWalletScreen extends StatefulWidget {
   final String username;
@@ -242,23 +241,65 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
 
   Widget _buildTabBar() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 45, // Chiều cao cố định
       decoration: BoxDecoration(
-        color: Colors.grey.shade900,
+        color: Colors.grey[900], // Màu nền tối
         borderRadius: BorderRadius.circular(25),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicator: BoxDecoration(
-          color: Colors.purple,
-          borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: Colors.grey[800]!,
+          width: 1,
         ),
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey,
-        tabs: [
-          Tab(text: 'Nạp Kim Cương'),
-          Tab(text: 'Nạp Xu'),
-        ],
+      ),
+      child: ClipRRect( // Để tránh indicator vượt ra ngoài border radius
+        borderRadius: BorderRadius.circular(25),
+        child: TabBar(
+          controller: _tabController,
+          indicator: BoxDecoration(
+            // Gradient cho tab được chọn
+            gradient: LinearGradient(
+              colors: [
+                Colors.purple[700]!,
+                Colors.deepPurple[800]!,
+              ],
+            ),
+          ),
+          // Loại bỏ divider mặc định
+          dividerColor: Colors.transparent,
+          indicatorSize: TabBarIndicatorSize.tab,
+          // Padding cho text
+          labelPadding: EdgeInsets.zero,
+          // Style cho text được chọn
+          labelStyle: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+          // Style cho text không được chọn
+          unselectedLabelStyle: TextStyle(
+            fontSize: 14,
+          ),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.grey[400],
+          // Thêm overlay color khi tap
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+
+          tabs: [
+            Tab(
+              child: Container(
+                alignment: Alignment.center,
+                width: double.infinity,
+                child: Text('Nạp Kim Cương'),
+              ),
+            ),
+            Tab(
+              child: Container(
+                alignment: Alignment.center,
+                width: double.infinity,
+                child: Text('Nạp Xu'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

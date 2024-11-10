@@ -43,13 +43,25 @@ class CommentWidget extends StatelessWidget {
               children: [
                 _buildCommentItem(parentComment),
                 if (childComments.isNotEmpty)
-                  Padding(
-                    padding: EdgeInsets.only(left: 40), // Thụt lề cho comment con
+                  Container(
+                    margin: EdgeInsets.only(left: 35), // Thụt lề cho comment con
+                    decoration: BoxDecoration(
+                      border: Border(
+                        left: BorderSide(
+                          color: Colors.grey[800]!,
+                          width: 2,
+                        ),
+                      ),
+                    ),
                     child: Column(
-                      children: childComments.map((child) => _buildCommentItem(child)).toList(),
+                      children: childComments.map((child) {
+                        return Padding(
+                          padding: EdgeInsets.only(left: 16), // Thêm padding bên trái
+                          child: _buildCommentItem(child),
+                        );
+                      }).toList(),
                     ),
                   ),
-                SizedBox(height: 8), // Khoảng cách giữa các nhóm comment
               ],
             );
           },
@@ -60,17 +72,17 @@ class CommentWidget extends StatelessWidget {
 
   Widget _buildCommentItem(Comment comment) {
     return Container(
-      padding: EdgeInsets.all(16),
-      margin: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      padding: EdgeInsets.all(12),
+      margin: EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.grey[900]?.withOpacity(0.5),
+        color: Colors.grey[900]?.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 20,
+            radius: 16,
             backgroundImage: comment.userImagePath != null
                 ? NetworkImage(comment.userImagePath!)
                 : null,
@@ -89,25 +101,29 @@ class CommentWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  comment.username,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      comment.username,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      _formatTimestamp(comment.createdAt),
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 4),
                 Text(
                   comment.content,
                   style: TextStyle(color: Colors.white),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  _formatTimestamp(comment.createdAt),
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 12,
-                  ),
                 ),
               ],
             ),

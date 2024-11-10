@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/ReadingProgress.dart';
-import '../models/comment.dart';
 import '../models/library_novel.dart';
 import '../models/novel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class NovelService {
   static const String baseUrl = 'http://14.225.207.58:9898/api/v1';
 
-  // novel_service.dart
   // services/novel_service.dart
   static Future<Novel> fetchNovelDetails(String slug) async {
     try {
@@ -98,74 +96,6 @@ class NovelService {
     throw Exception('User not logged in');
   }
 
- static Future<List<Comment>> fetchComments(String slug) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? token = prefs.getString('auth_token');
-
-  final response = await http.get(
-    Uri.parse('$baseUrl/comments/$slug'),
-    headers: {
-      'Authorization': 'Bearer $token',
-    },
-  );
-
-  if (response.statusCode == 200) {
-    final List<dynamic> commentsJson = jsonDecode(utf8.decode(response.bodyBytes));
-    List<Comment> comments = [];
-
-    for (var commentJson in commentsJson) {
-      int userId = commentJson['userId'];
-      final userResponse = await http.get(
-        Uri.parse('$baseUrl/images/?userId=$userId'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (userResponse.statusCode == 200) {
-        final List<dynamic> userJsonList = jsonDecode(utf8.decode(userResponse.bodyBytes));
-        if (userJsonList.isNotEmpty) {
-          final userJson = userJsonList[0];
-          if (userJson != null && userJson['user'] != null && userJson['user']['tier'] != null) {
-            commentJson['tierName'] = userJson['user']['tier']['name'];
-            commentJson['userImageData'] = userJson['data'];
-          }
-        }
-      } else {
-        print('Failed to fetch user data for userId: $userId');
-      }
-
-      comments.add(Comment.fromJson(commentJson));
-    }
-
-    return comments;
-  } else {
-    throw Exception('Failed to load comments');
-  }
-}
-
-
-  static Future<void> submitComment(String slug, String content, int userId) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/comments/post-comment'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'content': content,
-        'slug': slug,
-        'userId': userId,
-      }),
-    );
-
-    if (response.statusCode != 201 && response.statusCode != 200) {
-      throw Exception('Failed to submit comment');
-    }
-  }
 
   static Future<List<dynamic>> fetchTopReadNovels2() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -183,21 +113,6 @@ class NovelService {
       return data['content'] as List<dynamic>;
     } else {
       throw Exception('Failed to load top read novels');
-    }
-  }
-  static Future<void> deleteComment(int commentId) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
-
-    final response = await http.delete(
-      Uri.parse('http://14.225.207.58:9898/api/v1/comments/$commentId'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to delete comment');
     }
   }
 

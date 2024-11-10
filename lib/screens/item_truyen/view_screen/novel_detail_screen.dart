@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart' as http;
-import '../../../models/comment.dart';
 import '../../../models/novel.dart';
 import '../../../services/novel_service.dart';
 import '../../../widgets/general_widgets/cover_image.dart';
 import '../../../widgets/novel_widgets/chapter_list.dart';
 import '../../../widgets/novel_widgets/novel_info.dart';
 import '../../../widgets/recommendations.dart';
-import '../../../widgets/novel_widgets/comment_widgets.dart';
 import '../chapter_detail_screen.dart';
 import 'mobile_audio_player.dart';
 
@@ -39,10 +37,8 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   Novel? novel;
   bool _isSaved = false;
   bool _isLiked = false;
-  bool _isLoadingComments = false;
   bool _isLoadingLike = false;
   bool _isLoadingRating = false;
-  List<Comment> comments = [];
   double _userRating = 0.0;
   final TextEditingController _commentController = TextEditingController();
   final Map<int, bool> _showFullComment = {};
@@ -52,7 +48,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     super.initState();
     _fetchNovelDetails();
     _checkIfSaved();
-    _fetchComments();
     _checkIfLiked();
   }
 
@@ -190,24 +185,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     }
   }
 
-  Future<void> _fetchComments() async {
-    setState(() {
-      _isLoadingComments = true;
-    });
-    try {
-      final fetchedComments = await NovelService.fetchComments(widget.slug);
-      setState(() {
-        comments = fetchedComments;
-        _showFullComment.clear();
-      });
-    } catch (e) {
-      print('Error fetching comments: $e');
-    } finally {
-      setState(() {
-        _isLoadingComments = false;
-      });
-    }
-  }
 
   void _toggleSave() async {
     try {
@@ -227,60 +204,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     }
   }
 
-  Future<void> _submitComment() async {
-    String content = _commentController.text;
-    if (content.isNotEmpty) {
-      try {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        int? userId = prefs.getInt('user_id');
-
-        if (userId != null) {
-          await NovelService.submitComment(widget.slug, content, userId);
-          _commentController.clear();
-          _fetchComments();
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Bình luận đã được đăng')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Có lỗi xảy ra. Vui lòng thử lại.')),
-        );
-      }
-    }
-  }
-
-  void _showCommentBottomSheet() {
-    // Thêm hàm shortenComment
-    String _shortenComment(String content) {
-      const int maxLength = 100;
-      if (content.length > maxLength) {
-        return content.substring(0, maxLength) + '... Xem thêm';
-      }
-      return content;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => CommentBottomSheet(
-        comments: comments,
-        isLoading: _isLoadingComments,
-        commentController: _commentController,
-        onToggleShowFull: (index) {
-          setState(() {
-            _showFullComment[index] = !(_showFullComment[index] ?? false);
-          });
-        },
-        showFullComment: _showFullComment,
-        onSubmitComment: _submitComment,
-        onRefreshComments: _fetchComments,
-        shortenComment: _shortenComment, // Thêm tham số này
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -323,7 +246,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
         onRefresh: () async {
           await Future.wait([
             _fetchNovelDetails(),
-            _fetchComments(),
           ]);
         },
         child: SingleChildScrollView(
@@ -367,11 +289,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                     ),
                   ],
                 ),
-              ),
-              CommentButton(
-                commentCount: comments.length,
-                rating: novel?.averageRatings ?? 0.0,
-                onPressed: _showCommentBottomSheet,
               ),
               ChapterList(
                 totalChapters: novel!.totalChapters,

@@ -11,6 +11,8 @@ import '../../../widgets/novel_widgets/novel_info.dart';
 import '../../../widgets/recommendations.dart';
 import '../chapter_detail_screen.dart';
 import 'mobile_audio_player.dart';
+import 'package:apptruyenonline/widgets/comment/comment.dart'; // Import lớp Comment
+import 'package:apptruyenonline/widgets/comment/comment_widget.dart'; // Import widget CommentWidget
 
 // Thêm extension cho NovelService để xử lý auth headers
 extension NovelServiceExtension on NovelService {
@@ -41,10 +43,9 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   bool _isLoadingRating = false;
   double _userRating = 0.0;
   final TextEditingController _commentController = TextEditingController();
-  final Map<int, bool> _showFullComment = {};
-  List<dynamic> _comments = [];
+  List<Comment> _comments = [];
   bool _isLoadingComments = false;
-  bool _showComments = false; // Thêm vào phần khai báo biến state
+  bool _showComments = false;
 
   @override
   void initState() {
@@ -74,6 +75,38 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     }
   }
 
+  Future<void> _fetchComments() async {
+    if (mounted) {
+      setState(() => _isLoadingComments = true);
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('http://14.225.207.58:9898/api/v1/comments/${widget.slug}'),
+        headers: await NovelServiceExtension.getAuthHeader(),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> commentsData = jsonDecode(utf8.decode(response.bodyBytes));
+        if (mounted) {
+          setState(() {
+            _comments = commentsData.map((data) => Comment.fromJson(data)).toList();
+            _isLoadingComments = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching comments: $e');
+      if (mounted) {
+        setState(() => _isLoadingComments = false);
+      }
+    }
+  }
+
+  Widget _buildCommentSection() {
+    return CommentWidget(comments: _comments);
+  }
+
   Future<void> _checkIfSaved() async {
     try {
       bool saved = await NovelService.checkIfSaved(widget.slug);
@@ -86,6 +119,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       print('Error checking if novel is saved: $e');
     }
   }
+
 
   Future<void> _checkIfLiked() async {
     if (mounted) {
@@ -113,7 +147,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       }
     }
   }
-
   Future<void> _toggleLike() async {
     if (mounted) {
       setState(() => _isLoadingLike = true);
@@ -161,7 +194,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
         headers: await NovelServiceExtension.getAuthHeader(),
         body: jsonEncode({
           'rate': rating,
-          'novelId': novelId
+          'novelId': novelId,
         }),
       );
 
@@ -186,128 +219,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     } finally {
       if (mounted) {
         setState(() => _isLoadingRating = false);
-      }
-    }
-  }
-
-  Widget _buildCommentSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(
-            'Bình luận',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        _isLoadingComments
-            ? Center(child: CircularProgressIndicator())
-            : ListView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemCount: _comments.length,
-          itemBuilder: (context, index) {
-            final comment = _comments[index];
-            return _buildCommentItem(comment);
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCommentItem(dynamic comment) {
-    final String username = comment['username'] ?? 'Anonymous';
-    final String content = comment['content'] ?? '';
-    final String createdAt = comment['createdAt'] ?? '';
-    final String? userImagePath = comment['user_image_path'];
-
-    return Container(
-      padding: EdgeInsets.all(16),
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey[900]?.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: userImagePath != null
-                ? NetworkImage(userImagePath)
-                : null,
-            backgroundColor: Colors.grey[800],
-            child: userImagePath == null
-                ? Text(
-              username.isNotEmpty ? username[0].toUpperCase() : 'A',
-              style: TextStyle(color: Colors.white),
-            )
-                : null,
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  username,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  content,
-                  style: TextStyle(color: Colors.white),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  createdAt,
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-// Hàm fetch comments
-  Future<void> _fetchComments() async {
-    if (mounted) {
-      setState(() => _isLoadingComments = true);
-    }
-
-    try {
-      final response = await http.get(
-        Uri.parse('http://14.225.207.58:9898/api/v1/comments/${widget.slug}'),
-        headers: await NovelServiceExtension.getAuthHeader(),
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> commentsData = jsonDecode(utf8.decode(response.bodyBytes));
-
-        if (mounted) {
-          setState(() {
-            _comments = commentsData;
-            _isLoadingComments = false;
-          });
-        }
-      }
-    } catch (e) {
-      print('Error fetching comments: $e');
-      if (mounted) {
-        setState(() => _isLoadingComments = false);
       }
     }
   }
@@ -418,7 +329,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                 totalChapters: novel!.totalChapters,
                 onChapterTap: _navigateToChapter,
               ),
-              // Thêm button và phần hiển thị comments ở đây
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ElevatedButton(
@@ -460,7 +370,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
                   ),
                 ),
               ),
-              // Hiển thị comments nếu _showComments = true
               if (_showComments) _buildCommentSection(),
               SizedBox(height: 16),
               Recommendations(),

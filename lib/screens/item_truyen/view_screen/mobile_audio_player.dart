@@ -45,7 +45,6 @@ class _MobileAudioPlayerState extends State<MobileAudioPlayer>
   int chapterId = 0;
   late AudioPlayer _audioPlayer; // Khai báo AudioPlayer
   bool isLoading = true;
-  Timer? _progressUpdateTimer;
   late int _currentChapterNo;
 
   @override

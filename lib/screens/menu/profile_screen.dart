@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:apptruyenonline/services/profile_service.dart';
-import 'package:apptruyenonline/widgets/profile_widgets.dart';
 import 'package:apptruyenonline/models/ProfileModel.dart';
 import 'package:apptruyenonline/screens/authenticator/login_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/profile_view_screen/personal_profile_screen.dart';

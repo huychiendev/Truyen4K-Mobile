@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart' as http;
+import '../../../models/ProfileModel.dart';
 import '../../../models/novel.dart';
 import '../../../services/novel_service.dart';
 import '../../../widgets/general_widgets/cover_image.dart';
@@ -37,12 +38,14 @@ class NovelDetailScreen extends StatefulWidget {
 
 class _NovelDetailScreenState extends State<NovelDetailScreen> {
   Novel? novel;
+  late UserProfile? _userProfile;
   bool _isSaved = false;
   bool _isLiked = false;
   bool _isLoadingLike = false;
   bool _isLoadingRating = false;
   double _userRating = 0.0;
   final TextEditingController _commentController = TextEditingController();
+  final TextEditingController _replyController = TextEditingController();
   List<Comment> _comments = [];
   bool _isLoadingComments = false;
   bool _showComments = false;
@@ -51,9 +54,43 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   void initState() {
     super.initState();
     _fetchNovelDetails();
+    _loadUserProfile();
     _checkIfSaved();
     _checkIfLiked();
     _fetchComments();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+      String? username = prefs.getString('username');
+
+      if (token == null || username == null) {
+        setState(() => _userProfile = null);
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse('http://14.225.207.58:9898/api/v1/profile/$username'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final profileData = json.decode(utf8.decode(response.bodyBytes));
+        setState(() {
+          _userProfile = UserProfile.fromJson(profileData);
+        });
+      } else {
+        setState(() => _userProfile = null);
+      }
+    } catch (e) {
+      print('Error loading user profile: $e');
+      setState(() => _userProfile = null);
+    }
   }
 
   Future<void> _fetchNovelDetails() async {
@@ -66,7 +103,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
         });
       }
     } catch (e) {
-      print('Error in _fetchNovelDetails: $e');
+      print('Error fetching novel details: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Không thể tải thông tin truyện. Vui lòng thử lại sau.')),
@@ -104,8 +141,70 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   }
 
   Widget _buildCommentSection() {
-    return CommentWidget(comments: _comments);
+    return Column(
+      children: [
+        // Widget hiển thị bình luận
+        CommentWidget(comments: _comments),
+
+        // TextField để người dùng viết bình luận
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: TextField(
+            controller: _commentController,
+            decoration: InputDecoration(
+              hintText: 'Viết bình luận...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+
+        // Nút đăng bình luận
+        ElevatedButton(
+          onPressed: () {
+            if (_commentController.text.trim().isNotEmpty) {
+              _postComment(_commentController.text.trim());
+            }
+          },
+          child: Text('Đăng bình luận'),
+        ),
+
+        // Cái này chỉ là ví dụ về một widget để hiển thị bình luận trả lời
+        // Nó có thể là một button hoặc là một widget hiển thị các comment đã được reply
+      ],
+    );
   }
+
+// Hàm để hiển thị dialog trả lời bình luận
+  void _showReplyDialog(int parentCommentId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Trả lời bình luận'),
+        content: TextField(
+          controller: _replyController,
+          decoration: InputDecoration(
+            hintText: 'Nhập trả lời...',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (_replyController.text.trim().isNotEmpty) {
+                _replyComment(_replyController.text.trim(), parentCommentId);
+                Navigator.pop(context);
+              }
+            },
+            child: Text('Trả lời'),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Future<void> _checkIfSaved() async {
     try {
@@ -241,6 +340,75 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     }
   }
 
+  Future<void> _postComment(String content) async {
+    if (_userProfile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vui lòng đăng nhập để bình luận')),
+      );
+      return;
+    }
+
+    try {
+      await http.post(
+          Uri.parse('http://14.225.207.58:9898/api/v1/comments/post-comment'),
+          headers: await NovelServiceExtension.getAuthHeader(),
+          body: jsonEncode({
+            'content': content,
+            'slug': widget.slug,
+            'userId': _userProfile!.id
+          })
+      );
+      await _fetchComments();
+      _commentController.clear();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã đăng bình luận')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể đăng bình luận. Vui lòng thử lại.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _replyComment(String content, int parentCommentId) async {
+    if (_userProfile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vui lòng đăng nhập để trả lời bình luận')),
+      );
+      return;
+    }
+
+    try {
+      await http.post(
+          Uri.parse('http://14.225.207.58:9898/api/v1/comments/reply?parentCommentId=$parentCommentId'),
+          headers: await NovelServiceExtension.getAuthHeader(),
+          body: jsonEncode({
+            'content': content,
+            'slug': widget.slug,
+            'userId': _userProfile!.id
+          })
+      );
+      await _fetchComments();
+      _replyController.clear();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã trả lời bình luận')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể trả lời bình luận. Vui lòng thử lại.')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -410,6 +578,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   @override
   void dispose() {
     _commentController.dispose();
+    _replyController.dispose();  // Thêm dòng này
     super.dispose();
   }
 }

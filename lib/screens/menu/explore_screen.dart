@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:apptruyenonline/screens/menu/audio_player_provider.dart';
 import 'package:apptruyenonline/screens/item_truyen/all_items_screen.dart';
 import 'package:apptruyenonline/screens/item_truyen/view_screen/novel_detail_screen.dart';
-import '../../../../widgets/search_bar.dart' as custom;
 import '../../widgets/general_widgets/category_chip.dart';
 
 import '../../../../services/explore_service.dart';

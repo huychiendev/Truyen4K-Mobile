@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MiniPlayer extends StatefulWidget {

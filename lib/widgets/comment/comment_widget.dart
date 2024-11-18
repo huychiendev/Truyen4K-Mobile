@@ -1,138 +1,137 @@
 import 'package:flutter/material.dart';
-import 'comment.dart'; // Import lớp Comment từ comment.dart
+import 'comment.dart'; // Import lớp Comment
 
 class CommentWidget extends StatelessWidget {
   final List<Comment> comments;
 
-  const CommentWidget({
-    Key? key,
-    required this.comments,
-  }) : super(key: key);
+  const CommentWidget({Key? key, required this.comments}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Lọc ra các comment cha (không có parentId)
-    final parentComments = comments.where((c) => c.parentId == null).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(
-            'Bình luận',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemCount: parentComments.length,
-          itemBuilder: (context, index) {
-            final parentComment = parentComments[index];
-            // Lấy các comment con của comment cha này
-            final childComments = comments
-                .where((c) => c.parentId == parentComment.id)
-                .toList();
-
-            return Column(
-              children: [
-                _buildCommentItem(parentComment),
-                if (childComments.isNotEmpty)
-                  Container(
-                    margin: EdgeInsets.only(left: 35), // Thụt lề cho comment con
-                    decoration: BoxDecoration(
-                      border: Border(
-                        left: BorderSide(
-                          color: Colors.grey[800]!,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                    child: Column(
-                      children: childComments.map((child) {
-                        return Padding(
-                          padding: EdgeInsets.only(left: 16), // Thêm padding bên trái
-                          child: _buildCommentItem(child),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-      ],
+    return ListView.builder(
+      physics: NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: comments.length,
+      itemBuilder: (context, index) {
+        final comment = comments[index];
+        return _buildCommentItem(context, comment);
+      },
     );
   }
 
-  Widget _buildCommentItem(Comment comment) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      margin: EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey[900]?.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
+  Widget _buildCommentItem(BuildContext context, Comment comment) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundImage: comment.userImagePath != null
-                ? NetworkImage(comment.userImagePath!)
-                : null,
-            backgroundColor: Colors.grey[800],
-            child: comment.userImagePath == null
-                ? Text(
-              comment.username.isNotEmpty
-                  ? comment.username[0].toUpperCase()
-                  : 'A',
-              style: TextStyle(color: Colors.white),
-            )
-                : null,
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Row(
+            children: [
+              // Avatar của người dùng
+              CircleAvatar(
+                backgroundImage: comment.userImagePath != null
+                    ? NetworkImage(comment.userImagePath!)
+                    : AssetImage('assets/default_user.png'), // Placeholder cho người dùng không có ảnh
+              ),
+              SizedBox(width: 8.0),
+
+              // Tên người dùng và nội dung bình luận
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       comment.username,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
                     ),
-                    SizedBox(width: 8),
+                    // Thời gian bình luận (thời gian định dạng)
                     Text(
                       _formatTimestamp(comment.createdAt),
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.grey, fontSize: 12.0),
+                    ),
+                    SizedBox(height: 4.0),
+                    Text(
+                      comment.content,
+                      style: TextStyle(color: Colors.black),
                     ),
                   ],
                 ),
-                SizedBox(height: 4),
-                Text(
-                  comment.content,
-                  style: TextStyle(color: Colors.white),
-                ),
-              ],
-            ),
+              ),
+
+              // Nút ba chấm để chọn các hành động
+              PopupMenuButton<String>(
+                onSelected: (String value) {
+                  if (value == 'reply') {
+                    _showReplyDialog(context, comment.id);
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  return [
+                    PopupMenuItem(
+                      value: 'reply',
+                      child: Text('Trả lời'),
+                    ),
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Text('Chỉnh sửa'),
+                    ),
+                    PopupMenuItem(
+                      value: 'report',
+                      child: Text('Báo cáo'),
+                    ),
+                  ];
+                },
+                icon: Icon(Icons.more_vert, color: Colors.black),
+              ),
+            ],
           ),
+
+          // Hiển thị các bình luận trả lời (nếu có)
+          if (comment.replies.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 48.0, top: 8.0),
+              child: Column(
+                children: comment.replies.map((reply) => _buildCommentItem(context, reply)).toList(),
+              ),
+            ),
         ],
       ),
     );
   }
 
+  // Hàm để hiển thị hộp thoại trả lời bình luận
+  void _showReplyDialog(BuildContext context, int parentCommentId) {
+    final TextEditingController _replyController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Trả lời bình luận'),
+          content: TextField(
+            controller: _replyController,
+            decoration: InputDecoration(hintText: 'Nhập trả lời...'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (_replyController.text.trim().isNotEmpty) {
+                  // Logic xử lý đăng trả lời bình luận
+                  Navigator.pop(context);
+                }
+              },
+              child: Text('Trả lời'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Di chuyển hàm _formatTimestamp vào trong lớp CommentWidget
   String _formatTimestamp(DateTime dateTime) {
     final difference = DateTime.now().difference(dateTime);
     if (difference.inDays > 0) {

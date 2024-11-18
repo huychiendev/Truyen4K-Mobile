@@ -111,7 +111,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       }
     }
   }
-
   Future<void> _fetchComments() async {
     if (mounted) {
       setState(() => _isLoadingComments = true);
@@ -125,9 +124,32 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
 
       if (response.statusCode == 200) {
         final List<dynamic> commentsData = jsonDecode(utf8.decode(response.bodyBytes));
+
+        // Tạo danh sách tất cả các bình luận từ JSON
+        List<Comment> allComments = commentsData.map((data) => Comment.fromJson(data)).toList();
+
+        // Tạo một danh sách các bình luận cha (parentId == null)
+        List<Comment> parentComments = allComments.where((comment) => comment.parentId == null).toList();
+
+        // Liên kết bình luận con với bình luận cha
+        for (var comment in allComments) {
+          if (comment.parentId != null) {
+            try {
+              // Tìm bình luận cha của bình luận hiện tại
+              Comment parentComment = parentComments.firstWhere(
+                    (parent) => parent.id == comment.parentId,
+              );
+              // Thêm bình luận con vào danh sách replies của bình luận cha
+              parentComment.replies.add(comment);
+            } catch (e) {
+              // Không tìm thấy bình luận cha, bỏ qua
+            }
+          }
+        }
+
         if (mounted) {
           setState(() {
-            _comments = commentsData.map((data) => Comment.fromJson(data)).toList();
+            _comments = parentComments; // Chỉ hiển thị bình luận cha với bình luận con được thêm vào
             _isLoadingComments = false;
           });
         }
@@ -143,10 +165,18 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   Widget _buildCommentSection() {
     return Column(
       children: [
-        // Widget hiển thị bình luận
-        CommentWidget(comments: _comments),
+        // Danh sách bình luận
+        ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: _comments.length,
+          itemBuilder: (context, index) {
+            final comment = _comments[index];
+            return _buildCommentItem(comment);
+          },
+        ),
 
-        // TextField để người dùng viết bình luận
+        // TextField để người dùng viết bình luận mới
         Padding(
           padding: EdgeInsets.all(8.0),
           child: TextField(
@@ -167,44 +197,116 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
           },
           child: Text('Đăng bình luận'),
         ),
-
-        // Cái này chỉ là ví dụ về một widget để hiển thị bình luận trả lời
-        // Nó có thể là một button hoặc là một widget hiển thị các comment đã được reply
       ],
     );
   }
 
-// Hàm để hiển thị dialog trả lời bình luận
-  void _showReplyDialog(int parentCommentId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Trả lời bình luận'),
-        content: TextField(
-          controller: _replyController,
-          decoration: InputDecoration(
-            hintText: 'Nhập trả lời...',
+  Widget _buildCommentItem(Comment comment) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Avatar của người dùng
+              CircleAvatar(
+                backgroundImage: comment.userImagePath != null
+                    ? NetworkImage(comment.userImagePath!)
+                    : AssetImage('assets/default_user.png'), // Placeholder cho người dùng không có ảnh
+              ),
+              SizedBox(width: 8.0),
+
+              // Tên người dùng và nội dung bình luận
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      comment.username,
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    SizedBox(height: 4.0),
+                    Text(
+                      comment.content,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Nút ba chấm để chọn các hành động
+              PopupMenuButton<String>(
+                onSelected: (String value) {
+                  if (value == 'reply') {
+                    _showReplyDialog(comment.id);
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  return [
+                    PopupMenuItem(
+                      value: 'reply',
+                      child: Text('Trả lời'),
+                    ),
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Text('Chỉnh sửa'),
+                    ),
+                    PopupMenuItem(
+                      value: 'report',
+                      child: Text('Báo cáo'),
+                    ),
+                  ];
+                },
+                icon: Icon(Icons.more_vert, color: Colors.white),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Hủy'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (_replyController.text.trim().isNotEmpty) {
-                _replyComment(_replyController.text.trim(), parentCommentId);
-                Navigator.pop(context);
-              }
-            },
-            child: Text('Trả lời'),
-          ),
+
+          // Hiển thị các bình luận trả lời (nếu có)
+          if (comment.replies.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 48.0, top: 8.0),
+              child: Column(
+                children: comment.replies.map((reply) => _buildCommentItem(reply)).toList(),
+              ),
+            ),
         ],
       ),
     );
   }
 
+
+// Hàm để hiển thị hộp thoại trả lời bình luận
+  void _showReplyDialog(int parentCommentId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Trả lời bình luận'),
+          content: TextField(
+            controller: _replyController,
+            decoration: InputDecoration(hintText: 'Nhập trả lời...'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (_replyController.text.trim().isNotEmpty) {
+                  _replyComment(_replyController.text.trim(), parentCommentId);
+                  Navigator.pop(context);
+                }
+              },
+              child: Text('Trả lời'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _checkIfSaved() async {
     try {

@@ -5,6 +5,7 @@ class Comment {
   final String? userImagePath;
   final DateTime createdAt;
   final int? parentId;
+  List<Comment> replies;
 
   Comment({
     required this.id,
@@ -13,6 +14,7 @@ class Comment {
     this.userImagePath,
     required this.createdAt,
     this.parentId,
+    this.replies = const [],
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class Comment {
       userImagePath: json['user_image_path'],
       createdAt: DateTime.parse(json['createdAt']),
       parentId: json['parentId'],
+      replies: [],
     );
   }
 }

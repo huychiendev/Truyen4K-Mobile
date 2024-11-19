@@ -170,9 +170,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             CircleAvatar(
               radius: 30,
-              backgroundImage: _userProfile?.data != null
-                  ? MemoryImage(base64Decode(_userProfile!.data!))
+              backgroundImage: _userProfile?.imagePath != null
+                  ? NetworkImage(_userProfile!.imagePath!)
                   : AssetImage('assets/avt.png') as ImageProvider,
+              onBackgroundImageError: (exception, stackTrace) {
+                // Xử lý lỗi nếu không load được ảnh
+                print('Error loading profile image: $exception');
+              },
+              backgroundColor: Colors.grey[300], // Màu nền khi đang load hoặc lỗi
             ),
             SizedBox(width: 16),
             Expanded(
@@ -259,9 +264,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       builder: (context) => CoinWalletScreen(
                         username: _userProfile?.username ?? '',
                         email: _userProfile?.email ?? '',
-                        avatarUrl: _userProfile?.data != null
-                            ? 'data:image/jpeg;base64,${_userProfile!.data}'
-                            : 'assets/avt.png',
+                        avatarUrl: _userProfile?.imagePath ?? 'assets/avt.png',
                         coinBalance: 1000, // Sample value
                         diamondBalance: 500, // Sample value
                       ),
@@ -280,9 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       builder: (context) => WalletScreen(
                         username: _userProfile?.username ?? '',
                         email: _userProfile?.email ?? '',
-                        avatarUrl: _userProfile?.data != null
-                            ? 'data:image/jpeg;base64,${_userProfile!.data}'
-                            : 'assets/avt.png',
+                        avatarUrl: _userProfile?.imagePath ?? 'assets/avt.png',
                         balance: _userProfile?.coinBalance ?? 0,
                         diamondBalance: _userProfile?.diamondBalance ?? 0,
                       ),

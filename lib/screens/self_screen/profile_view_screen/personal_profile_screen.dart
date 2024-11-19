@@ -14,10 +14,11 @@ class PersonalProfileScreen extends StatefulWidget {
 }
 
 class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
-  UserProfile? _userProfile; // Thêm dòng này
+  UserProfile? _userProfile;
   UserImage? _userImage;
   File? _selectedImage;
   bool _isLoading = true;
+  bool _isUploadingImage = false;
   String? _error;
 
   final Map<String, int> cultivationLevels = {
@@ -87,8 +88,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
           if (imageResponse.statusCode == 200) {
             setState(() {
               _userImage = UserImage(
-                id: 0, // hoặc một id phù hợp
-                type: 'image/jpeg', // hoặc type phù hợp
+                id: 0,
+                type: 'image/jpeg',
                 data: base64Encode(imageResponse.bodyBytes),
                 createdAt: DateTime.now().toIso8601String(),
                 user: userProfile,
@@ -113,53 +114,159 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
 
   Future<void> _pickAndUploadImage() async {
     try {
-      final ImagePicker _picker = ImagePicker();
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-
-      if (image != null) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        String? token = prefs.getString('auth_token');
-        int? userId = prefs.getInt('user_id');
-
-        if (token == null || userId == null) {
-          throw Exception('Token or userId not found');
-        }
-
-        var request = http.MultipartRequest(
-          'POST',
-          Uri.parse('http://14.225.207.58:9898/api/v1/images/upload?userId=$userId'),
-        );
-
-        // Thêm headers
-        request.headers['Authorization'] = 'Bearer $token';
-        request.headers['Content-Type'] = 'multipart/form-data';
-
-        request.files.add(await http.MultipartFile.fromPath('file', image.path));
-
-        // Đợi response
-        final streamedResponse = await request.send();
-        final response = await http.Response.fromStream(streamedResponse);
-
-        if (response.statusCode == 200) {
-          setState(() {
-            _selectedImage = File(image.path);
-          });
-
-          // Đợi fetch xong mới update UI
-          await _fetchUserDetails();
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Ảnh đã được tải lên thành công')),
+      // Chọn ảnh từ thư viện hoặc camera
+      final ImageSource? source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext context) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Color(0xFF1D1E33),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'Chọn ảnh từ',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Divider(color: Colors.grey[800]),
+                  ListTile(
+                    leading: Icon(Icons.camera_alt, color: Colors.greenAccent),
+                    title: Text('Máy ảnh', style: TextStyle(color: Colors.white)),
+                    onTap: () => Navigator.pop(context, ImageSource.camera),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.photo_library, color: Colors.greenAccent),
+                    title: Text('Thư viện', style: TextStyle(color: Colors.white)),
+                    onTap: () => Navigator.pop(context, ImageSource.gallery),
+                  ),
+                  SizedBox(height: 8),
+                ],
+              ),
+            ),
           );
-        } else {
-          throw Exception('Upload failed: ${response.statusCode}');
-        }
+        },
+      );
+
+      if (source == null) return;
+
+      setState(() => _isUploadingImage = true);
+
+      final ImagePicker picker = ImagePicker();
+      final XFile? imageFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1080,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (imageFile == null) {
+        setState(() => _isUploadingImage = false);
+        return;
+      }
+
+      final File file = File(imageFile.path);
+      if (!await file.exists()) {
+        throw Exception('File không tồn tại');
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final String? token = prefs.getString('auth_token');
+      final String? userId = prefs.getString('user_id');
+
+      if (token == null || userId == null) {
+        throw Exception('Vui lòng đăng nhập lại');
+      }
+
+      // Hiển thị tiến trình tải lên
+      bool isUploading = true;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: AlertDialog(
+              backgroundColor: Color(0xFF1D1E33),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(color: Colors.greenAccent),
+                  SizedBox(height: 16),
+                  Text(
+                    'Đang tải ảnh lên...',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+
+      // Chuẩn bị request upload
+      var uri = Uri.parse('http://14.225.207.58:9898/api/images/upload');
+      uri = uri.replace(queryParameters: {'userId': userId});
+
+      var request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer $token'
+        ..headers['Content-Type'] = 'multipart/form-data'
+        ..files.add(await http.MultipartFile.fromPath(
+          'file',
+          file.path,
+          filename: imageFile.name,
+        ));
+
+      // Gửi yêu cầu
+      final streamedResponse = await request.send().timeout(
+        Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Hết thời gian chờ upload');
+        },
+      );
+
+      final response = await http.Response.fromStream(streamedResponse);
+
+      // Đóng hộp thoại tiến trình
+      if (isUploading) {
+        Navigator.of(context).pop();
+        isUploading = false;
+      }
+
+      if (response.statusCode == 200) {
+        // Cập nhật UI sau khi tải lên thành công
+        setState(() {
+          _selectedImage = file;
+        });
+
+        await _fetchUserDetails();
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Cập nhật ảnh đại diện thành công'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ));
+      } else {
+        throw Exception('Upload thất bại: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error uploading image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Lỗi: ${e.toString()}'),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ));
+    } finally {
+      setState(() => _isUploadingImage = false);
     }
   }
 
@@ -267,14 +374,23 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
           ),
         ),
         GestureDetector(
-          onTap: _pickAndUploadImage,
+          onTap: _isUploadingImage ? null : _pickAndUploadImage,
           child: Container(
             padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.greenAccent,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.camera_alt, color: Colors.black, size: 20),
+            child: _isUploadingImage
+                ? SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+              ),
+            )
+                : Icon(Icons.camera_alt, color: Colors.black, size: 20),
           ),
         ),
       ],

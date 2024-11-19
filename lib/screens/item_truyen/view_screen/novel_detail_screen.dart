@@ -200,7 +200,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     }
   }
 
-
   Future<void> _toggleLike() async {
     if (_userProfile == null) {
       ScaffoldMessenger.of(context).showSnackBar(

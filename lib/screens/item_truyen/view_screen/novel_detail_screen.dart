@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/ProfileModel.dart';
 import '../../../models/novel.dart';
+import '../../../services/novel_interaction_service.dart';
 import '../../../services/novel_service.dart';
 import '../../../widgets/general_widgets/cover_image.dart';
 import '../../../widgets/novel_widgets/chapter_list.dart';
@@ -54,9 +55,11 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   void initState() {
     super.initState();
     _fetchNovelDetails();
-    _loadUserProfile();
-    _checkIfSaved();
-    _checkIfLiked();
+    _loadUserProfile().then((_) {
+      if (_userProfile != null) {
+        _checkIfLiked();
+      }
+    });
     _fetchComments();
   }
 
@@ -111,6 +114,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       }
     }
   }
+
   Future<void> _fetchComments() async {
     if (mounted) {
       setState(() => _isLoadingComments = true);
@@ -162,6 +166,85 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     }
   }
 
+  Future<void> _checkIfLiked() async {
+    setState(() => _isLoadingLike = true);
+    try {
+      final userId = _userProfile?.id;
+      if (userId == null) {
+        throw Exception('User ID is null');
+      }
+
+      // Gọi API để kiểm tra trạng thái "like" của người dùng
+      final response = await http.get(
+        Uri.parse('http://14.225.207.58:9898/api/v1/novels/${widget.slug}/is-liked?userId=$userId'),
+        headers: await NovelServiceExtension.getAuthHeader(),
+      );
+
+      print("Request URL: http://14.225.207.58:9898/api/v1/novels/${widget.slug}/is-liked?userId=$userId");
+      print("Response status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        // Phản hồi trả về là một giá trị boolean (true hoặc false)
+        final bool isLiked = jsonDecode(response.body);
+        setState(() {
+          _isLiked = isLiked;
+        });
+      } else {
+        print('Failed to load like status with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error checking like status: $e');
+    } finally {
+      setState(() => _isLoadingLike = false);
+    }
+  }
+
+
+  Future<void> _toggleLike() async {
+    if (_userProfile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Vui lòng đăng nhập để thích truyện')));
+      return;
+    }
+
+    setState(() => _isLoadingLike = true);
+    try {
+      final userId = _userProfile?.id;
+      if (userId == null) {
+        throw Exception('User ID is null');
+      }
+
+      // Gọi API để "like" hoặc "unlike" truyện
+      final response = await http.post(
+        Uri.parse('http://14.225.207.58:9898/api/v1/novels/like/${widget.slug}?userId=$userId'),
+        headers: await NovelServiceExtension.getAuthHeader(),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          // Đảo ngược trạng thái hiện tại vì API đã cập nhật thành công
+          _isLiked = !_isLiked;
+        });
+
+        // Thông báo cho người dùng về trạng thái mới
+        final message = _isLiked ? 'Đã thích truyện' : 'Đã bỏ thích truyện';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      } else {
+        print('Failed to toggle like status: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Có lỗi xảy ra khi thích truyện. Vui lòng thử lại.')));
+      }
+    } catch (e) {
+      print('Error toggling like: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Có lỗi xảy ra khi thích truyện. Vui lòng thử lại.')));
+    } finally {
+      setState(() => _isLoadingLike = false);
+    }
+  }
+
+
   Widget _buildCommentSection() {
     return CommentWidget(
       comments: _comments,
@@ -170,80 +253,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       onPostComment: _postComment,
       showComments: _showComments,
     );
-  }
-
-  Future<void> _checkIfSaved() async {
-    try {
-      bool saved = await NovelService.checkIfSaved(widget.slug);
-      if (mounted) {
-        setState(() {
-          _isSaved = saved;
-        });
-      }
-    } catch (e) {
-      print('Error checking if novel is saved: $e');
-    }
-  }
-
-
-  Future<void> _checkIfLiked() async {
-    if (mounted) {
-      setState(() => _isLoadingLike = true);
-    }
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      int? userId = prefs.getInt('user_id');
-      if (userId != null) {
-        final response = await http.get(
-          Uri.parse('http://14.225.207.58:9898/api/v1/novels/${widget.slug}/is-liked?userId=$userId'),
-          headers: await NovelServiceExtension.getAuthHeader(),
-        );
-        if (mounted) {
-          setState(() {
-            _isLiked = response.body == 'true';
-          });
-        }
-      }
-    } catch (e) {
-      print('Error checking like status: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoadingLike = false);
-      }
-    }
-  }
-  Future<void> _toggleLike() async {
-    if (mounted) {
-      setState(() => _isLoadingLike = true);
-    }
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      int? userId = prefs.getInt('user_id');
-      if (userId != null) {
-        await http.post(
-          Uri.parse('http://14.225.207.58:9898/api/v1/novels/${widget.slug}/like?userId=$userId'),
-          headers: await NovelServiceExtension.getAuthHeader(),
-        );
-        if (mounted) {
-          setState(() {
-            _isLiked = !_isLiked;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_isLiked ? 'Đã thích truyện' : 'Đã bỏ thích truyện')),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Có lỗi xảy ra. Vui lòng thử lại.')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoadingLike = false);
-      }
-    }
   }
 
   Future<void> _submitRating(double rating) async {
@@ -288,23 +297,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     }
   }
 
-  Future<void> _toggleSave() async {
-    try {
-      bool newSavedState = await NovelService.toggleSave(widget.slug);
-      setState(() {
-        _isSaved = newSavedState;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isSaved ? 'Đã lưu truyện!' : 'Đã xóa khỏi danh sách lưu!'),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Có lỗi xảy ra. Vui lòng thử lại.')),
-      );
-    }
-  }
 
   Future<void> _postComment(String content) async {
     if (_userProfile == null) {
@@ -405,7 +397,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
               _isSaved ? Icons.bookmark : Icons.bookmark_border,
               color: _isSaved ? Colors.green : Colors.white,
             ),
-            onPressed: _toggleSave,
+            onPressed: () {},
           ),
         ],
       ),
@@ -544,7 +536,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   @override
   void dispose() {
     _commentController.dispose();
-    _replyController.dispose();  // Thêm dòng này
+    _replyController.dispose();
     super.dispose();
   }
 }

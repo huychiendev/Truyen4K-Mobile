@@ -65,7 +65,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
         throw Exception('Token or username not found');
       }
 
-      // Fetch profile data
+      // 1. Fetch profile data
       final profileResponse = await http.get(
         Uri.parse('http://14.225.207.58:9898/api/v1/profile/$username'),
         headers: {
@@ -82,16 +82,23 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
           _userProfile = userProfile;
         });
 
-        // Fetch user image if needed
-        if (userProfile.imagePath != null) {
-          final imageResponse = await http.get(Uri.parse(userProfile.imagePath!));
-          if (imageResponse.statusCode == 200) {
+        // 2. Fetch user avatar using correct endpoint
+        final avatarResponse = await http.get(
+          Uri.parse('http://14.225.207.58:9898/api/v1/images/?userId=${userProfile.id}'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (avatarResponse.statusCode == 200) {
+          final List<dynamic> images = json.decode(utf8.decode(avatarResponse.bodyBytes));
+          if (images.isNotEmpty) {
             setState(() {
               _userImage = UserImage(
-                id: 0,
-                type: 'image/jpeg',
-                data: base64Encode(imageResponse.bodyBytes),
-                createdAt: DateTime.now().toIso8601String(),
+                id: images[0]['id'] ?? 0,
+                type: images[0]['type'] ?? 'image/jpeg',
+                data: images[0]['data'],
+                createdAt: images[0]['createdAt'] ?? DateTime.now().toIso8601String(),
                 user: userProfile,
               );
             });
@@ -182,82 +189,33 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
 
       final prefs = await SharedPreferences.getInstance();
       final String? token = prefs.getString('auth_token');
-      final String? userId = prefs.getString('user_id');
+      final userId = _userProfile?.id.toString();
 
       if (token == null || userId == null) {
         throw Exception('Vui lòng đăng nhập lại');
       }
 
-      // Hiển thị tiến trình tải lên
-      bool isUploading = true;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return WillPopScope(
-            onWillPop: () async => false,
-            child: AlertDialog(
-              backgroundColor: Color(0xFF1D1E33),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: Colors.greenAccent),
-                  SizedBox(height: 16),
-                  Text(
-                    'Đang tải ảnh lên...',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-
-      // Chuẩn bị request upload
-      var uri = Uri.parse('http://14.225.207.58:9898/api/images/upload');
+      var uri = Uri.parse('http://14.225.207.58:9898/api/v1/images/upload');
       uri = uri.replace(queryParameters: {'userId': userId});
 
       var request = http.MultipartRequest('POST', uri)
         ..headers['Authorization'] = 'Bearer $token'
-        ..headers['Content-Type'] = 'multipart/form-data'
         ..files.add(await http.MultipartFile.fromPath(
           'file',
           file.path,
           filename: imageFile.name,
         ));
 
-      // Gửi yêu cầu
-      final streamedResponse = await request.send().timeout(
-        Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception('Hết thời gian chờ upload');
-        },
-      );
-
-      final response = await http.Response.fromStream(streamedResponse);
-
-      // Đóng hộp thoại tiến trình
-      if (isUploading) {
-        Navigator.of(context).pop();
-        isUploading = false;
-      }
+      final response = await request.send();
+      final responseStr = await http.Response.fromStream(response);
 
       if (response.statusCode == 200) {
-        // Cập nhật UI sau khi tải lên thành công
-        setState(() {
-          _selectedImage = file;
-        });
-
-        await _fetchUserDetails();
-
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Cập nhật ảnh đại diện thành công'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ));
+        await _fetchUserDetails(); // Refresh profile after successful upload
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Ảnh đại diện đã được cập nhật'))
+        );
       } else {
-        throw Exception('Upload thất bại: ${response.statusCode}');
+        throw Exception('Upload failed: ${response.statusCode}');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -272,15 +230,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
 
   String getCultivationLevel(int chaptersRead) {
     return _userProfile?.tierName ?? 'Đấu Khí';
-    String level = 'Đấu Khí';
-    for (var entry in cultivationLevels.entries) {
-      if (chaptersRead >= entry.value) {
-        level = entry.key;
-      } else {
-        break;
-      }
-    }
-    return level;
+
   }
 
   String formatDate(String dateString) {

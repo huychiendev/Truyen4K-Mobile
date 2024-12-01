@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class CoinWalletScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
         radius: 30,
         backgroundImage: widget.avatarUrl.startsWith('assets/')
             ? AssetImage(widget.avatarUrl) as ImageProvider
-            : NetworkImage(widget.avatarUrl),
+            : CachedNetworkImageProvider(widget.avatarUrl), // Sử dụng CachedNetworkImageProvider
         backgroundColor: Colors.grey[300],
       );
     }
@@ -66,68 +67,61 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black87,
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                _buildWalletCard(),
-                _buildTabBar(),
-                SizedBox(height: 20),
-                Container(
-                  height: MediaQuery.of(context).size.height - 400,
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildDiamondGrid(),
-                      _buildCoinGrid(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Ví của tôi',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.history, color: Colors.white),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(Icons.help_outline, color: Colors.white),
+            onPressed: () {},
           ),
         ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildWalletCard(),
+            _buildTabBar(),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildDiamondGrid(),
+                  _buildCoinGrid(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 120.0,
-      floating: false,
-      pinned: true,
-      backgroundColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          'Ví của tôi',
+
+  Widget _buildBalanceWidget(IconData icon, String amount, String label, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 32),
+        SizedBox(height: 8),
+        Text(
+          amount,
           style: TextStyle(
             color: Colors.white,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.purple.withOpacity(0.8),
-                Colors.black.withOpacity(0.0),
-              ],
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.history, color: Colors.white),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: Icon(Icons.help_outline, color: Colors.white),
-          onPressed: () {},
+        Text(
+          label,
+          style: TextStyle(color: Colors.white70),
         ),
       ],
     );
@@ -215,27 +209,6 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBalanceWidget(IconData icon, String amount, String label, Color color) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 32),
-        SizedBox(height: 8),
-        Text(
-          amount,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(color: Colors.white70),
-        ),
-      ],
     );
   }
 
@@ -525,6 +498,45 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
           ),
         ],
       ),
+    );
+  }
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 120.0,
+      floating: false,
+      pinned: true,
+      backgroundColor: Colors.transparent,
+      flexibleSpace: FlexibleSpaceBar(
+        title: Text(
+          'Ví của tôi',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.purple.withOpacity(0.8),
+                Colors.black.withOpacity(0.0),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.history, color: Colors.white),
+          onPressed: () {},
+        ),
+        IconButton(
+          icon: Icon(Icons.help_outline, color: Colors.white),
+          onPressed: () {},
+        ),
+      ],
     );
   }
 

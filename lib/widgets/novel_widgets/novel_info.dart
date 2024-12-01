@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/novel.dart';
+import 'package:apptruyenonline/screens/author/author_detail_screen.dart';  // Import màn hình chi tiết tác giả
 
 class NovelInfo extends StatelessWidget {
   final Novel novel;
@@ -13,22 +14,52 @@ class NovelInfo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Title of the novel
           Text(
             novel.title,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           SizedBox(height: 8),
-          Text(
-            'Tác giả: ${novel.authorName}',
-            style: TextStyle(fontSize: 16, color: Colors.white70),
+
+          // Tên tác giả có thể click để dẫn đến màn hình chi tiết tác giả
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AuthorDetailScreen(
+                    authorName: novel.authorName,
+                    authorId: novel.authorId, // Truyền authorId
+                  ),
+                ),
+              );
+            },
+            child: Text(
+              'Tác giả: ${novel.authorName.isNotEmpty ? novel.authorName : 'Chưa có thông tin tác giả'}',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.green,  // Đổi màu để thể hiện có thể click
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ),
+
+          // Số chương của tiểu thuyết
           Text(
             '${novel.totalChapters} Chương',
             style: TextStyle(color: Colors.grey),
           ),
           SizedBox(height: 8),
+
+          // Stats Row (Số lượt đọc, đánh giá trung bình, số lượt thích)
           _buildStatsRow(),
           SizedBox(height: 16),
+
+          // Mô tả về cuốn truyện
           Text(
             'Về cuốn truyện này',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
@@ -39,12 +70,15 @@ class NovelInfo extends StatelessWidget {
             style: TextStyle(fontSize: 16, color: Colors.white70),
           ),
           SizedBox(height: 16),
+
+          // Thể loại (tags)
           _buildTags(),
         ],
       ),
     );
   }
 
+  // Phương thức hiển thị các thống kê như số lượt đọc, đánh giá, và lượt thích
   Widget _buildStatsRow() {
     return Row(
       children: [
@@ -63,6 +97,7 @@ class NovelInfo extends StatelessWidget {
     );
   }
 
+  // Phương thức hiển thị thể loại (tags)
   Widget _buildTags() {
     return Wrap(
       spacing: 8,
@@ -71,6 +106,7 @@ class NovelInfo extends StatelessWidget {
     );
   }
 
+  // Phương thức hiển thị một tag thể loại
   Widget _buildTag(String tag) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),

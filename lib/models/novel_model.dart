@@ -4,7 +4,8 @@ class Novel {
   final String description;
   final String thumbnailImageUrl;
   final double averageRatings;
-  final String authorName; // Add this line
+  final String authorName;
+  final int totalChapters;
 
   Novel({
     required this.slug,
@@ -12,7 +13,8 @@ class Novel {
     required this.description,
     required this.thumbnailImageUrl,
     required this.averageRatings,
-    required this.authorName, // Add this line
+    required this.authorName,
+    required this.totalChapters,
   });
 
   factory Novel.fromJson(Map<String, dynamic> json) {
@@ -22,7 +24,8 @@ class Novel {
       description: json['description'],
       thumbnailImageUrl: json['thumbnailImageUrl'],
       averageRatings: json['averageRatings'],
-      authorName: json['authorName'], // Add this line
+      authorName: json['authorName'],
+      totalChapters: json['totalChapters'],
     );
   }
 }

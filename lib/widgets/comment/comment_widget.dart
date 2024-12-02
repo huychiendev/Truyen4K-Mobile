@@ -186,17 +186,43 @@ class CommentWidget extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Trả lời bình luận'),
+        backgroundColor: Colors.grey[850],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.reply, color: Colors.blue),
+            SizedBox(width: 8),
+            Text('Trả lời bình luận', style: TextStyle(color: Colors.white)),
+          ],
+        ),
         content: TextField(
           controller: replyController,
-          decoration: InputDecoration(hintText: 'Nhập trả lời...'),
+          style: TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: 'Nhập trả lời...',
+            hintStyle: TextStyle(color: Colors.grey),
+            filled: true,
+            fillColor: Colors.grey[800],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Hủy'),
+            child: Text('Hủy', style: TextStyle(color: Colors.grey)),
           ),
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             onPressed: () {
               if (replyController.text.trim().isNotEmpty) {
                 onReply(replyController.text.trim(), parentCommentId);

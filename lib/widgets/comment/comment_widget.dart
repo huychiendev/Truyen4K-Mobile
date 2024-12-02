@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'comment.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CommentWidget extends StatelessWidget {
   final List<Comment> comments;
-  final Function(String, int) onReply;
-  final TextEditingController commentController;
   final Function(String) onPostComment;
+  final Function(String, int) onReply;
+  final Function(int) onDelete; // Add delete callback
+  final TextEditingController commentController;
   final bool showComments;
 
+  // Update constructor
   const CommentWidget({
     Key? key,
     required this.comments,
-    required this.onReply,
-    required this.commentController,
     required this.onPostComment,
+    required this.onReply,
+    required this.onDelete,
+    required this.commentController,
     required this.showComments,
   }) : super(key: key);
 
@@ -41,92 +45,107 @@ class CommentWidget extends StatelessWidget {
     final shouldTruncate = comment.content.length > maxLength;
     final ValueNotifier<bool> isExpanded = ValueNotifier<bool>(false);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return FutureBuilder<String?>(
+      future: _getCurrentUsername(),
+      builder: (context, snapshot) {
+        final currentUsername = snapshot.data;
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                backgroundImage: comment.userImagePath != null
-                    ? NetworkImage(comment.userImagePath!)
-                    : AssetImage('assets/default_user.png') as ImageProvider,
-                radius: 20,
-              ),
-              SizedBox(width: 8.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      comment.username,
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    SizedBox(height: 4.0),
-                    Text(
-                      _formatTimestamp(comment.createdAt),
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 12,
-                      ),
-                    ),
-                    SizedBox(height: 4.0),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: isExpanded,
-                      builder: (context, expanded, child) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              expanded ? comment.content :
-                              shouldTruncate ? '${comment.content.substring(0, maxLength)}...' : comment.content,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            if (shouldTruncate)
-                              TextButton(
-                                onPressed: () => isExpanded.value = !expanded,
-                                child: Text(
-                                  expanded ? 'Thu gọn' : 'Xem thêm',
-                                  style: TextStyle(color: Colors.blue),
-                                ),
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuButton<String>(
-                onSelected: (String value) {
-                  if (value == 'reply') {
-                    _showReplyDialog(context, comment.id);
-                  }
-                },
-                icon: Icon(Icons.more_vert, color: Colors.white),
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem(
-                    value: 'reply',
-                    child: Text('Trả lời'),
+              Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: comment.userImagePath != null
+                        ? NetworkImage(comment.userImagePath!)
+                        : AssetImage('assets/default_user.png') as ImageProvider,
+                    radius: 20,
                   ),
-                  PopupMenuItem(
-                    value: 'report',
-                    child: Text('Báo cáo'),
+                  SizedBox(width: 8.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          comment.username,
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        SizedBox(height: 4.0),
+                        Text(
+                          _formatTimestamp(comment.createdAt),
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
+                        ),
+                        SizedBox(height: 4.0),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: isExpanded,
+                          builder: (context, expanded, child) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  expanded ? comment.content :
+                                  shouldTruncate ? '${comment.content.substring(0, maxLength)}...' : comment.content,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                if (shouldTruncate)
+                                  TextButton(
+                                    onPressed: () => isExpanded.value = !expanded,
+                                    child: Text(
+                                      expanded ? 'Thu gọn' : 'Xem thêm',
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (String value) {
+                      if (value == 'reply') {
+                        _showReplyDialog(context, comment.id);
+                      } else if (value == 'delete') {
+                        _showDeleteConfirmation(context, comment.id);
+                      }
+                    },
+                    icon: Icon(Icons.more_vert, color: Colors.white),
+                    itemBuilder: (BuildContext context) {
+                      return [
+                        PopupMenuItem(
+                          value: 'reply',
+                          child: Text('Trả lời'),
+                        ),
+                        if (comment.username == currentUsername) // Chỉ hiển thị nếu là bình luận của user hiện tại
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Xóa', style: TextStyle(color: Colors.red)),
+                          ),
+                        PopupMenuItem(
+                          value: 'report',
+                          child: Text('Báo cáo'),
+                        ),
+                      ];
+                    },
                   ),
                 ],
               ),
+              if (comment.replies.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(left: 48.0, top: 8.0),
+                  child: Column(
+                    children: comment.replies.map((reply) => _buildCommentItem(context, reply)).toList(),
+                  ),
+                ),
             ],
           ),
-          if (comment.replies.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(left: 48.0, top: 8.0),
-              child: Column(
-                children: comment.replies.map((reply) => _buildCommentItem(context, reply)).toList(),
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -202,5 +221,37 @@ class CommentWidget extends StatelessWidget {
     } else {
       return 'Vừa xong';
     }
+  }
+
+  Future<String?> _getCurrentUsername() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username');
+  }
+
+  void _showDeleteConfirmation(BuildContext context, int commentId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: Text('Xác nhận xóa', style: TextStyle(color: Colors.white)),
+          content: Text('Bạn có chắc chắn muốn xóa bình luận này?',
+              style: TextStyle(color: Colors.white)),
+          actions: [
+            TextButton(
+              child: Text('Hủy', style: TextStyle(color: Colors.grey)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text('Xóa', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                onDelete(commentId);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

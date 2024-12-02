@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../models/ProfileModel.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class AuthorDetailScreen extends StatefulWidget {
   final String authorName;
@@ -18,67 +15,6 @@ class AuthorDetailScreen extends StatefulWidget {
 }
 
 class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
-  bool _isFollowing = false;
-  int _followerCount = 0;
-  List<dynamic> _authorNovels = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAuthorData();
-  }
-
-  Future<void> _loadAuthorData() async {
-    setState(() => _isLoading = true);
-    try {
-      // Fetch author's novels
-      final novelsResponse = await http.get(
-        Uri.parse('http://14.225.207.58:9898/api/v1/novels/auth/my-novels?authorName=${widget.authorName}'),
-      );
-
-      // Fetch followers count
-      final followersResponse = await http.get(
-        Uri.parse('http://14.225.207.58:9898/api/v1/followers/${widget.authorId}'),
-      );
-
-      if (novelsResponse.statusCode == 200) {
-        setState(() {
-          _authorNovels = json.decode(utf8.decode(novelsResponse.bodyBytes));
-        });
-      }
-
-      if (followersResponse.statusCode == 200) {
-        final followers = json.decode(followersResponse.body);
-        setState(() {
-          _followerCount = followers.length;
-        });
-      }
-    } catch (e) {
-      print('Error loading author data: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _toggleFollow() async {
-    final endpoint = _isFollowing ? 'unfollow' : 'follow';
-    try {
-      final response = await http.post(
-        Uri.parse('http://14.225.207.58:9898/api/v1/$endpoint/author?currentUsername=admin&authorId=${widget.authorId}'),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          _isFollowing = !_isFollowing;
-          _followerCount += _isFollowing ? 1 : -1;
-        });
-      }
-    } catch (e) {
-      print('Error toggling follow: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,18 +25,15 @@ class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
         title: Text('Thông tin tác giả'),
         actions: [
           IconButton(
-            icon: Icon(_isFollowing ? Icons.person_remove : Icons.person_add),
-            onPressed: _toggleFollow,
+            icon: Icon(Icons.person_add),
+            onPressed: () {}, // Placeholder for follow function
           ),
         ],
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildAuthorHeader(),
+            _buildAuthorInfo(),
             _buildStats(),
             _buildNovelsList(),
           ],
@@ -109,8 +42,8 @@ class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
     );
   }
 
-  Widget _buildAuthorHeader() {
-    return Container(
+  Widget _buildAuthorInfo() {
+    return Padding(
       padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +52,7 @@ class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
             widget.authorName,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -127,8 +60,8 @@ class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
           Text(
             'Tác giả',
             style: TextStyle(
-              color: Colors.grey,
-              fontSize: 16,
+              color: Colors.white,
+              fontSize: 18,
             ),
           ),
         ],
@@ -138,33 +71,34 @@ class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
 
   Widget _buildStats() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(vertical: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem('Tác phẩm', _authorNovels.length.toString()),
-          _buildStatItem('Người theo dõi', _followerCount.toString()),
+          _buildStatItem('Tác phẩm', 5), // Sample data
+          _buildStatItem('Người theo dõi', 100), // Sample data
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(String label, int value) {
     return Column(
       children: [
         Text(
-          value,
+          value.toString(),
           style: TextStyle(
             color: Colors.white,
-            fontSize: 20,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
+        SizedBox(height: 4),
         Text(
           label,
           style: TextStyle(
-            color: Colors.grey,
-            fontSize: 14,
+            color: Colors.grey[400],
+            fontSize: 16,
           ),
         ),
       ],
@@ -172,50 +106,69 @@ class _AuthorDetailScreenState extends State<AuthorDetailScreen> {
   }
 
   Widget _buildNovelsList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            'Tác phẩm',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemCount: _authorNovels.length,
-          itemBuilder: (context, index) {
-            final novel = _authorNovels[index];
-            return ListTile(
-              leading: Container(
-                width: 50,
-                height: 70,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  image: DecorationImage(
-                    image: NetworkImage(novel['thumbnailImageUrl']),
-                    fit: BoxFit.cover,
-                  ),
+    // Sample novel data với kiểu dữ liệu rõ ràng
+    final List<Map<String, dynamic>> sampleNovels = List.generate(5, (index) => {
+      'title': 'Tên truyện ${index + 1}',
+      'thumbnailUrl': 'https://via.placeholder.com/60x90',
+      'totalChapters': 100 + index,
+      'readCount': 1000 + (index * 100),
+    });
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: sampleNovels.length,
+      itemBuilder: (context, index) {
+        final Map<String, dynamic> novel = sampleNovels[index];
+        return Card(
+          color: Colors.grey[900],
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            contentPadding: EdgeInsets.all(16),
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                novel['thumbnailUrl'] as String, // Chỉ định kiểu String
+                width: 60,
+                height: 90,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  width: 60,
+                  height: 90,
+                  color: Colors.grey[800],
+                  child: Icon(Icons.book, color: Colors.grey),
                 ),
               ),
-              title: Text(
-                novel['title'],
-                style: TextStyle(color: Colors.white),
+            ),
+            title: Text(
+              novel['title'] as String, // Chỉ định kiểu String
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-              subtitle: Text(
-                '${novel['totalChapters']} chương',
-                style: TextStyle(color: Colors.grey),
-              ),
-            );
-          },
-        ),
-      ],
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 4),
+                Text(
+                  'Số chương: ${novel['totalChapters']}',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Lượt đọc: ${novel['readCount']}',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+            onTap: () {
+              // Placeholder for navigation to novel detail
+            },
+          ),
+        );
+      },
     );
   }
 }

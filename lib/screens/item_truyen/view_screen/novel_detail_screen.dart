@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/ProfileModel.dart';
 import '../../../models/novel.dart';
-import '../../../services/novel_interaction_service.dart';
 import '../../../services/novel_service.dart';
 import '../../../widgets/general_widgets/cover_image.dart';
 import '../../../widgets/novel_widgets/chapter_list.dart';
@@ -243,11 +242,35 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     }
   }
 
+  Future<void> _deleteComment(int commentId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('http://14.225.207.58:9898/api/v1/comments/delete/$commentId'),
+        headers: await NovelServiceExtension.getAuthHeader(),
+      );
+
+      if (response.statusCode == 200) {
+        // Cập nhật lại danh sách comments sau khi xóa
+        await _fetchComments();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã xóa bình luận')),
+        );
+      } else {
+        throw Exception('Không thể xóa bình luận');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi xóa bình luận: ${e.toString()}')),
+      );
+    }
+  }
 
   Widget _buildCommentSection() {
     return CommentWidget(
       comments: _comments,
       onReply: _replyComment,
+      onDelete: _deleteComment, // Add delete handler
       commentController: _commentController,
       onPostComment: _postComment,
       showComments: _showComments,

@@ -14,7 +14,7 @@ class NovelInfo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title of the novel
+          // Tiêu đề của tiểu thuyết
           Text(
             novel.title,
             style: TextStyle(
@@ -55,7 +55,7 @@ class NovelInfo extends StatelessWidget {
           ),
           SizedBox(height: 8),
 
-          // Stats Row (Số lượt đọc, đánh giá trung bình, số lượt thích)
+          // Hàng thống kê (Số lượt đọc, đánh giá trung bình, số lượt thích)
           _buildStatsRow(),
           SizedBox(height: 16),
 

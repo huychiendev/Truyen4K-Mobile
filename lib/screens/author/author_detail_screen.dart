@@ -269,23 +269,65 @@ class _AuthorDetailScreenState extends State<AuthorDetailScreen> with SingleTick
 
   Widget _buildTabs() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 45, // Chiều cao cố định
       decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicator: BoxDecoration(
-          color: Colors.green,
-          borderRadius: BorderRadius.circular(8),
+        color: Colors.grey[900], // Màu nền tối
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: Colors.grey[800]!,
+          width: 1,
         ),
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey,
-        tabs: [
-          Tab(text: 'Tác phẩm'),
-          Tab(text: 'Thông tin'),
-        ],
+      ),
+      child: ClipRRect( // Để tránh indicator vượt ra ngoài border radius
+        borderRadius: BorderRadius.circular(25),
+        child: TabBar(
+          controller: _tabController,
+          indicator: BoxDecoration(
+            // Gradient cho tab được chọn
+            gradient: LinearGradient(
+              colors: [
+                Colors.purple[700]!,
+                Colors.deepPurple[800]!,
+              ],
+            ),
+          ),
+          // Loại bỏ divider mặc định
+          dividerColor: Colors.transparent,
+          indicatorSize: TabBarIndicatorSize.tab,
+          // Padding cho text
+          labelPadding: EdgeInsets.zero,
+          // Style cho text được chọn
+          labelStyle: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+          // Style cho text không được chọn
+          unselectedLabelStyle: TextStyle(
+            fontSize: 14,
+          ),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.grey[400],
+          // Thêm overlay color khi tap
+          overlayColor: MaterialStateProperty.all(Colors.transparent),
+
+          tabs: [
+            Tab(
+              child: Container(
+                alignment: Alignment.center,
+                width: double.infinity,
+                child: Text('Tác phẩm'),
+              ),
+            ),
+            Tab(
+              child: Container(
+                alignment: Alignment.center,
+                width: double.infinity,
+                child: Text('Thông tin'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

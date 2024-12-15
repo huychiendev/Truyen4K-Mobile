@@ -414,8 +414,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildMyPrivileges() {
     final privileges = [
-      {'icon': Icons.person,
-        'title': 'Level ${_userProfile!.tierName}'},
+      {
+        'icon': Icons.person,
+        'title': 'Level ${_userProfile?.tierName ?? ""}',
+        'color': Colors.blue
+      },
       {
         'icon': Icons.event,
         'title': 'Sự kiện',
@@ -449,16 +452,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         Container(
           height: 100,
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            scrollDirection: Axis.horizontal,
-            itemCount: privileges.length,
-            separatorBuilder: (context, index) => SizedBox(width: 16),
-            itemBuilder: (context, index) => _buildPrivilegeItem(
-              privileges[index]['icon'] as IconData,
-              privileges[index]['title'] as String,
-              privileges[index]['color'] as Color,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: privileges.map((item) => _buildPrivilegeItem(
+              item['icon'] as IconData,
+              item['title'] as String,
+              item['color'] as Color,
+            )).toList(),
           ),
         ),
       ],

@@ -300,7 +300,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             email: _userProfile!.email,
                             avatarUrl: _userProfile?.imagePath ?? 'assets/avt.png',
                             coinBalance: _userProfile?.coinBalance ?? 0,
-                            diamondBalance: _userProfile?.diamondBalance ?? 0,
                           ),
                         ),
                       );

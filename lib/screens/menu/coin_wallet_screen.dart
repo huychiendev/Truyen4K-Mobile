@@ -7,7 +7,6 @@ class CoinWalletScreen extends StatefulWidget {
   final String email;
   final String avatarUrl;
   final int coinBalance;
-  final int diamondBalance;
 
   const CoinWalletScreen({
     Key? key,
@@ -15,35 +14,13 @@ class CoinWalletScreen extends StatefulWidget {
     required this.email,
     required this.avatarUrl,
     required this.coinBalance,
-    required this.diamondBalance,
   }) : super(key: key);
 
   @override
   _CoinWalletScreenState createState() => _CoinWalletScreenState();
 }
 
-class _CoinWalletScreenState extends State<CoinWalletScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  bool showDiamonds = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      setState(() {
-        showDiamonds = _tabController.index == 0;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
+class _CoinWalletScreenState extends State<CoinWalletScreen> {
   Widget _buildProfileImage() {
     if (widget.avatarUrl.startsWith('data:image')) {
       String base64Image = widget.avatarUrl.split(',').last;
@@ -57,7 +34,7 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
         radius: 30,
         backgroundImage: widget.avatarUrl.startsWith('assets/')
             ? AssetImage(widget.avatarUrl) as ImageProvider
-            : CachedNetworkImageProvider(widget.avatarUrl), // Sử dụng CachedNetworkImageProvider
+            : CachedNetworkImageProvider(widget.avatarUrl),
         backgroundColor: Colors.grey[300],
       );
     }
@@ -89,22 +66,14 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
         child: Column(
           children: [
             _buildWalletCard(),
-            _buildTabBar(),
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildDiamondGrid(),
-                  _buildCoinGrid(),
-                ],
-              ),
+              child: _buildCoinGrid(),
             ),
           ],
         ),
       ),
     );
   }
-
 
   Widget _buildBalanceWidget(IconData icon, String amount, String label, Color color) {
     return Column(
@@ -189,177 +158,18 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
             ],
           ),
           SizedBox(height: 25),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildBalanceWidget(
-                Icons.diamond_outlined,
-                '${widget.diamondBalance}',
-                'Kim cương',
-                Colors.blue,
-              ),
-              Container(height: 40, width: 1, color: Colors.white24),
-              _buildBalanceWidget(
-                Icons.monetization_on_outlined,
-                '${widget.coinBalance}',
-                'Xu',
-                Colors.amber,
-              ),
-            ],
+          _buildBalanceWidget(
+            Icons.monetization_on_outlined,
+            '${widget.coinBalance}',
+            'Xu',
+            Colors.amber,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTabBar() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      height: 45, // Chiều cao cố định
-      decoration: BoxDecoration(
-        color: Colors.grey[900], // Màu nền tối
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
-        ),
-      ),
-      child: ClipRRect( // Để tránh indicator vượt ra ngoài border radius
-        borderRadius: BorderRadius.circular(25),
-        child: TabBar(
-          controller: _tabController,
-          indicator: BoxDecoration(
-            // Gradient cho tab được chọn
-            gradient: LinearGradient(
-              colors: [
-                Colors.purple[700]!,
-                Colors.deepPurple[800]!,
-              ],
-            ),
-          ),
-          // Loại bỏ divider mặc định
-          dividerColor: Colors.transparent,
-          indicatorSize: TabBarIndicatorSize.tab,
-          // Padding cho text
-          labelPadding: EdgeInsets.zero,
-          // Style cho text được chọn
-          labelStyle: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-          // Style cho text không được chọn
-          unselectedLabelStyle: TextStyle(
-            fontSize: 14,
-          ),
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.grey[400],
-          // Thêm overlay color khi tap
-          overlayColor: WidgetStateProperty.all(Colors.transparent),
-
-          tabs: [
-            Tab(
-              child: Container(
-                alignment: Alignment.center,
-                width: double.infinity,
-                child: Text('Nạp Kim Cương'),
-              ),
-            ),
-            Tab(
-              child: Container(
-                alignment: Alignment.center,
-                width: double.infinity,
-                child: Text('Nạp Xu'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDiamondGrid() {
-    return _buildPurchaseGrid([
-      _PurchaseOption(
-        amount: '100',
-        price: '20.000đ',
-        bonus: '',
-        isPopular: false,
-      ),
-      _PurchaseOption(
-        amount: '500',
-        price: '100.000đ',
-        bonus: '+10%',
-        isPopular: true,
-      ),
-      _PurchaseOption(
-        amount: '1000',
-        price: '200.000đ',
-        bonus: '+15%',
-        isPopular: false,
-      ),
-      _PurchaseOption(
-        amount: '2.000',
-        price: '400.000đ',
-        bonus: '+25%',
-        isPopular: false,
-      ),
-      _PurchaseOption(
-        amount: '5.000',
-        price: '1.000.000đ',
-        bonus: '+35%',
-        isPopular: false,
-      ),
-      _PurchaseOption(
-        amount: '10.000',
-        price: '2.000.000đ',
-        bonus: '+40%',
-        isPopular: false,
-      ),
-    ]);
-  }
-
   Widget _buildCoinGrid() {
-    return _buildPurchaseGrid([
-      _PurchaseOption(
-        amount: '1.000',
-        price: '20.000đ',
-        bonus: '',
-        isPopular: false,
-      ),
-      _PurchaseOption(
-        amount: '5.000',
-        price: '100.000đ',
-        bonus: '+10%',
-        isPopular: true,
-      ),
-      _PurchaseOption(
-        amount: '10.000',
-        price: '200.000đ',
-        bonus: '+15%',
-        isPopular: false,
-      ),
-      _PurchaseOption(
-        amount: '20.000',
-        price: '400.000đ',
-        bonus: '+25%',
-        isPopular: false,
-      ),
-      _PurchaseOption(
-        amount: '50.000',
-        price: '1.000.000đ',
-        bonus: '+35%',
-        isPopular: false,
-      ),
-      _PurchaseOption(
-        amount: '100.000',
-        price: '2.000.000đ',
-        bonus: '+40%',
-        isPopular: false,
-      ),
-    ]);
-  }
-
-  Widget _buildPurchaseGrid(List<_PurchaseOption> options) {
     return GridView.builder(
       padding: EdgeInsets.all(16),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -368,13 +178,52 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
         mainAxisSpacing: 16,
         childAspectRatio: 0.8,
       ),
-      itemCount: options.length,
+      itemCount: _coinOptions.length,
       itemBuilder: (context, index) {
-        final option = options[index];
+        final option = _coinOptions[index];
         return _buildPurchaseCard(option);
       },
     );
   }
+
+  List<_PurchaseOption> get _coinOptions => [
+    _PurchaseOption(
+      amount: '1.000',
+      price: '20.000đ',
+      bonus: '',
+      isPopular: false,
+    ),
+    _PurchaseOption(
+      amount: '5.000',
+      price: '100.000đ',
+      bonus: '+10%',
+      isPopular: true,
+    ),
+    _PurchaseOption(
+      amount: '10.000',
+      price: '200.000đ',
+      bonus: '+15%',
+      isPopular: false,
+    ),
+    _PurchaseOption(
+      amount: '20.000',
+      price: '400.000đ',
+      bonus: '+25%',
+      isPopular: false,
+    ),
+    _PurchaseOption(
+      amount: '50.000',
+      price: '1.000.000đ',
+      bonus: '+35%',
+      isPopular: false,
+    ),
+    _PurchaseOption(
+      amount: '100.000',
+      price: '2.000.000đ',
+      bonus: '+40%',
+      isPopular: false,
+    ),
+  ];
 
   Widget _buildPurchaseCard(_PurchaseOption option) {
     return GestureDetector(
@@ -415,9 +264,9 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    showDiamonds ? Icons.diamond_outlined : Icons.monetization_on_outlined,
+                    Icons.monetization_on_outlined,
                     size: 40,
-                    color: showDiamonds ? Colors.blue : Colors.amber,
+                    color: Colors.amber,
                   ),
                   SizedBox(height: 16),
                   Text(
@@ -472,7 +321,7 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
           style: TextStyle(color: Colors.white),
         ),
         content: Text(
-          'Bạn có muốn mua $amount ${showDiamonds ? 'kim cương' : 'xu'} với giá $price?',
+          'Bạn có muốn mua $amount xu với giá $price?',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -498,45 +347,6 @@ class _CoinWalletScreenState extends State<CoinWalletScreen>
           ),
         ],
       ),
-    );
-  }
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 120.0,
-      floating: false,
-      pinned: true,
-      backgroundColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          'Ví của tôi',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.purple.withOpacity(0.8),
-                Colors.black.withOpacity(0.0),
-              ],
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.history, color: Colors.white),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: Icon(Icons.help_outline, color: Colors.white),
-          onPressed: () {},
-        ),
-      ],
     );
   }
 

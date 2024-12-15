@@ -1,22 +1,24 @@
-// lib/screens/self_screen/wallet_screen.dart
-
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:apptruyenonline/models/ProfileModel.dart';
+import 'package:apptruyenonline/models/User.dart';
 
 class WalletScreen extends StatelessWidget {
   final String username;
   final String email;
-  final String avatarUrl;
   final int balance;
   final int diamondBalance;
+  final UserProfile userProfile;
+  final UserImage? userImage;
 
   const WalletScreen({
     Key? key,
     required this.username,
     required this.email,
-    required this.avatarUrl,
     this.balance = 0,
     this.diamondBalance = 0,
+    required this.userProfile,
+    this.userImage,
   }) : super(key: key);
 
   @override
@@ -74,14 +76,21 @@ class WalletScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              _buildProfileImage(),
+              CircleAvatar(
+                radius: 30,
+                backgroundImage: _getProfileImage(),
+                backgroundColor: Colors.grey[300],
+                onBackgroundImageError: (exception, stackTrace) {
+                  print('Error loading avatar image: $exception');
+                },
+              ),
               SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      username,
+                      userProfile.username,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -89,7 +98,7 @@ class WalletScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      email,
+                      userProfile.email,
                       style: TextStyle(color: Colors.white70),
                     ),
                   ],
@@ -103,7 +112,7 @@ class WalletScreen extends StatelessWidget {
                   border: Border.all(color: Colors.green, width: 1),
                 ),
                 child: Text(
-                  'VIP',
+                  userProfile.tierName,
                   style: TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
@@ -118,14 +127,14 @@ class WalletScreen extends StatelessWidget {
             children: [
               _buildBalanceItem(
                 Icons.diamond_outlined,
-                diamondBalance.toString(),
+                userProfile.diamondBalance.toString(),
                 'Kim cương',
                 Colors.blue,
               ),
               Container(height: 40, width: 1, color: Colors.white24),
               _buildBalanceItem(
                 Icons.monetization_on_outlined,
-                balance.toString(),
+                userProfile.coinBalance.toString(),
                 'Xu',
                 Colors.amber,
               ),
@@ -136,23 +145,16 @@ class WalletScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileImage() {
-    if (avatarUrl.startsWith('data:image')) {
-      String base64Image = avatarUrl.split(',').last;
-      return CircleAvatar(
-        radius: 30,
-        backgroundImage: MemoryImage(base64Decode(base64Image)),
-        backgroundColor: Colors.grey[300],
-      );
-    } else {
-      return CircleAvatar(
-        radius: 30,
-        backgroundImage: avatarUrl.startsWith('assets/')
-            ? AssetImage(avatarUrl) as ImageProvider
-            : NetworkImage(avatarUrl),
-        backgroundColor: Colors.grey[300],
-      );
+  ImageProvider _getProfileImage() {
+    if (userImage?.data != null) {
+      try {
+        return MemoryImage(base64Decode(userImage!.data));
+      } catch (e) {
+        print('Error decoding image data: $e');
+        return AssetImage('assets/avt.png');
+      }
     }
+    return AssetImage('assets/avt.png');
   }
 
   Widget _buildBalanceItem(IconData icon, String amount, String label, Color color) {

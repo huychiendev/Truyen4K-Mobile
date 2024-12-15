@@ -1,17 +1,13 @@
-import 'package:apptruyenonline/screens/authenticator/Category_Selection_Screen.dart';
 import 'package:apptruyenonline/screens/authenticator/sign_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../constants/login_constants.dart';
-
 //import '../model_login/forgot_password.dart';
 //import '../model_login/sign_up_screen.dart';
-
 // import '../model_login/forgot_password.dart';
 import '../../screens/authenticator/forgot_password_screen.dart';
 import '../general_widgets/custom_button.dart';
 import 'custom_text_field.dart';
-
 import '../../constants/app_colors.dart';
 import '../../main.dart';
 import '../../services/auth_service.dart';

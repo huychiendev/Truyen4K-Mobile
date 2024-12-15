@@ -1,15 +1,14 @@
-// profile_service.dart
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:apptruyenonline/models/ProfileModel.dart';
+import 'package:http/http.dart' as http;
+import '../models/ProfileModel.dart';
+import '../models/User.dart';
 
 class ProfileService {
   static const String baseUrl = 'http://14.225.207.58:9898/api/v1';
 
-  // profile_service.dart
-
-  static Future<UserProfile> fetchProfileData() async {
+  static Future<Map<String, dynamic>> getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
     String? username = prefs.getString('username');
@@ -19,36 +18,46 @@ class ProfileService {
     }
 
     // Fetch profile data
-    final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/v1/profile/$username'),
+    final profileResponse = await http.get(
+      Uri.parse('$baseUrl/profile/$username'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
     );
 
-    if (response.statusCode == 200) {
-      final profileData = json.decode(utf8.decode(response.bodyBytes));
-      UserProfile userProfile = UserProfile.fromJson(profileData);
+    if (profileResponse.statusCode == 200) {
+      final profileData = json.decode(utf8.decode(profileResponse.bodyBytes));
+      final userProfile = UserProfile.fromJson(profileData);
 
-      // Fetch user image using userId
+      // Fetch user image
       final imageResponse = await http.get(
-        Uri.parse('http://14.225.207.58:9898/api/images/?userId=${userProfile.id}'),
+        Uri.parse('$baseUrl/images/?userId=${userProfile.id}'),
         headers: {
           'Authorization': 'Bearer $token',
         },
       );
 
       if (imageResponse.statusCode == 200) {
-        final List<dynamic> imageData = json.decode(utf8.decode(imageResponse.bodyBytes));
-        if (imageData.isNotEmpty) {
-          return userProfile.copyWith(
-            data: imageData[0]['data'],
-          );
+        final List<dynamic> images = json.decode(utf8.decode(imageResponse.bodyBytes));
+        if (images.isNotEmpty) {
+          return {
+            'profile': userProfile,
+            'image': UserImage(
+              id: images[0]['id'] ?? 0,
+              type: images[0]['type'] ?? 'image/jpeg',
+              data: images[0]['data'],
+              createdAt: images[0]['createdAt'] ?? DateTime.now().toIso8601String(),
+              user: userProfile,
+            ),
+          };
         }
       }
 
-      return userProfile;
+      return {
+        'profile': userProfile,
+        'image': null,
+      };
     } else {
       throw Exception('Failed to load profile data');
     }

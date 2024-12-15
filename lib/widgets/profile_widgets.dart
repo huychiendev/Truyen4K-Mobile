@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-
 import '../screens/self_screen/profile_view_screen/personal_profile_screen.dart';
 
 class ProfileHeader extends StatelessWidget {

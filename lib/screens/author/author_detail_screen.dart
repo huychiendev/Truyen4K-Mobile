@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/novel_model.dart';
 import '../../services/explore_service.dart';
-import '../../widgets/novel_widgets/horizontal_novel_list.dart';
 
 class AuthorDetailScreen extends StatefulWidget {
   final String authorName;

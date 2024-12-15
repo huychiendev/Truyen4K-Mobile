@@ -82,21 +82,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Implement logic to get daily checkins data based on _userProfile
     return [true, true, false, false, false, false];
   }
+
   void _navigateToDailyMissions() {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DailyMissionsScreen(
           username: _userProfile!.username,
-          avatarUrl: _userProfile?.data ?? 'assets/avt.png',
           level: _getUserLevel(),
           progressValue: _getProgressValue(),
           dailyCheckins: _getDailyCheckins(),
+          userProfile: _userProfile!,
+          userImage: _userImage,
         ),
       ),
     );
   }
-
 
   void _handleMenuItemTap(String title) async {
     if (!mounted) return;

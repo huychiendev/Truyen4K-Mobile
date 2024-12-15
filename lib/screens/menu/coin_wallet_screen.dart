@@ -1,19 +1,22 @@
-import 'dart:convert';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:apptruyenonline/models/ProfileModel.dart';
+import 'package:apptruyenonline/models/User.dart';
 
 class CoinWalletScreen extends StatefulWidget {
   final String username;
   final String email;
-  final String avatarUrl;
   final int coinBalance;
+  final UserProfile userProfile;
+  final UserImage? userImage;
 
   const CoinWalletScreen({
     Key? key,
     required this.username,
     required this.email,
-    required this.avatarUrl,
     required this.coinBalance,
+    required this.userProfile,
+    this.userImage,
   }) : super(key: key);
 
   @override
@@ -21,23 +24,16 @@ class CoinWalletScreen extends StatefulWidget {
 }
 
 class _CoinWalletScreenState extends State<CoinWalletScreen> {
-  Widget _buildProfileImage() {
-    if (widget.avatarUrl.startsWith('data:image')) {
-      String base64Image = widget.avatarUrl.split(',').last;
-      return CircleAvatar(
-        radius: 30,
-        backgroundImage: MemoryImage(base64Decode(base64Image)),
-        backgroundColor: Colors.grey[300],
-      );
-    } else {
-      return CircleAvatar(
-        radius: 30,
-        backgroundImage: widget.avatarUrl.startsWith('assets/')
-            ? AssetImage(widget.avatarUrl) as ImageProvider
-            : CachedNetworkImageProvider(widget.avatarUrl),
-        backgroundColor: Colors.grey[300],
-      );
+  ImageProvider _getProfileImage() {
+    if (widget.userImage?.data != null) {
+      try {
+        return MemoryImage(base64Decode(widget.userImage!.data));
+      } catch (e) {
+        print('Error decoding image data: $e');
+        return AssetImage('assets/avt.png');
+      }
     }
+    return AssetImage('assets/avt.png');
   }
 
   @override
@@ -119,14 +115,21 @@ class _CoinWalletScreenState extends State<CoinWalletScreen> {
         children: [
           Row(
             children: [
-              _buildProfileImage(),
+              CircleAvatar(
+                radius: 30,
+                backgroundImage: _getProfileImage(),
+                backgroundColor: Colors.grey[300],
+                onBackgroundImageError: (exception, stackTrace) {
+                  print('Error loading avatar image: $exception');
+                },
+              ),
               SizedBox(width: 15),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.username,
+                      widget.userProfile.username,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -134,7 +137,7 @@ class _CoinWalletScreenState extends State<CoinWalletScreen> {
                       ),
                     ),
                     Text(
-                      widget.email,
+                      widget.userProfile.email,
                       style: TextStyle(color: Colors.white70),
                     ),
                   ],
@@ -148,7 +151,7 @@ class _CoinWalletScreenState extends State<CoinWalletScreen> {
                   border: Border.all(color: Colors.green, width: 1),
                 ),
                 child: Text(
-                  'VIP',
+                  widget.userProfile.tierName,
                   style: TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
@@ -160,7 +163,7 @@ class _CoinWalletScreenState extends State<CoinWalletScreen> {
           SizedBox(height: 25),
           _buildBalanceWidget(
             Icons.monetization_on_outlined,
-            '${widget.coinBalance}',
+            '${widget.userProfile.coinBalance}',
             'Xu',
             Colors.amber,
           ),

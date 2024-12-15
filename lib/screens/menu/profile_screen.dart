@@ -298,8 +298,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           builder: (context) => CoinWalletScreen(
                             username: _userProfile!.username,
                             email: _userProfile!.email,
-                            avatarUrl: _userProfile?.imagePath ?? 'assets/avt.png',
-                            coinBalance: _userProfile?.coinBalance ?? 0,
+                            coinBalance: _userProfile!.coinBalance,
+                            userProfile: _userProfile!,
+                            userImage: _userImage,
                           ),
                         ),
                       );

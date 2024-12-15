@@ -1,5 +1,3 @@
-// lib/screens/item_truyen/all_items_screen.dart
-
 import 'package:flutter/material.dart';
 import 'view_screen/novel_detail_screen.dart';
 

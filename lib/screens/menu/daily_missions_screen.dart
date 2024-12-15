@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'dart:convert';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:lottie/lottie.dart';
+import 'package:apptruyenonline/models/ProfileModel.dart';
+import 'package:apptruyenonline/models/User.dart';
 
 class DailyMissionsScreen extends StatefulWidget {
   final String username;
-  final String avatarUrl;
   final int level;
   final double progressValue;
   final List<bool> dailyCheckins;
+  final UserProfile userProfile;
+  final UserImage? userImage;
 
   const DailyMissionsScreen({
     Key? key,
     required this.username,
-    required this.avatarUrl,
     required this.level,
     required this.progressValue,
     required this.dailyCheckins,
+    required this.userProfile,
+    this.userImage,
   }) : super(key: key);
 
   @override
@@ -42,6 +47,19 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen>
     _controller.dispose();
     super.dispose();
   }
+
+  ImageProvider _getProfileImage() {
+    if (widget.userImage?.data != null) {
+      try {
+        return MemoryImage(base64Decode(widget.userImage!.data));
+      } catch (e) {
+        print('Error decoding image data: $e');
+        return AssetImage('assets/avt.png');
+      }
+    }
+    return AssetImage('assets/avt.png');
+  }
+
 
   Future<void> _onRefresh() async {
     setState(() => _isRefreshing = true);
@@ -148,7 +166,11 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen>
               ),
               child: CircleAvatar(
                 radius: 35,
-                backgroundImage: NetworkImage(widget.avatarUrl),
+                backgroundImage: _getProfileImage(),
+                backgroundColor: Colors.grey[300],
+                onBackgroundImageError: (exception, stackTrace) {
+                  print('Error loading avatar image: $exception');
+                },
               ),
             ),
           ),
@@ -158,11 +180,18 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.username,
+                  widget.userProfile.username,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  widget.userProfile.email,
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 14,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -187,44 +216,7 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen>
                     ),
                     SizedBox(width: 12),
                     Expanded(
-                      child: Stack(
-                        children: [
-                          Container(
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[800],
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          AnimatedBuilder(
-                            animation: _controller,
-                            builder: (context, child) {
-                              return FractionallySizedBox(
-                                widthFactor: widget.progressValue,
-                                child: Container(
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.blue[400]!,
-                                        Colors.purple[400]!,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(4),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.blue[400]!.withOpacity(0.5),
-                                        blurRadius: 6,
-                                        offset: Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                      child: _buildProgressBar(),
                     ),
                   ],
                 ),
@@ -233,6 +225,47 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildProgressBar() {
+    return Stack(
+      children: [
+        Container(
+          height: 8,
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return FractionallySizedBox(
+              widthFactor: widget.progressValue,
+              child: Container(
+                height: 8,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.blue[400]!,
+                      Colors.purple[400]!,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue[400]!.withOpacity(0.5),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 

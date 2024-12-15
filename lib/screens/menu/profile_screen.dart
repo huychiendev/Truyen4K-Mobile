@@ -313,6 +313,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   icon: Icons.shopping_bag,
                   label: 'Túi',
                   onTap: () {
+                    // Example navigation code
                     if (_userProfile != null) {
                       Navigator.push(
                         context,
@@ -320,9 +321,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           builder: (context) => WalletScreen(
                             username: _userProfile!.username,
                             email: _userProfile!.email,
-                            avatarUrl: _userProfile?.imagePath ?? 'assets/avt.png',
-                            balance: _userProfile?.coinBalance ?? 0,
-                            diamondBalance: _userProfile?.diamondBalance ?? 0,
+                            balance: _userProfile!.coinBalance,
+                            diamondBalance: _userProfile!.diamondBalance,
+                            userProfile: _userProfile!,
+                            userImage: _userImage,
                           ),
                         ),
                       );

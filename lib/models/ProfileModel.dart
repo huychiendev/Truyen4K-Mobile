@@ -17,6 +17,10 @@ class UserProfile {
   final String? data; // Thêm trường data
   final int coinBalance; // Thêm trường coinBalance
   final int diamondBalance; // Thêm trường diamondBalance
+  final int followerCount;
+  final String dayLeft;
+  final int coinWallet;
+  final int coinSpent;
 
   UserProfile({
     required this.id,
@@ -32,9 +36,13 @@ class UserProfile {
     required this.tierName,
     this.selectedGenreIds,
     this.hobbyNames,
-    this.data, // Thêm parameter
-    this.coinBalance = 0, // Thêm parameter với giá trị mặc định
-    this.diamondBalance = 0, // Thêm parameter với giá trị mặc định
+    this.data,
+    this.coinBalance = 0,
+    this.diamondBalance = 0,
+    this.followerCount = 0,
+    this.dayLeft = 'Bạn chưa mua gói premium',
+    this.coinWallet = 0,
+    this.coinSpent = 0,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -54,9 +62,13 @@ class UserProfile {
       List<int>.from(json['selectedGenreIds']) : null,
       hobbyNames: json['hobbyNames'] != null ?
       List<String>.from(json['hobbyNames']) : null,
-      data: json['data'], // Thêm mapping
-      coinBalance: json['coinBalance'] ?? 0, // Thêm mapping
-      diamondBalance: json['diamondBalance'] ?? 0, // Thêm mapping
+      data: json['data'],
+      coinBalance: json['coinBalance'] ?? 0,
+      diamondBalance: json['diamondBalance'] ?? 0,
+      followerCount: json['followerCount'] ?? 0,
+      dayLeft: json['dayLeft'] ?? 'Bạn chưa mua gói premium',
+      coinWallet: json['coinWallet'] ?? 0,
+      coinSpent: json['coinSpent'] ?? 0,
     );
   }
   // Thêm vào class UserProfile
@@ -64,6 +76,10 @@ class UserProfile {
     String? data,
     int? coinBalance,
     int? diamondBalance,
+    int? followerCount,
+    String? dayLeft,
+    int? coinWallet,
+    int? coinSpent,
   }) {
     return UserProfile(
       id: this.id,
@@ -81,6 +97,10 @@ class UserProfile {
       data: data ?? this.data,
       coinBalance: coinBalance ?? this.coinBalance,
       diamondBalance: diamondBalance ?? this.diamondBalance,
+      followerCount: followerCount ?? this.followerCount,
+      dayLeft: dayLeft ?? this.dayLeft,
+      coinWallet: coinWallet ?? this.coinWallet,
+      coinSpent: coinSpent ?? this.coinSpent,
     );
   }
 }

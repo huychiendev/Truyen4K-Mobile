@@ -465,7 +465,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
             '$label:',
             style: TextStyle(color: Colors.white70),
           ),
-          SizedBox(width: 16),
+          SizedBox(width: 10),
           // Bọc trong Expanded để Text có thể tự động xuống dòng
           Expanded(
             child: Text(

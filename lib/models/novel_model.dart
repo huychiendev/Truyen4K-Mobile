@@ -17,15 +17,16 @@ class Novel {
     required this.totalChapters,
   });
 
+// In novel_model.dart
   factory Novel.fromJson(Map<String, dynamic> json) {
     return Novel(
-      slug: json['slug'],
-      title: json['title'],
-      description: json['description'],
-      thumbnailImageUrl: json['thumbnailImageUrl'],
-      averageRatings: json['averageRatings'],
-      authorName: json['authorName'],
-      totalChapters: json['totalChapters'],
+      slug: json['slug'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      thumbnailImageUrl: json['thumbnailImageUrl'] ?? '',
+      averageRatings: (json['averageRatings'] as num?)?.toDouble() ?? 0.0,
+      authorName: json['authorName'] ?? 'Không xác định',
+      totalChapters: json['totalChapters'] ?? 0,
     );
   }
 }

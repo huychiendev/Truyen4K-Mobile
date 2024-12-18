@@ -6,9 +6,9 @@ class LoginConstants {
   static const String loginButtonText = 'Tiếp tục';
   static const String forgotPasswordText = 'Quên mật khẩu?';
   static const String orText = 'Hoặc';
-  static const String facebookLoginText = 'Đăng nhập với Facebook';
-  static const String googleLoginText = 'Đăng nhập với Google';
-  static const String appleLoginText = 'Đăng nhập với Apple';
+  // static const String facebookLoginText = 'Đăng nhập với Facebook';
+  // static const String googleLoginText = 'Đăng nhập với Google';
+  // static const String appleLoginText = 'Đăng nhập với Apple';
   static const String noAccountText = 'Bạn chưa có tài khoản? ';
   static const String signUpText = 'Đăng ký';
 

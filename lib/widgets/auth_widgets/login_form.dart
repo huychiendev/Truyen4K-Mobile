@@ -92,31 +92,6 @@ class _LoginFormState extends State<LoginForm> {
     }
   }
 
-      // bool categoriesSelected = prefs.getBool('categories_selected') ?? false;
-      //
-      // if (categoriesSelected) {
-      //   // If categories were already selected, go directly to main screen
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => MainScreen()),
-      //   );
-      // } else {
-        // If categories haven't been selected, go to category selection screen
-  //       Navigator.pushReplacement(
-  //         context,
-  //         MaterialPageRoute(
-  //           builder: (context) => CategorySelectionScreen(userId: userId),
-  //         ),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     _showErrorDialog(
-  //       context,
-  //       'Vui lòng kiểm tra lại tên đăng nhập và mật khẩu',
-  //     );
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -195,30 +170,30 @@ class _LoginFormState extends State<LoginForm> {
           ],
         ),
         SizedBox(height: 20),
-        CustomButton(
-          icon: FontAwesomeIcons.facebookF,
-          text: LoginConstants.facebookLoginText,
-          onPressed: () =>
-              _showSnackBar(context, LoginConstants.facebookLoginMessage),
-          color: Colors.white,
-          textColor: Colors.blue,
-        ),
-        CustomButton(
-          icon: FontAwesomeIcons.google,
-          text: LoginConstants.googleLoginText,
-          onPressed: () =>
-              _showSnackBar(context, LoginConstants.googleLoginMessage),
-          color: Colors.white,
-          textColor: Colors.red,
-        ),
-        CustomButton(
-          icon: FontAwesomeIcons.apple,
-          text: LoginConstants.appleLoginText,
-          onPressed: () =>
-              _showSnackBar(context, LoginConstants.appleLoginMessage),
-          color: Colors.white,
-          textColor: Colors.black,
-        ),
+        // CustomButton(
+        //   icon: FontAwesomeIcons.facebookF,
+        //   text: LoginConstants.facebookLoginText,
+        //   onPressed: () =>
+        //       _showSnackBar(context, LoginConstants.facebookLoginMessage),
+        //   color: Colors.white,
+        //   textColor: Colors.blue,
+        // ),
+        // CustomButton(
+        //   icon: FontAwesomeIcons.google,
+        //   text: LoginConstants.googleLoginText,
+        //   onPressed: () =>
+        //       _showSnackBar(context, LoginConstants.googleLoginMessage),
+        //   color: Colors.white,
+        //   textColor: Colors.red,
+        // ),
+        // CustomButton(
+        //   icon: FontAwesomeIcons.apple,
+        //   text: LoginConstants.appleLoginText,
+        //   onPressed: () =>
+        //       _showSnackBar(context, LoginConstants.appleLoginMessage),
+        //   color: Colors.white,
+        //   textColor: Colors.black,
+        // ),
         SizedBox(height: 25),
         Center(
           child: GestureDetector(

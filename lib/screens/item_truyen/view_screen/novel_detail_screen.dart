@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/ProfileModel.dart';
 import '../../../models/novel.dart';
+import '../../../services/novel_interaction_service.dart';
 import '../../../services/novel_service.dart';
 import '../../../widgets/general_widgets/cover_image.dart';
 import '../../../widgets/novel_widgets/chapter_list.dart';
@@ -40,6 +41,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
   Novel? novel;
   late UserProfile? _userProfile;
   bool _isSaved = false;
+  bool _isLoadingSave = false;
   bool _isLiked = false;
   bool _isLoadingLike = false;
   bool _isLoadingRating = false;
@@ -57,9 +59,63 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
     _loadUserProfile().then((_) {
       if (_userProfile != null) {
         _checkIfLiked();
+        _checkIfSaved();
       }
     });
     _fetchComments();
+  }
+
+  Future<void> _checkIfSaved() async {
+    try {
+      setState(() => _isLoadingSave = true);
+
+      final userId = _userProfile?.id;
+      if (userId == null) {
+        throw Exception('User ID is null');
+      }
+
+      final isSaved = await NovelInteractionService.checkIfSaved(widget.slug);
+
+      if (mounted) {
+        setState(() {
+          _isSaved = isSaved;
+          _isLoadingSave = false;
+        });
+      }
+    } catch (e) {
+      print('Error checking saved status: $e');
+      if (mounted) {
+        setState(() => _isLoadingSave = false);
+      }
+    }
+  }
+
+  Future<void> _toggleSave() async {
+    if (_userProfile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Vui lòng đăng nhập để lưu truyện'))
+      );
+      return;
+    }
+
+    setState(() => _isLoadingSave = true);
+
+    try {
+      final saved = await NovelInteractionService.saveNovelToLibrary(widget.slug);
+      setState(() {
+        _isSaved = saved;
+        _isLoadingSave = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_isSaved ? 'Đã lưu truyện vào thư viện' : 'Đã bỏ lưu truyện'))
+      );
+    } catch (e) {
+      setState(() => _isLoadingSave = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Có lỗi xảy ra khi lưu truyện. Vui lòng thử lại.'))
+      );
+    }
   }
 
   Future<void> _loadUserProfile() async {
@@ -172,7 +228,6 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
       if (userId == null) {
         throw Exception('User ID is null');
       }
-
       // Gọi API để kiểm tra trạng thái "like" của người dùng
       final response = await http.get(
         Uri.parse('http://14.225.207.58:9898/api/v1/novels/${widget.slug}/is-liked?userId=$userId'),
@@ -419,7 +474,7 @@ class _NovelDetailScreenState extends State<NovelDetailScreen> {
               _isSaved ? Icons.bookmark : Icons.bookmark_border,
               color: _isSaved ? Colors.green : Colors.white,
             ),
-            onPressed: () {},
+            onPressed: _toggleSave,
           ),
         ],
       ),

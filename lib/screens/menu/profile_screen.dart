@@ -1,4 +1,5 @@
 import 'package:apptruyenonline/screens/menu/coin_wallet_screen.dart';
+import 'package:apptruyenonline/screens/self_screen/event/achievement.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:apptruyenonline/services/profile_service.dart';
@@ -11,6 +12,8 @@ import 'package:apptruyenonline/screens/menu/daily_missions_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/wallet_screen.dart';
 import 'dart:convert';
 import '../../../models/User.dart';
+import 'package:apptruyenonline/screens/self_screen/event/BXH.dart';
+import 'package:apptruyenonline/screens/self_screen/event/achievement.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -468,28 +471,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+
   Widget _buildPrivilegeItem(IconData icon, String title, Color color) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: color.withOpacity(0.3),
-              width: 1,
+    return GestureDetector(
+      onTap: () {
+        if (title == 'Sự kiện') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => EventScreen()),
+          );
+        }
+        if (title == 'Thành tựu') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AchievementScreen()),
+          );
+        }
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: color.withOpacity(0.3),
+                width: 1,
+              ),
             ),
+            child: Icon(icon, color: color),
           ),
-          child: Icon(icon, color: color),
-        ),
-        SizedBox(height: 8),
-        Text(
-          title,
-          style: TextStyle(color: Colors.grey, fontSize: 12),
-        ),
-      ],
+          SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 

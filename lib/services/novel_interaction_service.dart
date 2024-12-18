@@ -15,6 +15,62 @@ class NovelInteractionService {
     };
   }
 
+  static Future<bool> checkIfSaved(String slug) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/liked-novels/check-saved/$slug'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        return responseData['saved'] ?? false;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Error checking saved status: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> saveNovelToLibrary(String slug) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/liked-novels/save-to-library'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'slug': slug}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 404) {
+        final errorResponse = jsonDecode(response.body);
+        if (errorResponse['status'] == 'NOT_FOUND' &&
+            errorResponse['message'].contains('already exists')) {
+          return true; // Truyện đã được lưu trước đó
+        }
+        throw Exception('Novel not found');
+      } else {
+        throw Exception('Failed to save novel');
+      }
+    } catch (e) {
+      print('Error saving novel to library: $e');
+      throw e;
+    }
+  }
 
   // Thích truyện (POST)
   static Future<bool> likeNovel(String slug) async {

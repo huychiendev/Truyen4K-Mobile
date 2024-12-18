@@ -370,38 +370,146 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
       color: Color(0xFF1D1E33),
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoItem('Email', _userProfile?.email ?? 'N/A'),
-            _buildInfoItem('Cấp độ', _userProfile?.tierName ?? 'N/A'),
-            _buildInfoItem('Trạng thái', _userProfile?.accountStatus ?? 'N/A'),
-            _buildInfoItem('Số chương đã đọc', _userProfile?.chapterReadCount.toString() ?? '0'),
-            _buildInfoItem('Điểm', _userProfile?.point.toString() ?? '0'),
-            if (_userProfile?.selectedGenreIds?.isNotEmpty ?? false)
-              _buildInfoItem('Thể loại đã chọn', _userProfile!.selectedGenreIds!.join(', ')),
-            if (_userImage != null)
-              _buildInfoItem('Lần cuối sửa ảnh', formatDate(_userImage!.createdAt)),
-            _buildInfoItem('Số chương yêu cầu',
-                cultivationLevels[getCultivationLevel(_userProfile?.chapterReadCount ?? 0)]?.toString() ?? '0'),
-          ],
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader('Thông tin cá nhân'),
+              _buildInfoItem('Họ và tên', _userProfile?.fullName ?? 'N/A'),
+              _buildInfoItem('Tên đăng nhập', _userProfile?.username ?? 'N/A'),
+              _buildInfoItem('Email', _userProfile?.email ?? 'N/A'),
+              _buildInfoItem('Trạng thái', _userProfile?.accountStatus ?? 'N/A'),
+              _buildInfoItem(
+                'Ngày tham gia',
+                _userProfile?.createdAt != null
+                    ? formatDate(_userProfile!.createdAt!)
+                    : 'N/A',
+              ),
+              _buildInfoItem(
+                'Cập nhật lần cuối',
+                _userProfile?.updatedAt != null
+                    ? formatDate(_userProfile!.updatedAt!)
+                    : 'Chưa cập nhật',
+              ),
+              Divider(color: Colors.grey[800], height: 32),
+              _buildSectionHeader('Thống kê đọc truyện'),
+              _buildInfoItem('Điểm tích lũy', '${_userProfile?.point ?? 0} điểm'),
+              _buildInfoItem(
+                  'Số chương đã đọc', '${_userProfile?.chapterReadCount ?? 0} chương'),
+              _buildInfoItem('Cấp độ tu luyện', _userProfile?.tierName ?? 'N/A'),
+              _buildInfoItem(
+                  'Người theo dõi', '${_userProfile?.followerCount ?? 0} người'),
+              Divider(color: Colors.grey[800], height: 32),
+              _buildSectionHeader('Thông tin ví và gói Premium'),
+              _buildInfoItem('Số xu hiện tại', '${_userProfile?.coinWallet ?? 0} xu'),
+              _buildInfoItem('Số xu đã tiêu', '${_userProfile?.coinSpent ?? 0} xu'),
+              _buildInfoItem(
+                  'Tình trạng Premium', _userProfile?.dayLeft ?? 'Bạn chưa mua gói premium'),
+              if (_userProfile?.selectedGenreIds?.isNotEmpty ?? false) ...[
+                Divider(color: Colors.grey[800], height: 32),
+                _buildSectionHeader('Thể loại và sở thích'),
+                _buildGenreList(_userProfile!.selectedGenreIds!),
+              ],
+              if (_userProfile?.hobbyNames?.isNotEmpty ?? false) ...[
+                SizedBox(height: 16),
+                _buildHobbyList(_userProfile!.hobbyNames!),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: Colors.greenAccent,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGenreList(List<int> genreIds) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: genreIds.map((id) => Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.greenAccent.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.greenAccent.withOpacity(0.5)),
+        ),
+        child: Text(
+          'ID: $id',
+          style: TextStyle(color: Colors.greenAccent),
+        ),
+      )).toList(),
+    );
+  }
   Widget _buildInfoItem(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('$label:', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
-          SizedBox(width: 8),
-          Expanded(child: Text(value, style: TextStyle(color: Colors.white))),
+          Text(
+            '$label:',
+            style: TextStyle(color: Colors.white70),
+          ),
+          SizedBox(width: 10),
+          // Bọc trong Expanded để Text có thể tự động xuống dòng
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+              softWrap: true,  // Tự động xuống dòng khi văn bản quá dài
+              overflow: TextOverflow.visible, // Đảm bảo không có dấu ba chấm
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+
+  Widget _buildHobbyList(List<String> hobbies) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Sở thích',
+          style: TextStyle(color: Colors.white70, fontSize: 16),
+        ),
+        SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: hobbies.map((hobby) => Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.withOpacity(0.5)),
+            ),
+            child: Text(
+              hobby,
+              style: TextStyle(color: Colors.blue[300]),
+            ),
+          )).toList(),
+        ),
+      ],
     );
   }
 }

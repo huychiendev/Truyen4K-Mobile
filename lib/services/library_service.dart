@@ -10,47 +10,44 @@ import '../models/ReadingProgress.dart';
 class NovelService {
   static const String baseUrl = 'http://14.225.207.58:9898/api/v1';
 
-  // Fetch saved novels
-  static Future<List<LibraryNovel>> fetchSavedNovels() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
-    String? username = prefs.getString('username');
-    String key = 'saved_items';
+  static Future<Map<String, String>> getAuthHeaders() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('auth_token');
 
-    if (username == null) {
-      throw Exception('Username not found');
+    if (token == null) {
+      throw Exception('Authentication token not found');
     }
 
-    List<String> savedItems = prefs.getStringList(key) ?? [];
-    List<LibraryNovel> novels = [];
-
-    for (String item in savedItems) {
-      if (item.startsWith('$username,')) {
-        String slug = item.split(',')[1];
-        try {
-          final response = await http.get(
-            Uri.parse('$baseUrl/novels/$slug'),
-            headers: {
-              'Authorization': 'Bearer $token',
-            },
-          ).timeout(Duration(seconds: 10));
-
-          if (response.statusCode == 200) {
-            novels.add(LibraryNovel.fromJson(
-              jsonDecode(utf8.decode(response.bodyBytes)),
-              icon: Icons.more_vert,
-              subtitle: 'Đã lưu',
-            ));
-          }
-        } catch (e) {
-          print('Error fetching saved novel $slug: $e');
-          continue;
-        }
-      }
-    }
-    return novels;
+    return {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
   }
 
+  static Future<List<LibraryNovel>> fetchSavedNovels() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/liked-novels/user/1'),
+        headers: await getAuthHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(utf8.decode(response.bodyBytes));
+        final List<dynamic> novels = responseData['content'] as List<dynamic>;
+
+        return novels.map((novelData) => LibraryNovel.fromJson(
+            novelData,
+            icon: Icons.bookmark,
+            subtitle: 'Đã lưu'
+        )).toList();
+      } else {
+        throw Exception('Failed to load saved novels');
+      }
+    } catch (e) {
+      print('Error fetching saved novels: $e');
+      throw e;
+    }
+  }
   // Fetch reading progress
   static Future<List<LibraryNovel>> fetchReadingProgress() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

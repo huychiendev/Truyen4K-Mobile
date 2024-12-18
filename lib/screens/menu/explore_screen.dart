@@ -171,7 +171,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   SizedBox(height: 20),
                   _buildSwordplay(),
                   SizedBox(height: 20),
-                  _buildNovel(),
+                  _buildUrbanNovels(),
                   SizedBox(height: 20),
                 ],
               ),
@@ -322,40 +322,116 @@ class _ExploreScreenState extends State<ExploreScreen> {
       future: _service.fetchNovelsByGenre([13]),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return Container(
+            height: 200,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+              ),
+            ),
+          );
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          return Container(
+            height: 200,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Không thể tải truyện kiếm hiệp',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {});
+                    },
+                    icon: Icon(Icons.refresh, color: Colors.green),
+                    label: Text(
+                      'Thử lại',
+                      style: TextStyle(color: Colors.green),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         } else if (snapshot.hasData) {
           return _buildNovelSection(
             title: 'Truyện Kiếm Hiệp',
             novels: snapshot.data!,
-            onViewAll: () =>
-                _navigateToAllItems(snapshot.data!, 'Truyện Kiếm Hiệp'),
+            onViewAll: () => _navigateToAllItems(snapshot.data!, 'Truyện Kiếm Hiệp'),
           );
         } else {
-          return Text('No novels found.');
+          return Container(
+            height: 200,
+            child: Center(
+              child: Text(
+                'Chưa có truyện kiếm hiệp',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+          );
         }
       },
     );
   }
 
-  Widget _buildNovel() {
+  Widget _buildUrbanNovels() {
     return FutureBuilder<List<Novel>>(
-      future: _service.fetchNovelsByGenre([12]),
+      future: _service.fetchNovelsByGenre('Đô Thị'),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return Container(
+            height: 200,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+              ),
+            ),
+          );
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          return Container(
+            height: 200,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Không thể tải truyện đô thị',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {});
+                    },
+                    icon: Icon(Icons.refresh, color: Colors.green),
+                    label: Text(
+                      'Thử lại',
+                      style: TextStyle(color: Colors.green),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         } else if (snapshot.hasData) {
           return _buildNovelSection(
-            title: 'Truyện Tu Tiên',
+            title: 'Truyện Đô Thị',
             novels: snapshot.data!,
-            onViewAll: () =>
-                _navigateToAllItems(snapshot.data!, 'Truyện Tu Tiên'),
+            onViewAll: () => _navigateToAllItems(snapshot.data!, 'Truyện Đô Thị'),
           );
         } else {
-          return Text('No novels found.');
+          return Container(
+            height: 200,
+            child: Center(
+              child: Text(
+                'Chưa có truyện đô thị',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+          );
         }
       },
     );

@@ -14,7 +14,6 @@ import 'package:apptruyenonline/screens/self_screen/bag/wallet_screen.dart';
 import 'dart:convert';
 import '../../../models/User.dart';
 import 'package:apptruyenonline/screens/self_screen/event/even.dart';
-import 'package:apptruyenonline/screens/self_screen/event/achievement.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -424,17 +423,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       {
         'icon': Icons.leaderboard,  // Changed from event to leaderboard
         'title': 'Bảng xếp hạng',  // Changed from "Sự kiện" to "Bảng xếp hạng"
-        'color': Colors.purple
+        'color': Colors.green
       },
       {
         'icon': Icons.event,
         'title': 'Sự kiện',
         'color': Colors.purple
-      },
-      {
-        'icon': Icons.app_registration,
-        'title': 'Đăng ký',
-        'color': Colors.orange
       },
       {
         'icon': Icons.star,
@@ -570,10 +564,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       {
         'icon': Icons.payment,
         'title': 'Quản lý thanh toán',
-      },
-      {
-        'icon': Icons.star,
-        'title': 'Đăng ký',
       },
       {
         'icon': Icons.help,

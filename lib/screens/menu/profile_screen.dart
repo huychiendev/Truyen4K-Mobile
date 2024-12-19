@@ -9,7 +9,7 @@ import 'package:apptruyenonline/screens/self_screen/profile_view_screen/personal
 import 'package:apptruyenonline/screens/self_screen/payment_screen/account_payment_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/register_screen/prime_screen.dart';
 import 'package:apptruyenonline/screens/menu/daily_missions_screen.dart';
-import 'package:apptruyenonline/screens/self_screen/wallet_screen.dart';
+import 'package:apptruyenonline/screens/self_screen/bag/wallet_screen.dart';
 import 'dart:convert';
 import '../../../models/User.dart';
 import 'package:apptruyenonline/screens/self_screen/event/BXH.dart';

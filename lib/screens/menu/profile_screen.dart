@@ -1,5 +1,6 @@
 import 'package:apptruyenonline/screens/menu/coin_wallet_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/event/achievement.dart';
+import 'package:apptruyenonline/screens/self_screen/event/ranking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:apptruyenonline/services/profile_service.dart';
@@ -12,7 +13,7 @@ import 'package:apptruyenonline/screens/menu/daily_missions_screen.dart';
 import 'package:apptruyenonline/screens/self_screen/bag/wallet_screen.dart';
 import 'dart:convert';
 import '../../../models/User.dart';
-import 'package:apptruyenonline/screens/self_screen/event/BXH.dart';
+import 'package:apptruyenonline/screens/self_screen/event/even.dart';
 import 'package:apptruyenonline/screens/self_screen/event/achievement.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -421,9 +422,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildMyPrivileges() {
     final privileges = [
       {
-        'icon': Icons.person,
-        'title': 'Level ${_userProfile?.tierName ?? ""}',
-        'color': Colors.blue
+        'icon': Icons.leaderboard,  // Changed from event to leaderboard
+        'title': 'Bảng xếp hạng',  // Changed from "Sự kiện" to "Bảng xếp hạng"
+        'color': Colors.purple
       },
       {
         'icon': Icons.event,
@@ -475,6 +476,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildPrivilegeItem(IconData icon, String title, Color color) {
     return GestureDetector(
       onTap: () {
+        if (title == 'Bảng xếp hạng') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => RankingScreen()),
+          );
+        }
         if (title == 'Sự kiện') {
           Navigator.push(
             context,

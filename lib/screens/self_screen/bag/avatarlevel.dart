@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:apptruyenonline/models/ProfileModel.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,14 +35,36 @@ class _AvatarLevelsScreenState extends State<AvatarLevelsScreen> {
 
   Future<void> _loadUserProgress() async {
     final prefs = await SharedPreferences.getInstance();
-    final chapterCount = prefs.getInt('chapter_count') ?? 0;
-    final level = _calculateUserLevel(chapterCount);
+    // Get the actual chapter count from user profile instead of SharedPreferences
+    final String? username = prefs.getString('username');
+    final String? token = prefs.getString('auth_token');
 
-    if (mounted) {
-      setState(() {
-        _userChapterCount = chapterCount;
-        _currentLevel = level;
-      });
+    if (username != null && token != null) {
+      try {
+        final response = await http.get(
+          Uri.parse('http://14.225.207.58:9898/api/v1/profile/$username'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          final profileData = json.decode(utf8.decode(response.bodyBytes));
+          final userProfile = UserProfile.fromJson(profileData);
+          final chapterCount = userProfile.chapterReadCount;
+          final level = _calculateUserLevel(chapterCount);
+
+          if (mounted) {
+            setState(() {
+              _userChapterCount = chapterCount;
+              _currentLevel = level;
+            });
+          }
+        }
+      } catch (e) {
+        print('Error loading user progress: $e');
+      }
     }
   }
 
@@ -108,10 +133,19 @@ class _AvatarLevelsScreenState extends State<AvatarLevelsScreen> {
             ),
           ),
           SizedBox(height: 16),
+          // Use the same asset path structure as in _buildCultivationIcon
           Image.asset(
             'assets/level/$_currentLevel.webp',
             width: 100,
             height: 100,
+            errorBuilder: (context, error, stackTrace) {
+              print('Error loading level image: $error');
+              return Icon(
+                Icons.error_outline,
+                size: 100,
+                color: Colors.white70,
+              );
+            },
           ),
           SizedBox(height: 16),
           Text(

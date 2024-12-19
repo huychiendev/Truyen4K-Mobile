@@ -1,23 +1,78 @@
+import 'package:apptruyenonline/screens/self_screen/event/ranking_user.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:apptruyenonline/screens/self_screen/event/ranking_user.dart';
 
 class RankingScreen extends StatefulWidget {
+  const RankingScreen({Key? key}) : super(key: key);
+
   @override
   _RankingScreenState createState() => _RankingScreenState();
 }
 
 class _RankingScreenState extends State<RankingScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  List<RankingUser> _rankings = [];
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _fetchRankings();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchRankings() async {
+    if (!mounted) return;
+
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+
+      if (token == null) {
+        throw Exception('Vui lòng đăng nhập để xem bảng xếp hạng');
+      }
+
+      final response = await http.get(
+        Uri.parse('http://14.225.207.58:9898/api/v1/bxh/top-read'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+        setState(() {
+          _rankings = data.map((json) => RankingUser.fromJson(json)).toList();
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Không thể tải bảng xếp hạng');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -42,28 +97,57 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildRankingList('weekly'),
-          _buildRankingList('monthly'),
-          _buildRankingList('all-time'),
-        ],
+      body: RefreshIndicator(
+        onRefresh: _fetchRankings,
+        child: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : _error != null
+            ? Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _fetchRankings,
+                child: Text('Thử lại'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                ),
+              ),
+            ],
+          ),
+        )
+            : TabBarView(
+          controller: _tabController,
+          children: [
+            _buildRankingList(_rankings),
+            _buildRankingList(_rankings),
+            _buildRankingList(_rankings),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildRankingList(String type) {
+  Widget _buildRankingList(List<RankingUser> rankings) {
     return ListView.builder(
       padding: EdgeInsets.all(16),
-      itemCount: 20,
+      itemCount: rankings.length,
       itemBuilder: (context, index) {
-        return _buildRankingItem(index + 1);
+        return _buildRankingItem(index + 1, rankings[index]);
       },
     );
   }
 
-  Widget _buildRankingItem(int rank) {
+  Widget _buildRankingItem(int rank, RankingUser user) {
     Color rankColor;
     Widget rankWidget;
 
@@ -110,7 +194,23 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
           SizedBox(width: 16),
           CircleAvatar(
             radius: 24,
-            backgroundImage: AssetImage('assets/avt.png'),
+            backgroundColor: Colors.grey[800],
+            child: ClipOval(
+              child: Image.network(
+                user.imagePath,
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/avt.png',
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
+            ),
           ),
           SizedBox(width: 16),
           Expanded(
@@ -118,7 +218,7 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'User Name',
+                  user.fullName,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -127,7 +227,7 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Level: Đấu Giả',
+                  'Level: ${user.tierName}',
                   style: TextStyle(color: Colors.grey),
                 ),
               ],
@@ -137,7 +237,7 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '1000',
+                '${user.chapterReadCount}',
                 style: TextStyle(
                   color: Colors.green,
                   fontWeight: FontWeight.bold,
@@ -145,7 +245,7 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
                 ),
               ),
               Text(
-                'điểm',
+                'chương',
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ],

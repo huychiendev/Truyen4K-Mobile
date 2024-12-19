@@ -65,12 +65,10 @@ class HorizontalListSection extends StatelessWidget {
       ),
     );
   }
-
-
   Widget _buildHorizontalListItem(BuildContext context, Map<String, dynamic> item) {
     return GestureDetector(
       onTap: () {
-        print('Bạn đã nhấn vào ${item['title']}');
+        print('Bạn đã nhấn vào ${item['title'] ?? 'Không có tiêu đề'}');
       },
       child: Padding(
         padding: const EdgeInsets.only(right: 16.0),
@@ -79,15 +77,22 @@ class HorizontalListSection extends StatelessWidget {
           children: [
             Stack(
               children: [
-                Container(
-                  width: 120,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: NetworkImage(item['thumbnailImageUrl']),
-                      fit: BoxFit.cover,
-                    ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    item['thumbnailImageUrl'] ?? r'D:\Android Studio\apptruyenonline\assets\300.jpg',
+                    width: 120,
+                    height: 140,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error loading image: $error');
+                      return Container(
+                        width: 120,
+                        height: 140,
+                        color: Colors.grey[800],
+                        child: Icon(Icons.image_not_supported, color: Colors.white70),
+                      );
+                    },
                   ),
                 ),
                 Positioned(
@@ -95,7 +100,11 @@ class HorizontalListSection extends StatelessWidget {
                   bottom: 5,
                   child: IconButton(
                     icon: Icon(Icons.play_circle_filled, color: Colors.white),
-                    onPressed: () => onPlayTap(item),  // Gọi hàm onPlayTap khi nhấn nút Play
+                    onPressed: () {
+                      if (item != null) {
+                        onPlayTap(item);
+                      }
+                    },
                   ),
                 ),
               ],
@@ -104,7 +113,7 @@ class HorizontalListSection extends StatelessWidget {
             Container(
               width: 120,
               child: Text(
-                item['title'] ?? 'Title',
+                item['title'] ?? 'Không có tiêu đề',
                 style: TextStyle(fontSize: 14, color: Colors.white),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

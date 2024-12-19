@@ -12,20 +12,29 @@ import 'package:provider/provider.dart';
 
 class DataService {
   static Future<Map<String, dynamic>> fetchData(String endpoint) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
 
-    final response = await http.get(
-      Uri.parse('http://14.225.207.58:9898/api/v1/$endpoint'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
+      if (token == null) {
+        throw Exception('Không tìm thấy token');
+      }
 
-    if (response.statusCode == 200) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
-    } else {
-      throw Exception('Failed to load data from $endpoint');
+      final response = await http.get(
+        Uri.parse('http://14.225.207.58:9898/api/v1/$endpoint'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(utf8.decode(response.bodyBytes));
+      } else {
+        throw Exception('Không thể tải dữ liệu');
+      }
+    } catch (e) {
+      print('Lỗi khi tải dữ liệu: $e');
+      return {'content': []};  // Trả về nội dung rỗng thay vì ném lỗi
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:apptruyenonline/screens/self_screen/event/ranking_user.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RankingScreen extends StatefulWidget {
   const RankingScreen({Key? key}) : super(key: key);
@@ -87,12 +88,14 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.green,
+          labelColor: Colors.white,  // Thêm thuộc tính labelColor để đổi màu chữ của các tab thành trắng
           tabs: [
             Tab(text: 'Đọc Tuần'),
             Tab(text: 'Truyện Được Đọc Nhiều'),
             Tab(text: 'Cao Thủ Tuần'),
           ],
         ),
+
       ),
       body: RefreshIndicator(
         onRefresh: _fetchRankings,
@@ -135,8 +138,96 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
       padding: EdgeInsets.all(16),
       itemCount: rankings.length,
       itemBuilder: (context, index) {
-        return _buildWeeklyRankingItem(index + 1, rankings[index]);
+        return _buildNovelRankingItem(index + 1, rankings[index]);
       },
+    );
+  }
+  Widget _buildNovelRankingItem(int rank, RankingUser novel) {
+    Color rankColor = _getRankColor(rank);
+    Widget rankWidget = _buildRankWidget(rank, rankColor);
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: rank <= 3 ? rankColor.withOpacity(0.5) : Colors.transparent,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          rankWidget,
+          SizedBox(width: 16),
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.grey[800],
+            child: ClipOval(
+              child: Image.network(
+                novel.imagePath,
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  print('Error loading novel image: $error');
+                  return Image.asset(
+                    'assets/avt.png',
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
+            ),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  novel.fullName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4),
+                Text(
+                  novel.tierName,
+                  style: TextStyle(
+                    color: Colors.greenAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${novel.readCounts ?? 0}',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              Text(
+                'lượt đọc',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -225,13 +316,36 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
             radius: 24,
             backgroundColor: Colors.grey[800],
             child: ClipOval(
-              child: FadeInImage.assetNetwork(
-                placeholder: 'assets/avt.png',
-                image: user.imagePath,
-                width: 48,
-                height: 48,
-                fit: BoxFit.cover,
-                imageErrorBuilder: (context, error, stackTrace) {
+              child: FutureBuilder<String?>(
+                future: _fetchUserAvatar(user.userId),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    try {
+                      return Image.memory(
+                        base64Decode(snapshot.data!),
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          print('Error loading avatar image: $error');
+                          return Image.asset(
+                            'assets/avt.png',
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      );
+                    } catch (e) {
+                      print('Error decoding image data: $e');
+                      return Image.asset(
+                        'assets/avt.png',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      );
+                    }
+                  }
                   return Image.asset(
                     'assets/avt.png',
                     width: 48,
@@ -273,7 +387,7 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${user.point ?? 0}',  // Display points instead of chapter count
+                '${user.point ?? 0}',  // Hiển thị điểm thay vì số chương
                 style: TextStyle(
                   color: Colors.green,
                   fontWeight: FontWeight.bold,
@@ -281,7 +395,7 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
                 ),
               ),
               Text(
-                'điểm',  // Changed from "chương" to "điểm"
+                'điểm',  // Thay đổi label từ "chương" sang "điểm"
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ],
@@ -314,13 +428,36 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
             radius: 24,
             backgroundColor: Colors.grey[800],
             child: ClipOval(
-              child: FadeInImage.assetNetwork(
-                placeholder: 'assets/avt.png',
-                image: user.imagePath,
-                width: 48,
-                height: 48,
-                fit: BoxFit.cover,
-                imageErrorBuilder: (context, error, stackTrace) {
+              child: FutureBuilder<String?>(
+                future: _fetchUserAvatar(user.userId),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    try {
+                      return Image.memory(
+                        base64Decode(snapshot.data!),
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          print('Error loading avatar image: $error');
+                          return Image.asset(
+                            'assets/avt.png',
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      );
+                    } catch (e) {
+                      print('Error decoding image data: $e');
+                      return Image.asset(
+                        'assets/avt.png',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      );
+                    }
+                  }
                   return Image.asset(
                     'assets/avt.png',
                     width: 48,
@@ -378,6 +515,35 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
         ],
       ),
     );
+  }
+
+  Future<String?> _fetchUserAvatar(int userId) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+
+      if (token == null) {
+        return null;
+      }
+
+      final response = await http.get(
+        Uri.parse('http://14.225.207.58:9898/api/v1/images/?userId=$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> images = json.decode(utf8.decode(response.bodyBytes));
+        if (images.isNotEmpty) {
+          return images[0]['data'];
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching user avatar: $e');
+      return null;
+    }
   }
 
 

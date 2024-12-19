@@ -1,3 +1,4 @@
+import 'package:apptruyenonline/screens/self_screen/bag/avatarlevel.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:apptruyenonline/models/ProfileModel.dart';
@@ -46,7 +47,7 @@ class WalletScreen extends StatelessWidget {
       body: ListView(
         children: [
           _buildUserCard(),
-          _buildMenuList(),
+          _buildMenuList(context), // Pass context here
         ],
       ),
     );
@@ -178,7 +179,7 @@ class WalletScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuList() {
+  Widget _buildMenuList(BuildContext context) {  // Accept context here
     final menuItems = [
       {'icon': Icons.star, 'title': 'Huy hiệu', 'color': Colors.amber},
       {'icon': Icons.account_circle, 'title': 'Khung Avatar', 'color': Colors.blue},
@@ -188,6 +189,7 @@ class WalletScreen extends StatelessWidget {
     return Column(
       children: menuItems
           .map((item) => _buildMenuItem(
+        context,  // Pass context here
         item['icon'] as IconData,
         item['title'] as String,
         item['color'] as Color,
@@ -196,7 +198,7 @@ class WalletScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title, Color color) {
+  Widget _buildMenuItem(BuildContext context, IconData icon, String title, Color color) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -217,7 +219,14 @@ class WalletScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         trailing: Icon(Icons.chevron_right, color: Colors.white54),
-        onTap: () {},
+        onTap: () {
+          if (title == 'Huy hiệu') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AvatarLevelsScreen()),
+            );
+          }
+        },
       ),
     );
   }

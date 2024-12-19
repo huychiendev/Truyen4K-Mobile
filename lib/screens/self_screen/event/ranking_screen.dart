@@ -149,7 +149,7 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
       padding: EdgeInsets.all(16),
       itemCount: rankings.length,
       itemBuilder: (context, index) {
-        return _buildWeeklyRankingItem(index + 1, rankings[index]);
+        return _buildTopUserRankingItem(index + 1, rankings[index]);
       },
     );
   }
@@ -202,53 +202,92 @@ class _RankingScreenState extends State<RankingScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildRankingList(List<RankingUser> rankings, {bool showPoints = true}) {
-    if (rankings.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Không có dữ liệu xếp hạng',
-              style: TextStyle(color: Colors.white70),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _fetchRankings,
-              child: Text('Tải lại'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+  Widget _buildTopUserRankingItem(int rank, RankingUser user) {
+    Color rankColor = _getRankColor(rank);
+    Widget rankWidget = _buildRankWidget(rank, rankColor);
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: rank <= 3 ? rankColor.withOpacity(0.5) : Colors.transparent,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          rankWidget,
+          SizedBox(width: 16),
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.grey[800],
+            child: ClipOval(
+              child: FadeInImage.assetNetwork(
+                placeholder: 'assets/avt.png',
+                image: user.imagePath,
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
+                imageErrorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/avt.png',
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                  );
+                },
               ),
             ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: EdgeInsets.all(16),
-      itemCount: rankings.length,
-      itemBuilder: (context, index) {
-        return AnimatedBuilder(
-          animation: _tabController.animation!,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: Tween(begin: 0.0, end: 1.0).animate(
-                CurvedAnimation(
-                  parent: _tabController.animation!,
-                  curve: Interval(
-                    0.5 * index / rankings.length,
-                    0.5 + 0.5 * index / rankings.length,
-                    curve: Curves.easeOut,
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.fullName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4),
+                Text(
+                  user.tierName,
+                  style: TextStyle(
+                    color: Colors.greenAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${user.point ?? 0}',  // Display points instead of chapter count
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
-              child: child,
-            );
-          },
-          child: _buildWeeklyRankingItem(index + 1, rankings[index]),
-        );
-      },
+              Text(
+                'điểm',  // Changed from "chương" to "điểm"
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
